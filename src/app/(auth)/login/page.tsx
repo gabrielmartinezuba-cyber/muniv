@@ -32,8 +32,8 @@ export default function LoginPage() {
     startTransition(async () => {
       const result = await signIn(data);
       if (result.success) {
-        // Redirigimos al catálogo/home (Flujo completado)
-        router.push("/");
+        // Redirigimos al Dashboard del Club
+        router.push("/club");
         router.refresh();
       } else {
         setServerState(result);
@@ -126,6 +126,11 @@ export default function LoginPage() {
                 <>Iniciar Sesión <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" /></>
               )}
             </button>
+            <div className="flex justify-center -mt-2">
+              <Link href="/recuperar-password" className="text-slate-400 text-sm hover:text-gold-500 transition-colors font-medium">
+                ¿Olvidaste tu contraseña?
+              </Link>
+            </div>
           </form>
         </div>
 

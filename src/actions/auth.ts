@@ -73,3 +73,45 @@ export async function signIn(data: unknown) {
     return { success: false, message: "Ocurrió un error al intentar iniciar sesión." };
   }
 }
+
+export async function signOutUser() {
+  const supabase = await createClient();
+  await supabase.auth.signOut();
+}
+
+export async function sendPasswordResetEmail(email: string) {
+  try {
+    const supabase = await createClient();
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/auth/callback?next=/actualizar-password`,
+    });
+
+    if (error) {
+      return { success: false, message: error.message };
+    }
+
+    return { success: true, message: "Enlace de recuperación enviado. Revisa tu correo electrónico." };
+  } catch (error: any) {
+    console.error("Auth Reset Password CRASH:", error);
+    return { success: false, message: "Ocurrió un error inesperado al enviar el correo." };
+  }
+}
+
+export async function updateUserPassword(data: unknown) {
+  try {
+    const supabase = await createClient();
+    const { password } = data as any; // Valdación básica extra
+
+    const { error } = await supabase.auth.updateUser({ password });
+
+    if (error) {
+      return { success: false, message: error.message };
+    }
+
+    return { success: true, message: "Contraseña actualizada con éxito." };
+  } catch (error: any) {
+    console.error("Auth Update Password CRASH:", error);
+    return { success: false, message: "Ocurrió un error inesperado al actualizar credenciales." };
+  }
+}
+

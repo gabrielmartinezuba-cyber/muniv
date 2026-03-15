@@ -30,3 +30,15 @@ export const LoginSchema = z.object({
   email: z.string().email("Email inválido"),
   password: z.string().min(1, "La contraseña es obligatoria"),
 });
+
+export const ResetPasswordSchema = z.object({
+  email: z.string().email("Email inválido"),
+});
+
+export const UpdatePasswordSchema = z.object({
+  password: z.string()
+    .min(8, "La contraseña debe tener mínimo 8 caracteres")
+    .regex(/[A-Z]/, "Debe contener al menos una mayúscula")
+    .regex(/[0-9]/, "Debe contener al menos un número"),
+});
+
