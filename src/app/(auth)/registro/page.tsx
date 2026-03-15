@@ -46,21 +46,11 @@ export default function RegisterPage() {
         transition={{ duration: 0.6, ease: "easeOut" }}
         className="w-full max-w-md z-10"
       >
-        <div className="flex flex-col items-center mb-8">
-          <Link href="/">
-            <Image
-              src="/logo.png"
-              alt="MUNIV Logo"
-              width={200}
-              height={66}
-              className="w-auto h-20 mb-6 object-contain drop-shadow-2xl"
-              priority
-            />
-          </Link>
-          <h1 className="font-display text-3xl text-white tracking-wide">
+        <div className="flex flex-col items-center mb-8 relative z-10 pt-20 md:pt-28">
+          <h1 className="font-display text-3xl text-white tracking-wide text-center">
             Asociate al <span className="italic text-gold-500">Club</span>
           </h1>
-          <p className="text-slate-400 text-sm mt-3 font-light">
+          <p className="text-slate-400 text-sm mt-3 font-light text-center">
             Experiencias de élite, catas privadas y acceso restringido.
           </p>
         </div>

@@ -27,10 +27,11 @@ export async function signUp(data: unknown) {
     });
 
     if (error) {
-      if (error.status === 400 || error.message.toLowerCase().includes("already registered")) {
-        return { success: false, message: "Este email ya está registrado o es inválido." };
+      if (error.status === 400 && error.message.toLowerCase().includes("already registered")) {
+        return { success: false, message: "Este email ya está registrado." };
       }
-      throw error;
+      // Devolver error exacto de Supabase para UI handling
+      return { success: false, message: error.message };
     }
 
     return { 
@@ -39,10 +40,36 @@ export async function signUp(data: unknown) {
     };
 
   } catch (error: any) {
-    console.error("Auth Server Action CRASH:", error);
-    if (error.name === "ZodError") {
-      return { success: false, message: "Validación estricta fallida." };
+    if (error?.name === "ZodError") {
+      return { success: false, message: "Validación de formulario estricta fallida." };
     }
+    
+    // Observabilidad Crítica
+    console.error("Auth Server Action CRASH COMPLETE:", error);
+    
     return { success: false, message: "Ocurrió un error inesperado en el servidor." };
+  }
+}
+
+export async function signIn(data: unknown) {
+  try {
+    const { email, password } = data as any; // Podríamos usar LoginSchema.parse(data), pero simplificamos
+
+    const supabase = await createClient();
+
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+
+    if (error) {
+      // Supabase devuelve "Invalid login credentials"
+      return { success: false, message: "Correo o contraseña incorrectos." };
+    }
+
+    return { success: true, message: "Login exitoso" };
+  } catch (error: any) {
+    console.error("Auth SignIn CRASH:", error);
+    return { success: false, message: "Ocurrió un error al intentar iniciar sesión." };
   }
 }

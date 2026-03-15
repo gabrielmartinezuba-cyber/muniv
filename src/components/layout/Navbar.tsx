@@ -53,7 +53,8 @@ export default function Navbar() {
         <div className="hidden md:flex items-center gap-8 text-sm tracking-widest uppercase font-medium z-10">
           <Link href="/" className="text-slate-300 hover:text-gold-500 transition-colors">Club</Link>
           <Link href="/gifting" className="text-slate-300 hover:text-gold-500 transition-colors">B2B Gifting</Link>
-          <Link href="#" className="text-gold-500 hover:text-white transition-colors">Login</Link>
+          <Link href="/login" className="text-slate-300 hover:text-gold-500 transition-colors">Login</Link>
+          <Link href="/registro" className="px-5 py-2 glass-panel-glow bg-gold-500/10 border border-gold-500/50 text-gold-200 rounded-full hover:bg-gold-500 hover:text-slate-900 transition-all font-semibold">Registro</Link>
         </div>
 
         {/* Mobile Menu Button - Accessible */}
@@ -114,13 +115,22 @@ export default function Navbar() {
               >
                 B2B GIFTING
               </Link>
-              <Link 
-                href="#" 
-                onClick={() => setIsMenuOpen(false)} 
-                className="font-display text-4xl text-gold-500 hover:text-white transition-colors tracking-wide"
-              >
-                LOGIN
-              </Link>
+              <div className="flex flex-col items-center gap-6 mt-4 w-full px-6">
+                <Link 
+                  href="/login" 
+                  onClick={() => setIsMenuOpen(false)} 
+                  className="font-display text-3xl text-slate-300 hover:text-white transition-colors tracking-wide"
+                >
+                  LOGIN
+                </Link>
+                <Link 
+                  href="/registro" 
+                  onClick={() => setIsMenuOpen(false)} 
+                  className="w-full text-center font-display text-2xl text-gold-200 hover:text-slate-900 hover:bg-gold-500 transition-all tracking-widest uppercase glass-panel-glow border border-gold-500/50 bg-gold-500/10 py-5 rounded-full"
+                >
+                  Crear Cuenta
+                </Link>
+              </div>
             </div>
           </motion.div>
         )}
