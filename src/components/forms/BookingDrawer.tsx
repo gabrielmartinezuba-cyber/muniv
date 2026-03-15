@@ -4,7 +4,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useBookingStore } from "@/store/useBookingStore";
 import { X, CalendarDays, Clock, Users, ShieldCheck, ChevronRight, Check, Loader2, AlertCircle } from "lucide-react";
 import { useEffect, useState, useTransition } from "react";
-import { submitBooking } from "@/app/actions/booking";
+import { submitBooking } from "@/actions/booking";
+import { useRouter } from "next/navigation";
 
 export default function BookingDrawer() {
   const { 
@@ -17,6 +18,7 @@ export default function BookingDrawer() {
   const [isMobile, setIsMobile] = useState(false);
   const [isPending, startTransition] = useTransition();
   const [globalError, setGlobalError] = useState<string | null>(null);
+  const router = useRouter();
 
   const handleClose = () => {
     if (step === 3) {
@@ -56,7 +58,10 @@ export default function BookingDrawer() {
 
       if (res.success) {
         resetDraft();
-        setStep(3);
+        // Redirigimos al Club para que vea su nueva reserva
+        router.push("/club");
+        router.refresh(); // Aseguramos que el server rinda la nueva data
+        closeBooking();
       } else {
         setGlobalError(res.message);
       }

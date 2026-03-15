@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { Building2, Package, CircleDollarSign, Send, ArrowRight, Loader2, AlertCircle } from "lucide-react";
 import { useState, useTransition } from "react";
 import Link from "next/link";
-import { submitGifting } from "@/app/actions/booking";
+import { submitGifting } from "@/actions/booking";
 
 export default function CorporateGifting() {
   const [formData, setFormData] = useState({

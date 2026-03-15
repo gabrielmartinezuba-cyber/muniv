@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import LogoutButton from "@/components/auth/LogoutButton";
-import { User, CalendarCheck, Crown, Settings } from "lucide-react";
+import SidebarNav from "@/components/layout/SidebarNav";
 
 export default async function ClubLayout({
   children,
@@ -43,23 +43,7 @@ export default async function ClubLayout({
           </div>
         </div>
 
-        <nav className="flex-1 hidden md:flex flex-col gap-2">
-          <span className="text-xs tracking-[0.2em] text-gold-500 font-bold uppercase mb-4 ml-1">Tu Espacio</span>
-          <Link href="/club" className="flex items-center gap-3 px-4 py-3 rounded-xl bg-gold-500/10 border border-gold-500 text-gold-500 font-medium">
-            <User size={18} /> Resumen
-          </Link>
-          <Link href="/club/reservas" className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/5 text-slate-300 transition-colors">
-            <CalendarCheck size={18} /> Mis Reservas
-          </Link>
-          <Link href="/club/beneficios" className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/5 text-slate-300 transition-colors">
-            <Crown size={18} /> Beneficios
-          </Link>
-          <div className="mt-8 border-t border-white/5 pt-8">
-            <Link href="/club/perfil" className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/5 text-slate-300 transition-colors">
-              <Settings size={18} /> Mi Perfil
-            </Link>
-          </div>
-        </nav>
+        <SidebarNav />
       </aside>
 
       {/* Main Content Area */}

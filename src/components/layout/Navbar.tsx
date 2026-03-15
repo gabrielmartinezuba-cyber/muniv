@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { usePathname } from "next/navigation";
 import { motion, useScroll, useMotionValueEvent, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
@@ -16,6 +17,7 @@ interface NavbarProps {
 
 export default function Navbar({ initialUser }: NavbarProps) {
   const { scrollY } = useScroll();
+  const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [user, setUser] = useState<User | null>(initialUser);
@@ -45,6 +47,11 @@ export default function Navbar({ initialUser }: NavbarProps) {
       setScrolled(false);
     }
   });
+
+  // Prevent double navbar/logo on club dashboard
+  if (pathname.startsWith("/club")) {
+    return null;
+  }
 
   return (
     <>
@@ -80,10 +87,7 @@ export default function Navbar({ initialUser }: NavbarProps) {
           <Link href="/gifting" className="text-slate-300 hover:text-gold-500 transition-colors">B2B Gifting</Link>
           {user ? (
             <>
-              <Link href="/club" className="text-gold-500 hover:text-white transition-colors">Mi Club</Link>
-              <Link href="/club/perfil" className="text-slate-300 hover:text-gold-500 transition-colors" aria-label="Mi Perfil">
-                <UserIcon size={18} />
-              </Link>
+              <Link href="/club" className="text-gold-500 hover:text-white transition-colors">Mi Perfil</Link>
               <LogoutButton />
             </>
           ) : (
@@ -141,8 +145,7 @@ export default function Navbar({ initialUser }: NavbarProps) {
               <div className="flex flex-col items-center gap-6 mt-4 w-full px-6 text-center">
                 {user ? (
                   <>
-                    <Link href="/club" onClick={() => setIsMenuOpen(false)} className="font-display text-3xl text-gold-500 hover:text-white transition-colors tracking-wide">MI CLUB</Link>
-                    <Link href="/club/perfil" onClick={() => setIsMenuOpen(false)} className="font-display text-2xl text-slate-300 hover:text-white transition-colors tracking-wide">MI PERFIL</Link>
+                    <Link href="/club" onClick={() => setIsMenuOpen(false)} className="font-display text-3xl text-gold-500 hover:text-white transition-colors tracking-wide">MI PERFIL</Link>
                     <div onClick={() => setIsMenuOpen(false)}>
                       <LogoutButton />
                     </div>

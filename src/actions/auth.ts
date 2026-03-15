@@ -5,17 +5,12 @@ import { SignUpSchema } from "@/schemas/auth";
 
 export async function signUp(data: unknown) {
   try {
-    // 1. Zod Validation en el server (El frontend ya lo hizo, pero no confiamos)
     const formData = SignUpSchema.parse(data);
-
-    // 2. Inicializar Supabase Client con SSR Auth context
     const supabase = await createClient();
 
-    // 3. Crear usuario inyectando metadata
-    const { data: user, error } = await supabase.auth.signUp({
+    const { error } = await supabase.auth.signUp({
       email: formData.email,
       password: formData.password,
-      // URL para redirigir luego de confirmación
       options: {
         emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/auth/callback`,
         data: {
@@ -30,7 +25,6 @@ export async function signUp(data: unknown) {
       if (error.status === 400 && error.message.toLowerCase().includes("already registered")) {
         return { success: false, message: "Este email ya está registrado." };
       }
-      // Devolver error exacto de Supabase para UI handling
       return { success: false, message: error.message };
     }
 
@@ -43,18 +37,14 @@ export async function signUp(data: unknown) {
     if (error?.name === "ZodError") {
       return { success: false, message: "Validación de formulario estricta fallida." };
     }
-    
-    // Observabilidad Crítica
     console.error("Auth Server Action CRASH COMPLETE:", error);
-    
     return { success: false, message: "Ocurrió un error inesperado en el servidor." };
   }
 }
 
 export async function signIn(data: unknown) {
   try {
-    const { email, password } = data as any; // Podríamos usar LoginSchema.parse(data), pero simplificamos
-
+    const { email, password } = data as any;
     const supabase = await createClient();
 
     const { error } = await supabase.auth.signInWithPassword({
@@ -63,7 +53,6 @@ export async function signIn(data: unknown) {
     });
 
     if (error) {
-      // Supabase devuelve "Invalid login credentials"
       return { success: false, message: "Correo o contraseña incorrectos." };
     }
 
@@ -100,7 +89,7 @@ export async function sendPasswordResetEmail(email: string) {
 export async function updateUserPassword(data: unknown) {
   try {
     const supabase = await createClient();
-    const { password } = data as any; // Valdación básica extra
+    const { password } = data as any;
 
     const { error } = await supabase.auth.updateUser({ password });
 
@@ -115,3 +104,23 @@ export async function updateUserPassword(data: unknown) {
   }
 }
 
+export async function updateUserData(data: { nombre: string; apellido: string }) {
+  try {
+    const supabase = await createClient();
+    const { error } = await supabase.auth.updateUser({
+      data: {
+        first_name: data.nombre,
+        last_name: data.apellido,
+      },
+    });
+
+    if (error) {
+      return { success: false, message: error.message };
+    }
+
+    return { success: true, message: "Datos actualizados correctamente." };
+  } catch (error: any) {
+    console.error("Auth Update User Data CRASH:", error);
+    return { success: false, message: "Ocurrió un error inesperado al actualizar los datos." };
+  }
+}
