@@ -2,6 +2,7 @@
 
 import { createClient } from "@/utils/supabase/server";
 import { SignUpSchema } from "@/schemas/auth";
+import { headers } from "next/headers";
 
 export async function signUp(data: unknown) {
   try {
@@ -71,8 +72,9 @@ export async function signOutUser() {
 export async function sendPasswordResetEmail(email: string) {
   try {
     const supabase = await createClient();
+    const origin = (await headers()).get("origin") || process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/auth/callback?next=/actualizar-password`,
+      redirectTo: `${origin}/auth/callback?next=/actualizar-password`,
     });
 
     if (error) {
