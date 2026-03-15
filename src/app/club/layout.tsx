@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import LogoutButton from "@/components/auth/LogoutButton";
 import SidebarNav from "@/components/layout/SidebarNav";
+import MobileNav from "@/components/layout/MobileNav";
 
 export default async function ClubLayout({
   children,
@@ -48,10 +49,12 @@ export default async function ClubLayout({
 
       {/* Main Content Area */}
       <main className="flex-1 w-full relative z-10 min-h-screen">
-        <div className="h-full overflow-y-auto w-full p-6 md:p-12 lg:px-20">
+        <div className="h-full overflow-y-auto w-full p-6 md:p-12 lg:px-20 pb-32 md:pb-12">
           {children}
         </div>
       </main>
+
+      <MobileNav />
     </div>
   );
 }

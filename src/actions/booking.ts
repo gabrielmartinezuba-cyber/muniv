@@ -36,20 +36,24 @@ export async function submitBooking(data: unknown) {
     // Cálculo del precio (simplificado, acá se podrían sumar up-sells si estuvieran en DB)
     const totalPrice = experience.price * formData.guests;
 
-    // 4. Insertar en tabla bookings
+    // 4. Insertar en tabla bookings (Mapeo estricto para evitar errores de Postgres)
     const { error: insertError } = await supabase
       .from('bookings')
       .insert({
         user_id: user.id,
         experience_id: formData.experienceId,
-        booking_date: `${formData.date}T${formData.time}:00Z`, // Formato ISO simplificado
-        guests_count: formData.guests,
-        total_price: totalPrice,
-        status: 'PENDING'
+        guests_count: Number(formData.guests),
+        total_price: Number(totalPrice),
+        status: 'CONFIRMED'
       });
 
     if (insertError) {
-      console.error("Supabase Insert Error:", insertError);
+      console.error("Supabase Booking Error:", {
+        code: insertError.code,
+        message: insertError.message,
+        details: insertError.details,
+        hint: insertError.hint
+      });
       throw new Error("Error al registrar la reserva en la base de datos.");
     }
 
@@ -86,5 +90,33 @@ export async function submitGifting(data: unknown) {
       success: false, 
       message: "Problema interno procesando la estructura B2B." 
     };
+  }
+}
+
+/**
+ * Recupera el historial de reservas del usuario logueado con datos de la experiencia vinculada
+ */
+export async function getUserBookings() {
+  try {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) return [];
+
+    const { data, error } = await supabase
+      .from('bookings')
+      .select('*, experiences(*)')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+       console.error("Error fetching user bookings:", error);
+       return [];
+    }
+
+    return data;
+  } catch (error) {
+    console.error("getUserBookings Action CRASH:", error);
+    return [];
   }
 }
