@@ -1,0 +1,130 @@
+"use client";
+
+import { useState } from "react";
+import { motion, useScroll, useMotionValueEvent, AnimatePresence } from "framer-motion";
+import Image from "next/image";
+import Link from "next/link";
+import { cn } from "@/lib/utils";
+import { X } from "lucide-react";
+
+export default function Navbar() {
+  const { scrollY } = useScroll();
+  const [scrolled, setScrolled] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  useMotionValueEvent(scrollY, "change", (latest) => {
+    if (latest > 50) {
+      setScrolled(true);
+    } else {
+      setScrolled(false);
+    }
+  });
+
+  return (
+    <>
+      <motion.nav
+        initial={{ y: -100 }}
+        animate={{ y: 0 }}
+        transition={{ duration: 0.8, ease: "easeOut" }}
+        className={cn(
+          "fixed top-0 w-full z-50 transition-all duration-500 flex items-center justify-between px-6 md:px-12",
+          scrolled
+            ? "bg-slate-950/50 backdrop-blur-md border-b border-white/5 py-4 shadow-[0_4px_30px_rgba(0,0,0,0.1)]"
+            : "bg-transparent py-6"
+        )}
+      >
+        <Link 
+          href="/" 
+          className="flex items-center group relative z-10"
+          onClick={() => setIsMenuOpen(false)}
+        >
+          {/* Using explicit width and height instead of fill ensures Next.js renders the initial layout size correctly, fixing the broken aspect ratio / microscopic issue */}
+          <Image
+            src="/logo.png"
+            alt="MUNIV Logo"
+            width={400}
+            height={133}
+            className="w-auto h-24 md:h-28 group-hover:scale-105 transition-transform duration-500 object-contain"
+            priority
+          />
+        </Link>
+
+        {/* Desktop Links */}
+        <div className="hidden md:flex items-center gap-8 text-sm tracking-widest uppercase font-medium z-10">
+          <Link href="/" className="text-slate-300 hover:text-gold-500 transition-colors">Club</Link>
+          <Link href="/gifting" className="text-slate-300 hover:text-gold-500 transition-colors">B2B Gifting</Link>
+          <Link href="#" className="text-gold-500 hover:text-white transition-colors">Login</Link>
+        </div>
+
+        {/* Mobile Menu Button - Accessible */}
+        <button 
+          className="md:hidden flex flex-col gap-1.5 p-2 z-10 min-h-[44px] min-w-[44px] justify-center items-end" 
+          aria-label="Menú"
+          onClick={() => setIsMenuOpen(true)}
+        >
+          <span className="w-6 h-[2px] bg-gold-500 rounded-full" />
+          <span className="w-4 h-[2px] bg-gold-500 rounded-full" />
+        </button>
+      </motion.nav>
+
+      {/* Mobile Menu Overlay with Framer Motion */}
+      <AnimatePresence>
+        {isMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.4, ease: "easeOut" }}
+            className="fixed inset-0 z-[60] bg-slate-950/90 backdrop-blur-xl flex flex-col pt-6 px-6"
+          >
+            {/* Top Bar for Overlay */}
+            <div className="flex justify-between items-center w-full">
+              <Link href="/" onClick={() => setIsMenuOpen(false)}>
+                <Image
+                  src="/logo.png"
+                  alt="MUNIV Logo"
+                  width={400}
+                  height={133}
+                  className="w-auto h-20 object-contain"
+                  priority
+                />
+              </Link>
+              <button 
+                onClick={() => setIsMenuOpen(false)}
+                className="text-gold-500 min-h-[44px] min-w-[44px] flex items-center justify-end"
+                aria-label="Cerrar Menú"
+              >
+                <X size={32} />
+              </button>
+            </div>
+            
+            {/* Central Navigation Links */}
+            <div className="flex flex-col items-center justify-center flex-grow gap-12 pb-20">
+              <Link 
+                href="/" 
+                onClick={() => setIsMenuOpen(false)} 
+                className="font-display text-4xl text-white hover:text-gold-500 transition-colors tracking-wide"
+              >
+                CLUB
+              </Link>
+              <Link 
+                href="/gifting" 
+                onClick={() => setIsMenuOpen(false)} 
+                className="font-display text-4xl text-white hover:text-gold-500 transition-colors tracking-wide"
+              >
+                B2B GIFTING
+              </Link>
+              <Link 
+                href="#" 
+                onClick={() => setIsMenuOpen(false)} 
+                className="font-display text-4xl text-gold-500 hover:text-white transition-colors tracking-wide"
+              >
+                LOGIN
+              </Link>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </>
+  );
+}
