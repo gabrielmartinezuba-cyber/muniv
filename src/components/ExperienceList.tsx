@@ -66,16 +66,25 @@ export default function ExperienceList() {
               <div className="flex flex-col">
                 <span className="text-xs text-slate-500 uppercase tracking-tighter">Inversión</span>
                 <span className="text-xl text-white font-medium">
-                  ${exp.price.toLocaleString('es-AR')}
+                  {exp.price === 0 ? 'Gratis' : `$${exp.price.toLocaleString('es-AR')}`}
                 </span>
               </div>
 
-              <button
-                onClick={() => openBooking(exp.id, exp.title)}
-                className="flex items-center gap-2 px-5 py-2.5 bg-gold-500 text-slate-950 rounded-full font-bold text-sm hover:bg-gold-400 transition-all active:scale-95 shadow-[0_0_20px_rgba(212,175,55,0.2)]"
-              >
-                Reservar <Plus size={16} />
-              </button>
+              {exp.status === 'COMING_SOON' ? (
+                <button
+                  disabled
+                  className="flex items-center gap-2 px-5 py-2.5 bg-slate-800 text-slate-500 rounded-full font-bold text-sm cursor-not-allowed border border-white/5"
+                >
+                  PRÓXIMAMENTE
+                </button>
+              ) : (
+                <button
+                  onClick={() => openBooking(exp.id, exp.title, exp.price, exp.status)}
+                  className="flex items-center gap-2 px-5 py-2.5 bg-gold-500 text-slate-950 rounded-full font-bold text-sm hover:bg-gold-400 transition-all active:scale-95 shadow-[0_0_20px_rgba(212,175,55,0.2)]"
+                >
+                  {exp.price === 0 ? 'Participar' : 'Reservar'} <Plus size={16} />
+                </button>
+              )}
             </div>
           </div>
         </motion.div>

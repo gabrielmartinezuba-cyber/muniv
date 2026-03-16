@@ -124,16 +124,16 @@ export default function Hero() {
                   
                   <div className="text-slate-300 font-light leading-relaxed space-y-6 text-lg">
                     <p>
-                      MUNIV es una marca dedicada a crear experiencias alrededor del vino. Nacimos con la idea de transformar cada botella en algo más que una bebida: en un momento para compartir, disfrutar y recordar.
+                      MUNIV es una marca creada para convertir el vino en una experiencia que se disfruta, se comparte y se recuerda. Nacimos con la intención de acercar vinos con identidad, calidad y sentido, pero sobre todo de darle a cada botella un lugar dentro de momentos reales: una juntada, una comida, un regalo, una celebración o simplemente el placer de frenar y disfrutar.
                     </p>
                     <p>
-                      Seleccionamos vinos con historia, personalidad y calidad real, y los acercamos de una forma simple, cuidada y cercana. Ya sea a través de experiencias, eventos, recomendaciones curadas o propuestas pensadas para regalar y celebrar, en MUNIV buscamos que cada elección tenga sentido y que cada encuentro se vuelva especial.
+                      En MUNIV no creemos en el vino como algo lejano o complicado. Creemos en una forma más simple, cercana y auténtica de vivirlo. Por eso seleccionamos propuestas con criterio, cuidamos cada detalle y buscamos que cada experiencia tenga valor, tanto en lo que ofrece como en lo que genera.
                     </p>
                     <p>
-                      Creemos que el vino no tiene que ser complicado ni distante. Tiene que sentirse auténtico, disfrutable y parte de esos momentos que uno quiere repetir.
+                      Más que vender vino, en MUNIV queremos acompañar momentos. Crear una conexión entre buenas etiquetas, buenas historias y personas que valoran compartir algo distinto.
                     </p>
                     <p>
-                      MUNIV es eso: una forma de vivir el vino desde la experiencia, la conexión y el placer de compartir.
+                      MUNIV es calidad, experiencia y disfrute. Una invitación a descubrir vinos con personalidad y a hacer de cada ocasión algo digno de repetir.
                     </p>
                   </div>
                 </div>

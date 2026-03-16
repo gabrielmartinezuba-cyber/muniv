@@ -22,6 +22,8 @@ interface BookingState {
   step: BookingStep;
   experienceId: string | null;
   experienceTitle: string | null;
+  experiencePrice: number | null;
+  experienceStatus: string | null;
   
   // Form Data Draft
   date: string | null;
@@ -30,7 +32,7 @@ interface BookingState {
   upSells: string[]; // e.g. ["SOMMELIER_BILINGUE", "MARIDAJE_PREMIUM"]
   
   // Actions
-  openBooking: (expId: string, title: string) => void;
+  openBooking: (expId: string, title: string, price: number, status: string) => void;
   closeBooking: () => void;
   setStep: (step: BookingStep) => void;
   setDate: (date: string) => void;
@@ -47,13 +49,21 @@ export const useBookingStore = create<BookingState>()(
       step: 1,
       experienceId: null,
       experienceTitle: null,
+      experiencePrice: null,
+      experienceStatus: null,
       date: null,
       time: null,
       guests: 2,
       upSells: [],
 
-      openBooking: (expId, title) => 
-        set({ isOpen: true, experienceId: expId, experienceTitle: title }),
+      openBooking: (expId, title, price, status) => 
+        set({ 
+          isOpen: true, 
+          experienceId: expId, 
+          experienceTitle: title,
+          experiencePrice: price,
+          experienceStatus: status
+        }),
       
       closeBooking: () => set({ isOpen: false }),
       
@@ -88,6 +98,8 @@ export const useBookingStore = create<BookingState>()(
         step: state.step,
         experienceId: state.experienceId,
         experienceTitle: state.experienceTitle,
+        experiencePrice: state.experiencePrice,
+        experienceStatus: state.experienceStatus,
         date: state.date,
         time: state.time,
         guests: state.guests,

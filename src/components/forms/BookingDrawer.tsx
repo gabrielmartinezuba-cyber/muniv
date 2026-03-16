@@ -9,7 +9,7 @@ import { useRouter } from "next/navigation";
 
 export default function BookingDrawer() {
   const { 
-    isOpen, closeBooking, step, setStep, experienceTitle,
+    isOpen, closeBooking, step, setStep, experienceTitle, experiencePrice,
     date, setDate, time, setTime, guests, setGuests,
     upSells, toggleUpSell, resetDraft 
   } = useBookingStore();
@@ -138,31 +138,33 @@ export default function BookingDrawer() {
               </div>
             </div>
 
-            <div className="mt-4">
-              <label className="text-gold-500 text-sm tracking-widest font-semibold flex items-center gap-2 mb-3">
-                UP-SELLS EXCLUSIVOS
-              </label>
-              <div className="space-y-3">
-                {UPSELL_OPTIONS.map(opt => {
-                  const isActive = upSells.includes(opt.id);
-                  return (
-                    <div 
-                      key={opt.id}
-                      onClick={() => toggleUpSell(opt.id)}
-                      className={`min-h-[44px] cursor-pointer border p-4 rounded-xl flex items-center justify-between transition-all ${isActive ? 'bg-gold-500/10 border-gold-500 shadow-[0_0_10px_rgba(212,175,55,0.2)]' : 'bg-slate-900/50 border-white/10 hover:border-gold-500/30'}`}
-                    >
-                      <div>
-                        <h4 className="text-white font-medium text-sm">{opt.label}</h4>
-                        <span className="text-gold-500 font-medium text-xs">+${opt.price.toLocaleString('es-AR')}</span>
+            {experiencePrice !== 0 && (
+              <div className="mt-4">
+                <label className="text-gold-500 text-sm tracking-widest font-semibold flex items-center gap-2 mb-3">
+                  UP-SELLS EXCLUSIVOS
+                </label>
+                <div className="space-y-3">
+                  {UPSELL_OPTIONS.map(opt => {
+                    const isActive = upSells.includes(opt.id);
+                    return (
+                      <div 
+                        key={opt.id}
+                        onClick={() => toggleUpSell(opt.id)}
+                        className={`min-h-[44px] cursor-pointer border p-4 rounded-xl flex items-center justify-between transition-all ${isActive ? 'bg-gold-500/10 border-gold-500 shadow-[0_0_10px_rgba(212,175,55,0.2)]' : 'bg-slate-900/50 border-white/10 hover:border-gold-500/30'}`}
+                      >
+                        <div>
+                          <h4 className="text-white font-medium text-sm">{opt.label}</h4>
+                          <span className="text-gold-500 font-medium text-xs">+${opt.price.toLocaleString('es-AR')}</span>
+                        </div>
+                        <div className={`w-6 h-6 rounded border flex items-center justify-center ${isActive ? 'bg-gold-500 border-gold-500 text-slate-900' : 'border-slate-500'}`}>
+                          {isActive && <Check size={14} strokeWidth={3} />}
+                        </div>
                       </div>
-                      <div className={`w-6 h-6 rounded border flex items-center justify-center ${isActive ? 'bg-gold-500 border-gold-500 text-slate-900' : 'border-slate-500'}`}>
-                        {isActive && <Check size={14} strokeWidth={3} />}
-                      </div>
-                    </div>
-                  );
-                })}
+                    );
+                  })}
+                </div>
               </div>
-            </div>
+            )}
 
             <div className="flex gap-4 mt-6">
               <button 
@@ -179,7 +181,10 @@ export default function BookingDrawer() {
                 {isPending ? (
                   <>Procesando <Loader2 size={18} className="animate-spin" /></>
                 ) : (
-                  <>Confirmar Reserva <ShieldCheck size={18} /></>
+                  <>
+                    {experiencePrice === 0 ? 'Confirmar Participación' : 'Confirmar Reserva'}
+                    <ShieldCheck size={18} />
+                  </>
                 )}
               </button>
             </div>
@@ -199,9 +204,13 @@ export default function BookingDrawer() {
             <div className="w-20 h-20 bg-green-500/20 border border-green-500 rounded-full flex items-center justify-center text-green-500 mb-6 shadow-[0_0_30px_rgba(34,197,94,0.3)]">
               <Check size={40} />
             </div>
-            <h3 className="font-display text-3xl text-white mb-2">¡Reserva Confirmada!</h3>
+            <h3 className="font-display text-3xl text-white mb-2">
+              {experiencePrice === 0 ? '¡Ya estás participando!' : '¡Reserva Confirmada!'}
+            </h3>
             <p className="text-slate-400 mb-8 max-w-xs">
-              Tu experiencia ha sido agendada en nuestro sistema central. El Sommelier asignado recibirá una alerta y te contactaremos en breve para los preparativos.
+              {experiencePrice === 0 
+                ? 'Tu participación en el sorteo ha sido registrada. Te notificaremos vía email si resultás ganador/a.'
+                : 'Tu experiencia ha sido agendada en nuestro sistema central. El Sommelier asignado recibirá una alerta y te contactaremos en breve para los preparativos.'}
             </p>
             <button 
               onClick={handleClose}
@@ -255,7 +264,9 @@ export default function BookingDrawer() {
 
             <div className={`px-6 pb-6 border-b border-white/10 flex items-center justify-between sticky top-0 bg-slate-900/80 backdrop-blur-lg z-10 ${!isMobile ? "pt-6" : "pt-2"}`}>
               <div>
-                <span className="text-rose-500 text-xs font-bold tracking-widest uppercase block mb-1">Tu Reserva</span>
+                <span className="text-rose-500 text-xs font-bold tracking-widest uppercase block mb-1">
+                  {experiencePrice === 0 ? 'Sorteo Exclusivo' : 'Tu Reserva'}
+                </span>
                 <h2 className="font-display text-2xl text-white">{experienceTitle}</h2>
               </div>
               <button 

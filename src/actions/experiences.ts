@@ -10,7 +10,7 @@ export type Experience = {
   price: number;
   type: string;
   image_url: string;
-  status: 'ACTIVE' | 'SOLD_OUT' | 'DRAFT';
+  status: 'ACTIVE' | 'SOLD_OUT' | 'COMING_SOON' | 'DRAFT';
 };
 
 export async function getActiveExperiences(): Promise<Experience[]> {
@@ -19,7 +19,7 @@ export async function getActiveExperiences(): Promise<Experience[]> {
   const { data, error } = await supabase
     .from('experiences')
     .select('*')
-    .in('status', ['ACTIVE', 'SOLD_OUT'])
+    .in('status', ['ACTIVE', 'SOLD_OUT', 'COMING_SOON'])
     .order('created_at', { ascending: false });
 
   if (error) {
