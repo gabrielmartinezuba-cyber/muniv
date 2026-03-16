@@ -64,7 +64,7 @@ export default function ExperienceList() {
             <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent" />
 
             {/* Type Badge */}
-            <span className="absolute top-4 left-4 px-3 py-1 bg-gold-500/20 backdrop-blur-md border border-gold-500/30 text-gold-500 text-[10px] uppercase tracking-widest font-bold rounded-full">
+            <span className="absolute top-4 left-4 px-3 py-1 bg-slate-950/80 backdrop-blur-md border border-gold-500/30 text-gold-500 text-[10px] uppercase tracking-widest font-bold rounded-full">
               {exp.type}
             </span>
           </div>
@@ -74,7 +74,7 @@ export default function ExperienceList() {
             <h3 className="font-display text-2xl text-white mb-2 group-hover:text-gold-500 transition-colors">
               {exp.title}
             </h3>
-            <p className="text-slate-400 text-sm line-clamp-2 mb-6 font-light">
+            <p className="text-slate-400 text-sm mb-6 font-light">
               {exp.description}
             </p>
 

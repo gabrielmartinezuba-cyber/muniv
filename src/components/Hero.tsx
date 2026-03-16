@@ -58,20 +58,20 @@ export default function Hero() {
       {/* Foreground Content */}
       <div ref={textRef} className="z-10 text-center flex flex-col items-center max-w-4xl px-4 pointer-events-none">
         <h1 className="font-display font-medium text-5xl md:text-7xl lg:text-8xl tracking-tight text-white mb-6 drop-shadow-2xl">
-          Diseñadores de <br/>
+          Vinos y experiencias <br/>
           <span className="font-bold text-transparent bg-clip-text bg-gradient-to-r from-gold-200 via-gold-500 to-gold-400">
-            Momentos
+            para compartir
           </span>
         </h1>
         <p className="text-lg md:text-xl text-slate-300 font-light max-w-2xl mb-10 leading-relaxed drop-shadow-lg">
-          Más que una vinoteca. Un club de experiencias vínicas curadas de alto perfil para quienes buscan conectar a través de lo extraordinario.
+          Club de vinos y experiencias pensado para descubrir, regalar y disfrutar momentos que valen la pena repetir.
         </p>
         <div className="pointer-events-auto flex items-center gap-6">
           <button 
             onClick={() => setIsDrawerOpen(true)}
             className="glass-panel glass-panel-glow px-8 py-4 rounded-full text-gold-200 font-medium tracking-wide transition-all duration-500 transform hover:scale-105 flex items-center gap-2 group"
           >
-            <span className="group-hover:text-white transition-colors duration-300">¿Qué es MUNIV?</span>
+            <span className="group-hover:text-white transition-colors duration-300">Conocé MUNIV</span>
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gold-500 group-hover:translate-x-1 group-hover:text-white transition-all duration-300" viewBox="0 0 20 20" fill="currentColor">
               <path fillRule="evenodd" d="M12.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd" />
             </svg>
