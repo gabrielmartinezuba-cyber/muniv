@@ -1,7 +1,9 @@
 "use client";
 
 import dynamic from 'next/dynamic';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { X } from 'lucide-react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
@@ -20,6 +22,7 @@ const Scene3D = dynamic(() => import('@/components/3d/HeroScene'), {
 });
 
 export default function Hero() {
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const textRef = useRef<HTMLDivElement>(null);
 
@@ -60,12 +63,15 @@ export default function Hero() {
             Momentos
           </span>
         </h1>
-        <p className="text-lg md:text-xl text-slate-300 font-light max-w-2xl mb-10 leading-relaxed drop-shadow-lg backdrop-blur-sm rounded-lg py-2">
+        <p className="text-lg md:text-xl text-slate-300 font-light max-w-2xl mb-10 leading-relaxed drop-shadow-lg">
           Más que una vinoteca. Un club de experiencias vínicas curadas de alto perfil para quienes buscan conectar a través de lo extraordinario.
         </p>
         <div className="pointer-events-auto flex items-center gap-6">
-          <button className="glass-panel glass-panel-glow px-8 py-4 rounded-full text-gold-200 font-medium tracking-wide transition-all duration-500 transform hover:scale-105 flex items-center gap-2 group">
-            <span className="group-hover:text-white transition-colors duration-300">Descubrir</span>
+          <button 
+            onClick={() => setIsDrawerOpen(true)}
+            className="glass-panel glass-panel-glow px-8 py-4 rounded-full text-gold-200 font-medium tracking-wide transition-all duration-500 transform hover:scale-105 flex items-center gap-2 group"
+          >
+            <span className="group-hover:text-white transition-colors duration-300">¿Qué es MUNIV?</span>
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gold-500 group-hover:translate-x-1 group-hover:text-white transition-all duration-300" viewBox="0 0 20 20" fill="currentColor">
               <path fillRule="evenodd" d="M12.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd" />
             </svg>
@@ -78,6 +84,73 @@ export default function Hero() {
         <span className="text-xs uppercase tracking-[0.2em] text-gold-500/70 font-semibold">Scroll</span>
         <div className="w-[1px] h-12 bg-gradient-to-b from-gold-500/70 to-transparent"></div>
       </div>
+
+      {/* Side Drawer: Info */}
+      <AnimatePresence>
+        {isDrawerOpen && (
+          <>
+            {/* Backdrop */}
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsDrawerOpen(false)}
+              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100]"
+            />
+            
+            {/* Drawer */}
+            <motion.div 
+              initial={{ x: '100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '100%' }}
+              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+              className="fixed inset-y-0 right-0 w-full md:w-[500px] bg-slate-950/90 backdrop-blur-xl border-l border-white/10 z-[101] flex flex-col shadow-2xl"
+            >
+              <div className="p-8 md:p-12 flex flex-col h-full">
+                <div className="flex justify-end mb-8">
+                  <button 
+                    onClick={() => setIsDrawerOpen(false)}
+                    className="p-2 text-slate-400 hover:text-white hover:bg-white/5 rounded-full transition-all"
+                  >
+                    <X size={24} />
+                  </button>
+                </div>
+                
+                <div className="flex-1 overflow-y-auto custom-scrollbar pr-4">
+                  <h2 className="font-display text-4xl md:text-5xl text-white mb-10 leading-tight">
+                    ¿Qué es <br/>
+                    <span className="italic text-gold-500">MUNIV?</span>
+                  </h2>
+                  
+                  <div className="text-slate-300 font-light leading-relaxed space-y-6 text-lg">
+                    <p>
+                      MUNIV es una marca dedicada a crear experiencias alrededor del vino. Nacimos con la idea de transformar cada botella en algo más que una bebida: en un momento para compartir, disfrutar y recordar.
+                    </p>
+                    <p>
+                      Seleccionamos vinos con historia, personalidad y calidad real, y los acercamos de una forma simple, cuidada y cercana. Ya sea a través de experiencias, eventos, recomendaciones curadas o propuestas pensadas para regalar y celebrar, en MUNIV buscamos que cada elección tenga sentido y que cada encuentro se vuelva especial.
+                    </p>
+                    <p>
+                      Creemos que el vino no tiene que ser complicado ni distante. Tiene que sentirse auténtico, disfrutable y parte de esos momentos que uno quiere repetir.
+                    </p>
+                    <p>
+                      MUNIV es eso: una forma de vivir el vino desde la experiencia, la conexión y el placer de compartir.
+                    </p>
+                  </div>
+                </div>
+                
+                <div className="pt-12 mt-auto border-t border-white/5">
+                   <button 
+                    onClick={() => setIsDrawerOpen(false)}
+                    className="w-full py-4 bg-gold-500 text-slate-950 font-bold rounded-xl hover:bg-gold-400 transition-colors"
+                  >
+                    Continuar Explorando
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </section>
   );
 }
