@@ -48,8 +48,8 @@ export default function BookingDrawer() {
       const payload = {
         experienceId: useBookingStore.getState().experienceId || "XP-001",
         experienceTitle,
-        date, 
-        time,
+        date: experiencePrice === 0 ? new Date().toISOString().split('T')[0] : date, 
+        time: experiencePrice === 0 ? "00:00" : time,
         guests,
         upSells
       };
@@ -76,37 +76,54 @@ export default function BookingDrawer() {
             initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
             className="flex flex-col gap-6"
           >
-            <div>
-              <label className="text-gold-500 text-sm tracking-widest font-semibold flex items-center gap-2 mb-3">
-                <CalendarDays size={16} /> FECHA DE RESERVA
-              </label>
-              <input 
-                type="date" 
-                value={date || ""}
-                onChange={(e) => setDate(e.target.value)}
-                className="w-full min-h-[44px] bg-slate-900/50 border border-gold-500/30 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-gold-500 focus:ring-1 focus:ring-gold-500 transition-all font-sans"
-              />
-            </div>
-            
-            <div>
-              <label className="text-gold-500 text-sm tracking-widest font-semibold flex items-center gap-2 mb-3">
-                <Clock size={16} /> HORARIO
-              </label>
-              <div className="grid grid-cols-2 gap-3">
-                {["12:00", "13:30", "18:00", "20:30"].map(t => (
-                  <button 
-                    key={t}
-                    onClick={() => setTime(t)}
-                    className={`min-h-[44px] px-4 py-3 rounded-xl border transition-all ${time === t ? 'bg-gold-500/20 border-gold-500 text-gold-200 shadow-[0_0_15px_rgba(212,175,55,0.2)]' : 'bg-slate-900/50 border-white/10 text-slate-300 hover:border-gold-500/50'}`}
-                  >
-                    {t}
-                  </button>
-                ))}
+            {experiencePrice === 0 ? (
+              <div className="bg-slate-900/50 border border-gold-500/30 rounded-2xl p-8 flex flex-col items-center text-center gap-4 animate-in fade-in zoom-in duration-500">
+                <div className="w-16 h-16 rounded-full bg-gold-500/10 flex items-center justify-center border border-gold-500/20 mb-2">
+                  <CalendarDays size={32} className="text-gold-500" />
+                </div>
+                <div>
+                  <h4 className="text-slate-400 uppercase tracking-widest text-xs font-bold mb-1">Fecha del Sorteo</h4>
+                  <p className="text-white font-display text-3xl">30/04/2026</p>
+                </div>
+                <p className="text-slate-400 text-sm leading-relaxed max-w-[280px]">
+                  La participación es automática y gratuita. Los resultados se comunicarán vía email.
+                </p>
               </div>
-            </div>
+            ) : (
+              <>
+                <div>
+                  <label className="text-gold-500 text-sm tracking-widest font-semibold flex items-center gap-2 mb-3">
+                    <CalendarDays size={16} /> FECHA DE RESERVA
+                  </label>
+                  <input 
+                    type="date" 
+                    value={date || ""}
+                    onChange={(e) => setDate(e.target.value)}
+                    className="w-full min-h-[44px] bg-slate-900/50 border border-gold-500/30 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-gold-500 focus:ring-1 focus:ring-gold-500 transition-all font-sans"
+                  />
+                </div>
+                
+                <div>
+                  <label className="text-gold-500 text-sm tracking-widest font-semibold flex items-center gap-2 mb-3">
+                    <Clock size={16} /> HORARIO
+                  </label>
+                  <div className="grid grid-cols-2 gap-3">
+                    {["12:00", "13:30", "18:00", "20:30"].map(t => (
+                      <button 
+                        key={t}
+                        onClick={() => setTime(t)}
+                        className={`min-h-[44px] px-4 py-3 rounded-xl border transition-all ${time === t ? 'bg-gold-500/20 border-gold-500 text-gold-200 shadow-[0_0_15px_rgba(212,175,55,0.2)]' : 'bg-slate-900/50 border-white/10 text-slate-300 hover:border-gold-500/50'}`}
+                      >
+                        {t}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </>
+            )}
             
             <button 
-              disabled={!date || !time}
+              disabled={experiencePrice !== 0 && (!date || !time)}
               onClick={() => setStep(2)}
               className="mt-6 min-h-[44px] glass-panel-glow bg-gold-500/10 border border-gold-500 text-gold-200 py-4 rounded-full font-medium tracking-wide flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gold-500 hover:text-white transition-all duration-300"
             >
