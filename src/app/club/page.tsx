@@ -24,7 +24,7 @@ export default async function ClubDashboard() {
         </p>
       </header>
 
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
+      <div className="max-w-4xl">
         
         {/* Widget: Mis Reservas */}
         <div className="glass-panel p-8 rounded-3xl border border-white/5 bg-slate-900/40 relative overflow-hidden group hover:border-white/10 transition-colors flex flex-col">
@@ -104,36 +104,6 @@ export default async function ClubDashboard() {
               </Link>
             </div>
           )}
-        </div>
-
-        {/* Widget: Beneficios */}
-        <div className="glass-panel p-8 rounded-3xl border border-gold-500/20 bg-slate-900/40 relative overflow-hidden flex flex-col group hover:border-gold-500/40 transition-colors">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-gold-500/10 rounded-full blur-[80px] -mr-20 -mt-20 pointer-events-none" />
-          
-          <div className="flex items-center gap-3 mb-6 relative z-10">
-             <h2 className="font-display text-2xl text-gold-500 flex items-center gap-3">
-               Beneficios Exclusivos <span className="px-2.5 py-1 text-[10px] uppercase font-bold tracking-widest bg-gold-500 text-slate-900 rounded-sm">V.I.P</span>
-             </h2>
-          </div>
-          
-          <p className="text-slate-400 text-md mb-8 relative z-10 border-b border-white/5 pb-8">
-            Como miembro de nuestra comunidad, tenés acceso prioritario a ventas anticipadas y asesoría directa de nuestro Sommelier Jefe.
-          </p>
-
-          <div className="mt-auto relative z-10 space-y-4">
-            <div className="flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/5 hover:bg-white/10 transition-colors">
-              <span className="text-white font-medium text-sm">Consultoría One-to-One</span>
-              <span className="text-gold-500 text-sm font-semibold">Desbloqueado</span>
-            </div>
-            <div className="flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/5 opacity-50">
-              <span className="text-slate-300 font-medium text-sm">Suscripción de Cajas Mensuales</span>
-              <span className="text-slate-500 text-sm font-semibold">Próximamente</span>
-            </div>
-            <div className="flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/5 opacity-50">
-              <span className="text-slate-300 font-medium text-sm">Visitas a Bodegas Boutique</span>
-              <span className="text-slate-500 text-sm font-semibold">Próximamente</span>
-            </div>
-          </div>
         </div>
 
       </div>
