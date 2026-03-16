@@ -6,11 +6,27 @@ import Image from "next/image";
 import { getActiveExperiences, type Experience } from "@/actions/experiences";
 import { useBookingStore } from "@/store/useBookingStore";
 import { Loader2, Plus } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { createClient } from "@/utils/supabase/client";
 
 export default function ExperienceList() {
   const [experiences, setExperiences] = useState<Experience[]>([]);
   const [loading, setLoading] = useState(true);
   const { openBooking } = useBookingStore();
+  const router = useRouter();
+  const supabase = createClient();
+
+  const handleBookingClick = async (exp: Experience) => {
+    const { data: { session } } = await supabase.auth.getSession();
+    
+    if (!session) {
+      // No session, redirect to login
+      router.push("/login");
+      return;
+    }
+
+    openBooking(exp.id, exp.title, exp.price, exp.status);
+  };
 
   useEffect(() => {
     getActiveExperiences().then((data: Experience[]) => {
@@ -79,7 +95,7 @@ export default function ExperienceList() {
                 </button>
               ) : (
                 <button
-                  onClick={() => openBooking(exp.id, exp.title, exp.price, exp.status)}
+                  onClick={() => handleBookingClick(exp)}
                   className="flex items-center gap-2 px-5 py-2.5 bg-gold-500 text-slate-950 rounded-full font-bold text-sm hover:bg-gold-400 transition-all active:scale-95 shadow-[0_0_20px_rgba(212,175,55,0.2)]"
                 >
                   {exp.price === 0 ? 'Participar' : 'Reservar'} <Plus size={16} />

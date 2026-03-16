@@ -50,7 +50,7 @@ export default function BookingDrawer() {
         experienceTitle,
         date: experiencePrice === 0 ? new Date().toISOString().split('T')[0] : date, 
         time: experiencePrice === 0 ? "00:00" : time,
-        guests,
+        guests: experiencePrice === 0 ? 1 : guests,
         upSells
       };
 
@@ -77,18 +77,32 @@ export default function BookingDrawer() {
             className="flex flex-col gap-6"
           >
             {experiencePrice === 0 ? (
-              <div className="bg-slate-900/50 border border-gold-500/30 rounded-2xl p-8 flex flex-col items-center text-center gap-4 animate-in fade-in zoom-in duration-500">
-                <div className="w-16 h-16 rounded-full bg-gold-500/10 flex items-center justify-center border border-gold-500/20 mb-2">
-                  <CalendarDays size={32} className="text-gold-500" />
+              <>
+                <div className="bg-slate-900/50 border border-gold-500/30 rounded-2xl p-8 flex flex-col items-center text-center gap-4 animate-in fade-in zoom-in duration-500">
+                  <div className="w-16 h-16 rounded-full bg-gold-500/10 flex items-center justify-center border border-gold-500/20 mb-2">
+                    <CalendarDays size={32} className="text-gold-500" />
+                  </div>
+                  <div>
+                    <h4 className="text-slate-400 uppercase tracking-widest text-xs font-bold mb-1">Fecha del Sorteo</h4>
+                    <p className="text-white font-display text-3xl">30/04/2026</p>
+                  </div>
+                  <p className="text-slate-400 text-sm leading-relaxed max-w-[280px]">
+                    La participación es automática y gratuita. Los resultados se comunicarán vía email.
+                  </p>
                 </div>
-                <div>
-                  <h4 className="text-slate-400 uppercase tracking-widest text-xs font-bold mb-1">Fecha del Sorteo</h4>
-                  <p className="text-white font-display text-3xl">30/04/2026</p>
-                </div>
-                <p className="text-slate-400 text-sm leading-relaxed max-w-[280px]">
-                  La participación es automática y gratuita. Los resultados se comunicarán vía email.
-                </p>
-              </div>
+
+                <button 
+                  onClick={handleConfirmReservation}
+                  disabled={isPending}
+                  className="mt-6 min-h-[44px] flex-1 glass-panel-glow bg-gold-500 text-slate-900 font-bold py-4 rounded-full flex items-center justify-center gap-2 hover:bg-gold-400 transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
+                >
+                  {isPending ? (
+                    <>Procesando <Loader2 size={18} className="animate-spin" /></>
+                  ) : (
+                    <>Confirmar Participación <ShieldCheck size={18} /></>
+                  )}
+                </button>
+              </>
             ) : (
               <>
                 <div>
@@ -119,16 +133,17 @@ export default function BookingDrawer() {
                     ))}
                   </div>
                 </div>
+
+                <button 
+                  disabled={!date || !time}
+                  onClick={() => setStep(2)}
+                  className="mt-6 min-h-[44px] glass-panel-glow bg-gold-500/10 border border-gold-500 text-gold-200 py-4 rounded-full font-medium tracking-wide flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gold-500 hover:text-white transition-all duration-300"
+                >
+                  Continuar <ChevronRight size={18} />
+                </button>
               </>
             )}
-            
-            <button 
-              disabled={experiencePrice !== 0 && (!date || !time)}
-              onClick={() => setStep(2)}
-              className="mt-6 min-h-[44px] glass-panel-glow bg-gold-500/10 border border-gold-500 text-gold-200 py-4 rounded-full font-medium tracking-wide flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gold-500 hover:text-white transition-all duration-300"
-            >
-              Continuar <ChevronRight size={18} />
-            </button>
+
           </motion.div>
         );
       case 2:
@@ -297,7 +312,7 @@ export default function BookingDrawer() {
 
             <div className="p-6 flex-grow">
               {/* Stepper logic */}
-              {step < 3 && (
+              {step < 3 && experiencePrice !== 0 && (
                 <div className="flex gap-2 mb-8">
                   {[1, 2].map(s => (
                     <div key={s} className={`h-1 flex-1 rounded-full transition-all duration-500 ${s <= step ? 'bg-gold-500 shadow-[0_0_8px_rgba(212,175,55,0.6)]' : 'bg-white/10'}`} />
