@@ -33,10 +33,30 @@ export async function submitBooking(data: unknown) {
       return { success: false, message: "La experiencia seleccionada no es válida." };
     }
 
+    // 4. Protección contra duplicados: Buscar si ya existe una reserva activa para este usuario y experiencia
+    const { data: existingBooking, error: checkError } = await supabase
+      .from('bookings')
+      .select('id')
+      .eq('user_id', user.id)
+      .eq('experience_id', formData.experienceId)
+      .maybeSingle();
+
+    if (checkError) {
+      console.error("Error checking existing booking:", checkError);
+    }
+
+    if (existingBooking) {
+      return { 
+        success: false, 
+        error: 'ALREADY_BOOKED', 
+        message: 'Ya estás participando de este sorteo o experiencia.' 
+      };
+    }
+
     // Cálculo del precio (simplificado, acá se podrían sumar up-sells si estuvieran en DB)
     const totalPrice = experience.price * formData.guests;
 
-    // 4. Insertar en tabla bookings (Mapeo estricto para evitar errores de Postgres)
+    // 5. Insertar en tabla bookings (Mapeo estricto para evitar errores de Postgres)
     const { error: insertError } = await supabase
       .from('bookings')
       .insert({

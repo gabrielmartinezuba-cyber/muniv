@@ -6,6 +6,7 @@ import { X, CalendarDays, Clock, Users, ShieldCheck, ChevronRight, Check, Loader
 import { useEffect, useState, useTransition } from "react";
 import { submitBooking } from "@/actions/booking";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 export default function BookingDrawer() {
   const { 
@@ -57,13 +58,28 @@ export default function BookingDrawer() {
       const res = await submitBooking(payload);
 
       if (res.success) {
-        resetDraft();
-        // Redirigimos al Club para que vea su nueva reserva
-        router.push("/club");
-        router.refresh(); // Aseguramos que el server rinda la nueva data
-        closeBooking();
+        // Success feedback
+        if (experiencePrice === 0) {
+          toast.success("¡Ya estás participando!");
+        } else {
+          toast.success("¡Reserva confirmada!");
+        }
+
+        // Delay success flow for better UX
+        setTimeout(() => {
+          resetDraft();
+          router.push("/club");
+          router.refresh();
+          closeBooking();
+        }, 1500);
       } else {
-        setGlobalError(res.message);
+        if (res.error === 'ALREADY_BOOKED') {
+          toast.error("Ya estás participando de este sorteo.");
+          setGlobalError("Ya tienes una reserva o participación para esta experiencia.");
+        } else {
+          toast.error(res.message || "Error al procesar la reserva.");
+          setGlobalError(res.message);
+        }
       }
     });
   };

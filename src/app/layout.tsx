@@ -4,6 +4,7 @@ import "./globals.css";
 import Navbar from "@/components/layout/Navbar";
 import BookingDrawer from "@/components/forms/BookingDrawer";
 import { createClient } from "@/utils/supabase/server";
+import { Toaster } from "sonner";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -37,6 +38,7 @@ export default async function RootLayout({
         <Navbar initialUser={user} />
         {children}
         <BookingDrawer />
+        <Toaster richColors position="top-right" theme="dark" />
       </body>
     </html>
   );
