@@ -76,7 +76,7 @@ function Embers({ isMobile }: { isMobile: boolean }) {
   }, []);
 
   const { positions, colors, velocities, flutters, sizes, opacities, flickerSpeeds, particleCount } = useMemo(() => {
-    const count = isMobile ? 5000 : 18000; // Massively increased density for high-end visibility
+    const count = isMobile ? 10000 : 35000; // Restoring "original" high density
     const pos = new Float32Array(count * 3);
     const col = new Float32Array(count * 3);
     const vel = new Float32Array(count);
@@ -94,20 +94,18 @@ function Embers({ isMobile }: { isMobile: boolean }) {
     ];
 
     for (let i = 0; i < count; i++) {
-      const r = 8 * Math.cbrt(Math.random());
-      const theta = Math.random() * 2 * Math.PI;
-      
-      pos[i * 3]     = r * Math.cos(theta);
-      pos[i * 3 + 1] = (Math.random() - 0.5) * 12;
-      pos[i * 3 + 2] = r * Math.sin(theta) * 0.4;
+      // SCREEN-WIDE DISTRIBUTION (Restoring proportional coverage)
+      pos[i * 3]     = (Math.random() - 0.5) * 30; // Wide X spread (-15 to 15)
+      pos[i * 3 + 1] = (Math.random() - 0.5) * 14; // Full Y coverage
+      pos[i * 3 + 2] = (Math.random() - 0.5) * 4;  // Depth
       
       vel[i] = 0.008 + Math.random() * 0.035; 
       flu[i] = Math.random() * Math.PI * 2;
       
-      // OPTIMIZED FOR VISIBILITY: 98% sparks (increased min size), 2% larger ash flakes
+      // STYLE: Keeping the validated irregular sparks and embers
       sz[i] = Math.random() < 0.02 ? (0.12 + Math.random() * 0.25) : (0.015 + Math.random() * 0.025); 
       
-      op[i] = 0.4 + Math.random() * 0.6; // Higher base opacity for visibility
+      op[i] = 0.4 + Math.random() * 0.6; 
       fs[i] = 5.0 + Math.random() * 15.0; 
 
       const mixedColor = colorPalette[Math.floor(Math.random() * colorPalette.length)];
@@ -133,9 +131,9 @@ function Embers({ isMobile }: { isMobile: boolean }) {
         posAttr[i3 + 1] += velocities[i];
         posAttr[i3] += Math.sin(time * 1.5 + flutters[i]) * 0.004;
 
-        if (posAttr[i3 + 1] > 6) {
-          posAttr[i3 + 1] = -6;
-          posAttr[i3] = (Math.random() - 0.5) * 12;
+        if (posAttr[i3 + 1] > 7) {
+          posAttr[i3 + 1] = -7;
+          posAttr[i3] = (Math.random() - 0.5) * 30; // Wide reset
         }
       }
       ref.current.geometry.attributes.position.needsUpdate = true;
