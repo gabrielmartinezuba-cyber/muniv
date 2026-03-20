@@ -18,13 +18,12 @@ export type AdminReportRow = {
 
 export async function getAdminExperiences(): Promise<{ id: string; title: string }[]> {
   try {
-    const supabaseSession = await createClient();
-    const { data: { user } } = await supabaseSession.auth.getUser();
-
-    if (!user || user.email !== 'gabrielmartinezuba@gmail.com') {
+    const isAdmin = await checkIsAdmin();
+    if (!isAdmin) {
       throw new Error("Unauthorized access.");
     }
 
+    const supabaseSession = await createClient();
     const { data, error } = await supabaseSession
       .from('experiences')
       .select('id, title')
@@ -49,10 +48,8 @@ export type AdminReportFilters = {
 export async function getAdminReport(filters?: AdminReportFilters): Promise<AdminReportRow[]> {
   try {
     // 1. Verify Super Admin Access
-    const supabaseSession = await createClient();
-    const { data: { user } } = await supabaseSession.auth.getUser();
-
-    if (!user || user.email !== 'gabrielmartinezuba@gmail.com') {
+    const isAdmin = await checkIsAdmin();
+    if (!isAdmin) {
       throw new Error("Unauthorized access.");
     }
 
@@ -61,6 +58,9 @@ export async function getAdminReport(filters?: AdminReportFilters): Promise<Admi
 
     // SPECIAL CASE: Only Registered Members (Leads)
     if (filters?.experience_id === 'MEMBERS_ONLY') {
+      const { data: admins } = await supabaseAdmin.from('admins').select('email');
+      const adminEmails = new Set(admins?.map(a => a.email) || []);
+
       const { data: { users }, error: usersError } = await supabaseAdmin.auth.admin.listUsers();
       if (usersError) {
         console.error("Error fetching members:", usersError);
@@ -73,18 +73,24 @@ export async function getAdminReport(filters?: AdminReportFilters): Promise<Admi
           ? `${rawMeta.first_name} ${rawMeta.last_name || ''}`.trim() 
           : rawMeta.name || "Sin Nombre";
 
+        const isAdminUser = u.email && adminEmails.has(u.email);
+
         return {
           id: u.id,
           created_at: u.created_at,
           user_id: u.id,
           client_name: clientName,
           client_email: u.email || "Sin Email",
-          experience_title: 'Socio Registrado',
-          experience_type: 'MIEMBRO',
+          experience_title: '',
+          experience_type: isAdminUser ? 'ADMIN' : 'MIEMBRO',
           guests_count: null,
           total_price: null,
           status: '-'
         };
+      }).sort((a, b) => {
+        if (a.experience_type === 'ADMIN' && b.experience_type !== 'ADMIN') return -1;
+        if (a.experience_type !== 'ADMIN' && b.experience_type === 'ADMIN') return 1;
+        return 0;
       });
     }
 
@@ -147,9 +153,8 @@ export async function getAdminReport(filters?: AdminReportFilters): Promise<Admi
 
 export async function upsertExperience(formData: FormData): Promise<{ success: boolean; error?: string }> {
   try {
-    const supabaseSession = await createClient();
-    const { data: { user } } = await supabaseSession.auth.getUser();
-    if (!user || user.email !== 'gabrielmartinezuba@gmail.com') {
+    const isAdmin = await checkIsAdmin();
+    if (!isAdmin) {
       return { success: false, error: "Unauthorized access." };
     }
 
@@ -230,9 +235,8 @@ export async function upsertExperience(formData: FormData): Promise<{ success: b
 
 export async function deleteExperience(id: string): Promise<{ success: boolean; error?: string }> {
   try {
-    const supabaseSession = await createClient();
-    const { data: { user } } = await supabaseSession.auth.getUser();
-    if (!user || user.email !== 'gabrielmartinezuba@gmail.com') {
+    const isAdmin = await checkIsAdmin();
+    if (!isAdmin) {
       return { success: false, error: "Unauthorized access." };
     }
 
@@ -254,9 +258,8 @@ export async function deleteExperience(id: string): Promise<{ success: boolean; 
 
 export async function getAdminExperienceDetails(id: string) {
   try {
-    const supabaseSession = await createClient();
-    const { data: { user } } = await supabaseSession.auth.getUser();
-    if (!user || user.email !== 'gabrielmartinezuba@gmail.com') {
+    const isAdmin = await checkIsAdmin();
+    if (!isAdmin) {
       throw new Error("Unauthorized access.");
     }
 
@@ -272,5 +275,74 @@ export async function getAdminExperienceDetails(id: string) {
   } catch (error: any) {
     console.error("getAdminExperienceDetails error:", error);
     return null;
+  }
+}
+
+export async function checkIsAdmin(): Promise<boolean> {
+  try {
+    const supabaseSession = await createClient();
+    const { data: { user } } = await supabaseSession.auth.getUser();
+    if (!user || !user.email) return false;
+    
+    // Check if the email exists in the `admins` table
+    const { data } = await supabaseSession
+      .from('admins')
+      .select('email')
+      .eq('email', user.email)
+      .single();
+      
+    return !!data;
+  } catch (error) {
+    return false;
+  }
+}
+
+export async function addAdmin(formData: FormData): Promise<{ success: boolean; error?: string }> {
+  try {
+    const isAdmin = await checkIsAdmin();
+    if (!isAdmin) {
+      return { success: false, error: "Unauthorized access." };
+    }
+    
+    const email = formData.get("email")?.toString().trim();
+    if (!email) return { success: false, error: "El email es requerido." };
+    
+    const supabaseAdmin = createAdminClient();
+    
+    // Validate if the user exists in auth.users
+    const { data: { users }, error: listError } = await supabaseAdmin.auth.admin.listUsers();
+    
+    if (listError) {
+      return { success: false, error: "Error de conexión al listar usuarios." };
+    }
+    
+    const userExists = users.some(u => u.email === email);
+    if (!userExists) {
+      return { success: false, error: "El usuario debe registrarse primero." };
+    }
+    
+    // Check if already in the admins table to avoid generic duplicate errors
+    const { data: existingAdmin } = await supabaseAdmin
+      .from('admins')
+      .select('email')
+      .eq('email', email)
+      .single();
+      
+    if (existingAdmin) {
+      return { success: false, error: "El usuario ya es administrador." };
+    }
+    
+    const { error: insertError } = await supabaseAdmin
+      .from('admins')
+      .insert({ email });
+      
+    if (insertError) {
+      console.error("Insert error for new admin:", insertError);
+      return { success: false, error: insertError.message || "Error al asignar el rol." };
+    }
+
+    return { success: true };
+  } catch (error: any) {
+    return { success: false, error: error.message };
   }
 }

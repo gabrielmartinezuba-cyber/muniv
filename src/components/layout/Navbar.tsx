@@ -48,8 +48,8 @@ export default function Navbar({ initialUser }: NavbarProps) {
     }
   });
 
-  // Prevent double navbar/logo on club dashboard
-  if (pathname.startsWith("/club")) {
+  // Prevent double navbar/logo on club dashboard or admin
+  if (pathname.startsWith("/club") || pathname.startsWith("/admin")) {
     return null;
   }
 

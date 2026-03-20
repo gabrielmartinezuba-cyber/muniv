@@ -56,24 +56,38 @@ export default function AdminDashboardPage() {
   const downloadCSV = () => {
     if (!report.length) return;
 
-    const headers = [
-      "Fecha Res.",
-      "Cliente",
-      "Email",
-      "Experiencia",
-      "Tipo",
-      "Cant. Personas",
-      "Monto ($)",
-      "Estado",
-    ];
+    const isMembersReport = filterExpId === 'MEMBERS_ONLY';
+
+    const headers = isMembersReport
+      ? ["Fecha Registro", "Cliente", "Email", "Rol"]
+      : [
+          "Fecha Res.",
+          "Cliente",
+          "Email",
+          "Experiencia",
+          "Tipo",
+          "Cant. Personas",
+          "Monto ($)",
+          "Estado",
+        ];
 
     const rows = report.map(r => {
       const dateStr = new Date(r.created_at).toLocaleDateString("es-AR", {
         day: "2-digit", month: "2-digit", year: "numeric"
       });
-      // Handle $0 or null explicitly
-      const amount = r.experience_title === 'Socio Registrado' ? '-' : (r.total_price === 0 ? "SORTEO" : `$${r.total_price}`);
-      const guests = r.experience_title === 'Socio Registrado' ? '-' : r.guests_count;
+
+      if (isMembersReport) {
+        return [
+          dateStr,
+          `"${r.client_name}"`,
+          `"${r.client_email}"`,
+          r.experience_type
+        ];
+      }
+
+      // Handle $0 or null explicitly for sales report
+      const amount = r.experience_title === 'Socio Registrado' || !r.experience_title ? '-' : (r.total_price === 0 ? "SORTEO" : `$${r.total_price}`);
+      const guests = r.experience_title === 'Socio Registrado' || !r.experience_title ? '-' : r.guests_count;
 
       return [
         dateStr,
@@ -84,7 +98,7 @@ export default function AdminDashboardPage() {
         guests,
         amount,
         r.status
-      ]
+      ];
     });
 
     const csvContent = "\uFEFF" + [headers.join(";"), ...rows.map(r => r.join(";"))].join("\n");
@@ -223,9 +237,15 @@ export default function AdminDashboardPage() {
               <tr>
                 <th className="px-8 py-5 font-bold align-middle">Fecha</th>
                 <th className="px-8 py-5 font-bold align-middle">Cliente</th>
-                <th className="px-8 py-5 font-bold align-middle">Experiencia</th>
-                <th className="px-8 py-5 font-bold text-center align-middle">Cant.</th>
-                <th className="px-8 py-5 font-bold text-right align-middle">Monto</th>
+                <th className="px-8 py-5 font-bold align-middle">
+                  {filterExpId === 'MEMBERS_ONLY' ? 'ROL' : 'EXPERIENCIA'}
+                </th>
+                {filterExpId !== 'MEMBERS_ONLY' && (
+                  <>
+                    <th className="px-8 py-5 font-bold text-center align-middle">Cant.</th>
+                    <th className="px-8 py-5 font-bold text-right align-middle">Monto</th>
+                  </>
+                )}
               </tr>
             </thead>
             <tbody className="divide-y divide-white/5">
@@ -243,30 +263,42 @@ export default function AdminDashboardPage() {
                     <div className="text-[11px] text-slate-500">{row.client_email}</div>
                   </td>
                   <td className="px-8 py-5 align-middle">
-                    <div className="font-medium text-white mb-0.5">{row.experience_title}</div>
-                    <div className="text-[10px] text-gold-500 font-bold uppercase tracking-wider">{row.experience_type}</div>
-                  </td>
-                  <td className="px-8 py-5 text-center align-middle font-display text-xl text-white">
-                    {row.experience_title === 'Socio Registrado' ? '-' : row.guests_count}
-                  </td>
-                  <td className="px-8 py-5 text-right align-middle">
-                    {row.experience_title === 'Socio Registrado' ? (
-                      <span className="text-slate-500">-</span>
-                    ) : row.total_price === 0 ? (
-                      <span className="inline-block px-3 py-1 bg-white/5 border border-white/10 rounded text-xs font-bold text-slate-300 tracking-widest">
-                        SORTEO
-                      </span>
+                    {filterExpId === 'MEMBERS_ONLY' || !row.experience_title ? (
+                      <div className="text-base text-gold-500 font-semibold uppercase tracking-wider">
+                        {row.experience_type}
+                      </div>
                     ) : (
-                      <span className="font-medium text-white text-base">
-                        ${row.total_price?.toLocaleString('es-AR')}
-                      </span>
+                      <>
+                        <div className="font-medium text-white mb-0.5">{row.experience_title}</div>
+                        <div className="text-[10px] text-gold-500 font-bold uppercase tracking-wider">{row.experience_type}</div>
+                      </>
                     )}
                   </td>
+                  {filterExpId !== 'MEMBERS_ONLY' && (
+                    <>
+                      <td className="px-8 py-5 text-center align-middle font-display text-xl text-white">
+                        {row.experience_title === 'Socio Registrado' || !row.experience_title ? '-' : row.guests_count}
+                      </td>
+                      <td className="px-8 py-5 text-right align-middle">
+                        {row.experience_title === 'Socio Registrado' || !row.experience_title ? (
+                          <span className="text-slate-500">-</span>
+                        ) : row.total_price === 0 ? (
+                          <span className="inline-block px-3 py-1 bg-white/5 border border-white/10 rounded text-xs font-bold text-slate-300 tracking-widest">
+                            SORTEO
+                          </span>
+                        ) : (
+                          <span className="font-medium text-white text-base">
+                            ${row.total_price?.toLocaleString('es-AR')}
+                          </span>
+                        )}
+                      </td>
+                    </>
+                  )}
                 </tr>
               ))}
               {!report.length && (
                 <tr>
-                  <td colSpan={5} className="px-8 py-16 text-center text-slate-500 bg-slate-900/20">
+                  <td colSpan={filterExpId === 'MEMBERS_ONLY' ? 3 : 5} className="px-8 py-16 text-center text-slate-500 bg-slate-900/20">
                      No se encontraron registros para estos filtros.
                   </td>
                 </tr>

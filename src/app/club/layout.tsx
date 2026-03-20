@@ -1,4 +1,5 @@
 import { createClient } from "@/utils/supabase/server";
+import { checkIsAdmin } from "@/actions/admin";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
@@ -18,7 +19,7 @@ export default async function ClubLayout({
     redirect("/login");
   }
 
-  const isAdmin = user.email === 'gabrielmartinezuba@gmail.com';
+  const isAdmin = await checkIsAdmin();
 
   return (
     <div className="min-h-screen bg-[#0B0F19] text-white flex flex-col md:flex-row relative overflow-hidden">

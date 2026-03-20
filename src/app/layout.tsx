@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter, Playfair_Display } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/layout/Navbar";
@@ -19,6 +19,13 @@ const playfair = Playfair_Display({
 export const metadata: Metadata = {
   title: "MUNIV | Diseñador de Momentos",
   description: "Club de experiencias vínicas curadas de alto perfil.",
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
 };
 
 export default async function RootLayout({

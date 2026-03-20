@@ -9,6 +9,7 @@ import { UpdatePasswordSchema } from "@/schemas/auth";
 import type { z } from "zod";
 import { updateUserPassword, updateUserData } from "@/actions/auth";
 import { createClient } from "@/utils/supabase/client";
+import AdminDashboardCard from "./AdminDashboardCard";
 
 type UpdateFormData = z.infer<typeof UpdatePasswordSchema>;
 
@@ -262,6 +263,8 @@ export default function ProfilePage() {
           </AnimatePresence>
         </div>
       </div>
+
+      <AdminDashboardCard />
     </div>
   );
 }
