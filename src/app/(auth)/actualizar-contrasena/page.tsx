@@ -34,7 +34,7 @@ export default function ActualizarContrasenaPage() {
   };
 
   return (
-    <main className="min-h-screen bg-[#0B0F19] relative flex flex-col items-center justify-center p-4 sm:p-6 overflow-hidden">
+    <main className="min-h-screen bg-[#0c0a09] relative flex flex-col items-center justify-center p-4 sm:p-6 overflow-hidden">
       <div className="absolute inset-0 pointer-events-none z-0">
         <div className="absolute top-1/4 -right-1/4 w-[100wv] h-[100wv] bg-gold-500/5 rounded-full blur-[120px]" />
         <div className="absolute -bottom-1/4 -left-1/4 w-[100wv] h-[100wv] bg-green-700/5 rounded-full blur-[120px]" />
@@ -73,7 +73,7 @@ export default function ActualizarContrasenaPage() {
                 </p>
                 <Link 
                   href="/club"
-                  className="w-full glass-panel-glow bg-gold-500 text-slate-900 py-3 rounded-xl font-bold flex items-center justify-center hover:bg-gold-400 transition-all"
+                  className="w-full glass-panel-glow bg-burgundy-600 text-white py-3 rounded-xl font-bold flex items-center justify-center hover:bg-burgundy-500 transition-all"
                 >
                   Ir a mi Club
                 </Link>
@@ -118,7 +118,7 @@ export default function ActualizarContrasenaPage() {
                 <button 
                   type="submit" 
                   disabled={isPending}
-                  className="mt-2 glass-panel-glow bg-gold-500 text-slate-900 font-bold py-4 rounded-xl flex items-center justify-center gap-2 hover:bg-gold-400 transition-all group disabled:opacity-70 disabled:cursor-not-allowed"
+                  className="mt-2 glass-panel-glow bg-burgundy-600 text-white font-bold py-4 rounded-xl flex items-center justify-center gap-2 hover:bg-burgundy-500 transition-all group disabled:opacity-70 disabled:cursor-not-allowed"
                 >
                   {isPending ? (
                     <>Actualizando <Loader2 size={18} className="animate-spin" /></>
@@ -134,3 +134,6 @@ export default function ActualizarContrasenaPage() {
     </main>
   );
 }
+
+
+

@@ -12,10 +12,10 @@ import { ErrorBoundary } from '@/components/ErrorBoundary';
 const Scene3D = dynamic(() => import('@/components/3d/HeroScene'), { 
   ssr: false,
   loading: () => (
-    <div className="absolute inset-0 flex items-center justify-center bg-[#0B0F19]">
+    <div className="absolute inset-0 flex items-center justify-center bg-[#0c0a09]">
       <div className="relative w-16 h-16">
         <div className="absolute inset-0 rounded-full border-t-2 border-gold-500 animate-spin"></div>
-        <div className="absolute inset-2 rounded-full border-r-2 border-rose-700 animate-spin flex-reverse shadow-[0_0_15px_rgba(190,18,60,0.6)]"></div>
+        <div className="absolute inset-2 rounded-full border-r-2 border-burgundy-600 animate-spin flex-reverse shadow-[0_0_15px_rgba(108,26,26,0.6)]"></div>
       </div>
     </div>
   )
@@ -59,7 +59,7 @@ export default function Hero() {
       <div ref={textRef} className="z-10 text-center flex flex-col items-center max-w-4xl px-4 pointer-events-none">
         <h1 className="font-display font-medium text-5xl md:text-7xl lg:text-8xl tracking-tight text-white mb-6 drop-shadow-2xl">
           Vinos y experiencias <br/>
-          <span className="font-bold text-transparent bg-clip-text bg-gradient-to-r from-gold-200 via-gold-500 to-gold-400">
+          <span className="font-bold text-transparent bg-clip-text bg-gradient-to-r from-gold-200 via-gold-400 to-gold-500">
             para compartir
           </span>
         </h1>
@@ -69,10 +69,10 @@ export default function Hero() {
         <div className="pointer-events-auto flex items-center gap-6">
           <button 
             onClick={() => setIsDrawerOpen(true)}
-            className="glass-panel glass-panel-glow px-8 py-4 rounded-full text-gold-200 font-medium tracking-wide transition-all duration-500 transform hover:scale-105 flex items-center gap-2 group"
+            className="glass-panel glass-panel-glow px-8 py-4 rounded-full text-gold-400 font-medium tracking-wide transition-all duration-500 transform hover:scale-105 flex items-center gap-2 group"
           >
             <span className="group-hover:text-white transition-colors duration-300">Conocé MUNIV</span>
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gold-500 group-hover:translate-x-1 group-hover:text-white transition-all duration-300" viewBox="0 0 20 20" fill="currentColor">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gold-400 group-hover:translate-x-1 group-hover:text-gold-200 transition-all duration-300" viewBox="0 0 20 20" fill="currentColor">
               <path fillRule="evenodd" d="M12.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd" />
             </svg>
           </button>
@@ -81,8 +81,8 @@ export default function Hero() {
       
       {/* Scroll indicator */}
       <div className="absolute bottom-10 left-1/2 -translate-x-1/2 z-10 flex flex-col items-center gap-2 animate-bounce">
-        <span className="text-xs uppercase tracking-[0.2em] text-gold-500/70 font-semibold">Scroll</span>
-        <div className="w-[1px] h-12 bg-gradient-to-b from-gold-500/70 to-transparent"></div>
+        <span className="text-xs uppercase tracking-[0.2em] text-gold-500/60 font-semibold">Scroll</span>
+        <div className="w-[1px] h-12 bg-gradient-to-b from-gold-500/60 to-transparent"></div>
       </div>
 
       {/* Side Drawer: Info */}
@@ -104,7 +104,8 @@ export default function Hero() {
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
               transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              className="fixed inset-y-0 right-0 w-full md:w-[500px] bg-slate-950/90 backdrop-blur-xl border-l border-white/10 z-[101] flex flex-col shadow-2xl"
+              className="fixed inset-y-0 right-0 w-full md:w-[500px] backdrop-blur-xl border-l z-[101] flex flex-col shadow-2xl"
+              style={{ background: 'rgba(12,10,9,0.95)', borderColor: 'rgba(182,154,104,0.12)' }}
             >
               <div className="p-8 md:p-12 flex flex-col h-full">
                 <div className="flex justify-end mb-8">
@@ -119,7 +120,7 @@ export default function Hero() {
                 <div className="flex-1 overflow-y-auto custom-scrollbar pr-4">
                   <h2 className="font-display text-4xl md:text-5xl text-white mb-10 leading-tight">
                     ¿Qué es <br/>
-                    <span className="italic text-gold-500">MUNIV?</span>
+                    <span className="italic text-gold-400">MUNIV?</span>
                   </h2>
                   
                   <div className="text-slate-300 font-light leading-relaxed space-y-6 text-lg">
@@ -141,10 +142,10 @@ export default function Hero() {
                 <div className="pt-12 mt-auto border-t border-white/5">
                    <button 
                     onClick={() => setIsDrawerOpen(false)}
-                    className="w-full py-4 bg-gold-500 text-slate-950 font-bold rounded-xl hover:bg-gold-400 transition-colors"
-                  >
-                    Continuar Explorando
-                  </button>
+                     className="w-full py-4 bg-burgundy-600 text-white font-bold rounded-xl hover:bg-burgundy-500 transition-colors shadow-[0_0_20px_rgba(108,26,26,0.3)]"
+                   >
+                     Continuar Explorando
+                   </button>
                 </div>
               </div>
             </motion.div>
@@ -154,3 +155,5 @@ export default function Hero() {
     </section>
   );
 }
+
+

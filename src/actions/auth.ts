@@ -126,3 +126,4 @@ export async function updateUserData(data: { nombre: string; apellido: string })
     return { success: false, message: "Ocurrió un error inesperado al actualizar los datos." };
   }
 }
+

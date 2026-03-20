@@ -163,7 +163,7 @@ export default function ProfilePage() {
             <button 
               type="submit" 
               disabled={isDataPending}
-              className="glass-panel-glow bg-gold-500 text-slate-900 font-bold py-3.5 px-8 rounded-xl flex items-center justify-center gap-2 hover:bg-gold-400 transition-all disabled:opacity-70 disabled:cursor-not-allowed"
+              className="glass-panel-glow bg-burgundy-600 text-white font-bold py-3.5 px-8 rounded-xl flex items-center justify-center gap-2 hover:bg-burgundy-500 transition-all disabled:opacity-70 disabled:cursor-not-allowed"
             >
               {isDataPending ? <Loader2 size={18} className="animate-spin" /> : <>Guardar Cambios <ArrowRight size={18} /></>}
             </button>
@@ -249,7 +249,7 @@ export default function ProfilePage() {
                   <button 
                     type="submit" 
                     disabled={isPending}
-                    className="glass-panel-glow bg-gold-500 text-slate-900 font-bold py-3.5 px-8 rounded-xl flex items-center justify-center gap-2 hover:bg-gold-400 transition-all group disabled:opacity-70 disabled:cursor-not-allowed"
+                    className="glass-panel-glow bg-burgundy-600 text-white font-bold py-3.5 px-8 rounded-xl flex items-center justify-center gap-2 hover:bg-burgundy-500 transition-all group disabled:opacity-70 disabled:cursor-not-allowed"
                   >
                     {isPending ? (
                       <>Guardando <Loader2 size={18} className="animate-spin" /></>
@@ -268,3 +268,5 @@ export default function ProfilePage() {
     </div>
   );
 }
+
+

@@ -22,7 +22,7 @@ export default async function ClubLayout({
   const isAdmin = await checkIsAdmin();
 
   return (
-    <div className="min-h-screen bg-[#0B0F19] text-white flex flex-col md:flex-row relative overflow-hidden">
+    <div className="min-h-screen bg-[#0c0a09] text-white flex flex-col md:flex-row relative overflow-hidden">
       {/* Abstract Backgrounds */}
       <div className="absolute inset-0 pointer-events-none z-0">
         <div className="absolute top-0 -left-1/4 w-[80vw] h-[80vw] bg-rose-700/5 rounded-full blur-[150px]" />
@@ -61,3 +61,5 @@ export default async function ClubLayout({
     </div>
   );
 }
+
+

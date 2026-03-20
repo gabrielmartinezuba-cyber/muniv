@@ -17,3 +17,4 @@ export const GiftingSubmitSchema = z.object({
   budget: z.string(),
   message: z.string().optional()
 });
+

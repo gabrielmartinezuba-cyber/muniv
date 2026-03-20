@@ -65,3 +65,5 @@ export default function MobileNav({ isAdmin }: { isAdmin?: boolean }) {
     </nav>
   );
 }
+
+

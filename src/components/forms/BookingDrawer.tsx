@@ -110,7 +110,7 @@ export default function BookingDrawer() {
                 <button 
                   onClick={handleConfirmReservation}
                   disabled={isPending}
-                  className="mt-6 min-h-[44px] flex-1 glass-panel-glow bg-gold-500 text-slate-900 font-bold py-4 rounded-full flex items-center justify-center gap-2 hover:bg-gold-400 transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
+                  className="mt-6 min-h-[44px] flex-1 glass-panel-glow bg-burgundy-600 text-white font-bold py-4 rounded-full flex items-center justify-center gap-2 hover:bg-burgundy-500 transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
                 >
                   {isPending ? (
                     <>Procesando <Loader2 size={18} className="animate-spin" /></>
@@ -224,7 +224,7 @@ export default function BookingDrawer() {
               <button 
                 onClick={handleConfirmReservation}
                 disabled={isPending}
-                className="min-h-[44px] flex-1 glass-panel-glow bg-gold-500 text-slate-900 font-bold py-4 rounded-full flex items-center justify-center gap-2 hover:bg-gold-400 transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
+                className="min-h-[44px] flex-1 glass-panel-glow bg-burgundy-600 text-white font-bold py-4 rounded-full flex items-center justify-center gap-2 hover:bg-burgundy-500 transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
               >
                 {isPending ? (
                   <>Procesando <Loader2 size={18} className="animate-spin" /></>
@@ -354,3 +354,5 @@ export default function BookingDrawer() {
     </AnimatePresence>
   );
 }
+
+

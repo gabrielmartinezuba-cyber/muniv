@@ -88,7 +88,7 @@ export default function AdminDashboardCard() {
           <button 
             type="submit" 
             disabled={isSubmitting || !email}
-            className="glass-panel-glow bg-gold-500 text-slate-900 font-bold py-3.5 px-8 rounded-xl flex items-center justify-center gap-2 hover:bg-gold-400 transition-all group disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_0_15px_rgba(212,175,55,0.2)]"
+            className="glass-panel-glow bg-burgundy-600 text-white font-bold py-3.5 px-8 rounded-xl flex items-center justify-center gap-2 hover:bg-burgundy-500 transition-all group disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_0_15px_rgba(212,175,55,0.2)]"
           >
             {isSubmitting ? (
               <>Autorizando <Loader2 size={18} className="animate-spin" /></>
@@ -101,3 +101,5 @@ export default function AdminDashboardCard() {
     </motion.div>
   );
 }
+
+

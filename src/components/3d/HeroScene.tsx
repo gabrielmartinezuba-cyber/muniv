@@ -1,73 +1,170 @@
 "use client";
 
 import { Canvas, useFrame } from "@react-three/fiber";
-import { Points, PointMaterial } from "@react-three/drei";
+import { Points } from "@react-three/drei";
 import { useState, useRef, useMemo, useEffect } from "react";
 import * as THREE from "three";
 
+// Custom shader for per-particle randomness (size, opacity, flicker)
+const EmberShader = {
+  uniforms: {
+    time: { value: 0 },
+    pointTexture: { value: null },
+  },
+  vertexShader: `
+    attribute float aSize;
+    attribute float aOpacity;
+    attribute float aFlickerSpeed;
+    varying float vOpacity;
+    varying vec3 vColor;
+    varying float vFlicker;
+    uniform float time;
+
+    void main() {
+      vColor = color;
+      vFlicker = sin(time * aFlickerSpeed) * 0.5 + 0.5; // More dramatic flickering (0.0 to 1.0)
+      vOpacity = aOpacity;
+      vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+      gl_PointSize = aSize * (400.0 / -mvPosition.z); // Slightly larger base
+      gl_Position = projectionMatrix * mvPosition;
+    }
+  `,
+  fragmentShader: `
+    uniform sampler2D pointTexture;
+    varying float vOpacity;
+    varying vec3 vColor;
+    varying float vFlicker;
+
+    void main() {
+      vec4 texColor = texture2D(pointTexture, gl_PointCoord);
+      if (texColor.a < 0.2) discard; // Sharper irregular edges
+      gl_FragColor = vec4(vColor, vOpacity * vFlicker) * texColor;
+    }
+  `,
+};
+
 function Embers({ isMobile }: { isMobile: boolean }) {
   const ref = useRef<THREE.Points>(null);
-  
-  // Create points in a sphere to simulate glowing embers/sparks
-  const { positions, colors, particleCount } = useMemo(() => {
-    // 30% of total desktop particles when on mobile
-    const count = isMobile ? 600 : 2000;
+  const materialRef = useRef<THREE.ShaderMaterial>(null);
+
+  // Irregular flake texture generation (Procedural Spark/Ash)
+  const flakeTexture = useMemo(() => {
+    const canvas = document.createElement("canvas");
+    canvas.width = 64;
+    canvas.height = 64;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return null;
+
+    // Draw an irregular, jagged flake
+    ctx.fillStyle = "white";
+    ctx.beginPath();
+    const centerX = 32, centerY = 32;
+    // Lower point count for sharper, more 'ash-like' jaggies
+    const points = 4 + Math.floor(Math.random() * 4);
+    for (let i = 0; i < points; i++) {
+      const angle = (i / points) * Math.PI * 2;
+      const radius = 5 + Math.random() * 25;
+      const x = centerX + Math.cos(angle) * radius;
+      const y = centerY + Math.sin(angle) * radius;
+      if (i === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    }
+    ctx.closePath();
+    ctx.fill();
+
+    return new THREE.CanvasTexture(canvas);
+  }, []);
+
+  const { positions, colors, velocities, flutters, sizes, opacities, flickerSpeeds, particleCount } = useMemo(() => {
+    const count = isMobile ? 5000 : 18000; // Massively increased density for high-end visibility
     const pos = new Float32Array(count * 3);
     const col = new Float32Array(count * 3);
-    
-    // Rose-700 (#BE123C), Orange-500 (#F97316), Gold-500 (#D4AF37)
+    const vel = new Float32Array(count);
+    const flu = new Float32Array(count);
+    const sz = new Float32Array(count);
+    const op = new Float32Array(count);
+    const fs = new Float32Array(count);
+
     const colorPalette = [
-      new THREE.Color("#BE123C"), 
-      new THREE.Color("#F97316"), 
-      new THREE.Color("#D4AF37")
+      new THREE.Color("#f97316"), // Naranja fuego
+      new THREE.Color("#ea580c"), // Deep orange
+      new THREE.Color("#991b1b"), // Rojo vino
+      new THREE.Color("#7c2d12"), // Borgoña profundo
+      new THREE.Color("#f59e0b"), // Ámbar
     ];
 
     for (let i = 0; i < count; i++) {
-      const r = 10 * Math.cbrt(Math.random());
+      const r = 8 * Math.cbrt(Math.random());
       const theta = Math.random() * 2 * Math.PI;
-      const phi = Math.acos(2 * Math.random() - 1);
       
-      pos[i * 3] = r * Math.sin(phi) * Math.cos(theta); // x
-      pos[i * 3 + 1] = r * Math.sin(phi) * Math.sin(theta); // y
-      pos[i * 3 + 2] = r * Math.cos(phi); // z
+      pos[i * 3]     = r * Math.cos(theta);
+      pos[i * 3 + 1] = (Math.random() - 0.5) * 12;
+      pos[i * 3 + 2] = r * Math.sin(theta) * 0.4;
       
+      vel[i] = 0.008 + Math.random() * 0.035; 
+      flu[i] = Math.random() * Math.PI * 2;
+      
+      // OPTIMIZED FOR VISIBILITY: 98% sparks (increased min size), 2% larger ash flakes
+      sz[i] = Math.random() < 0.02 ? (0.12 + Math.random() * 0.25) : (0.015 + Math.random() * 0.025); 
+      
+      op[i] = 0.4 + Math.random() * 0.6; // Higher base opacity for visibility
+      fs[i] = 5.0 + Math.random() * 15.0; 
+
       const mixedColor = colorPalette[Math.floor(Math.random() * colorPalette.length)];
-      col[i * 3] = mixedColor.r;
+      col[i * 3]     = mixedColor.r;
       col[i * 3 + 1] = mixedColor.g;
       col[i * 3 + 2] = mixedColor.b;
     }
-    return { positions: pos, colors: col, particleCount: count };
+    return { 
+      positions: pos, colors: col, velocities: vel, flutters: flu, 
+      sizes: sz, opacities: op, flickerSpeeds: fs, particleCount: count 
+    };
   }, [isMobile]);
 
-  useFrame((state, delta) => {
-    if (ref.current) {
-      ref.current.rotation.x -= delta / 10;
-      ref.current.rotation.y -= delta / 15;
-      
-      // Organic flow
+  useFrame((state) => {
+    if (ref.current && materialRef.current) {
       const time = state.clock.getElapsedTime();
-      const positions = ref.current.geometry.attributes.position.array;
+      materialRef.current.uniforms.time.value = time;
+      
+      const posAttr = ref.current.geometry.attributes.position.array as Float32Array;
+
       for (let i = 0; i < particleCount; i++) {
         const i3 = i * 3;
-        // Subtle drift on y-axis resembling heat rising
-        positions[i3 + 1] += Math.sin(time + positions[i3]) * 0.005;
+        posAttr[i3 + 1] += velocities[i];
+        posAttr[i3] += Math.sin(time * 1.5 + flutters[i]) * 0.004;
+
+        if (posAttr[i3 + 1] > 6) {
+          posAttr[i3 + 1] = -6;
+          posAttr[i3] = (Math.random() - 0.5) * 12;
+        }
       }
       ref.current.geometry.attributes.position.needsUpdate = true;
     }
   });
 
   return (
-    <Points ref={ref} positions={positions} colors={colors} stride={3} frustumCulled={false}>
-      <PointMaterial
-        transparent
+    <points ref={ref}>
+      <bufferGeometry>
+        <bufferAttribute attach="attributes-position" args={[positions, 3]} />
+        <bufferAttribute attach="attributes-color" args={[colors, 3]} />
+        <bufferAttribute attach="attributes-aSize" args={[sizes, 1]} />
+        <bufferAttribute attach="attributes-aOpacity" args={[opacities, 1]} />
+        <bufferAttribute attach="attributes-aFlickerSpeed" args={[flickerSpeeds, 1]} />
+      </bufferGeometry>
+      <shaderMaterial
+        ref={materialRef}
         vertexColors
-        size={0.08}
-        sizeAttenuation={true}
+        transparent
         depthWrite={false}
-        opacity={0.6}
         blending={THREE.AdditiveBlending}
+        uniforms={useMemo(() => ({
+          time: { value: 0 },
+          pointTexture: { value: flakeTexture },
+        }), [flakeTexture])}
+        vertexShader={EmberShader.vertexShader}
+        fragmentShader={EmberShader.fragmentShader}
       />
-    </Points>
+    </points>
   );
 }
 
@@ -76,15 +173,14 @@ export default function HeroScene() {
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
-    checkMobile(); // Check immediately on mount (ssr is false, window is safe)
+    checkMobile();
     window.addEventListener("resize", checkMobile);
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
   return (
-    // Adjust Device Pixel Ratio for performance on mobile
     <Canvas camera={{ position: [0, 0, 8] }} dpr={isMobile ? [1, 1] : [1, 2]}>
-      <ambientLight intensity={0.5} />
+      <ambientLight intensity={0.3} />
       <Embers isMobile={isMobile} />
     </Canvas>
   );

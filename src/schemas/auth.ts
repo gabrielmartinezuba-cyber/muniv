@@ -42,3 +42,4 @@ export const UpdatePasswordSchema = z.object({
     .regex(/[0-9]/, "Debe contener al menos un número"),
 });
 
+

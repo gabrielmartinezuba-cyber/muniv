@@ -35,7 +35,7 @@ export default function CorporateGifting() {
   };
 
   return (
-    <main className="min-h-screen bg-[#0B0F19] flex items-center justify-center p-4 relative overflow-hidden">
+    <main className="min-h-screen bg-[#0c0a09] flex items-center justify-center p-4 relative overflow-hidden">
       {/* Abstract Background for B2B */}
       <div className="absolute inset-0 pointer-events-none z-0">
         <div className="absolute top-1/4 -left-1/4 w-[80wv] h-[80wv] bg-gold-500/5 rounded-full blur-3xl" />
@@ -167,3 +167,4 @@ function CheckIcon() {
     </svg>
   );
 }
+

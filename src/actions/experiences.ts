@@ -29,3 +29,4 @@ export async function getActiveExperiences(): Promise<Experience[]> {
 
   return data as Experience[];
 }
+

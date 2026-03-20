@@ -40,7 +40,7 @@ export default async function RootLayout({
   return (
     <html lang="es" className="dark" style={{ colorScheme: "dark" }}>
       <body
-        className={`${inter.variable} ${playfair.variable} font-sans antialiased text-white bg-[#0B0F19] min-h-screen selection:bg-gold-500/30 selection:text-white`}
+        className={`${inter.variable} ${playfair.variable} font-sans antialiased text-white bg-[#0c0a09] min-h-screen selection:bg-gold-500/30 selection:text-white`}
       >
         <Navbar initialUser={user} />
         {children}
@@ -50,3 +50,4 @@ export default async function RootLayout({
     </html>
   );
 }
+

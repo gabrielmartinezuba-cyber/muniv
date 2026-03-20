@@ -6,3 +6,4 @@ export async function GET() {
   const { data, error } = await supabase.from('experiences').select('*').limit(1);
   return NextResponse.json({ keys: data ? Object.keys(data[0]) : error });
 }
+

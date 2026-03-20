@@ -22,7 +22,7 @@ export default function ReservasPage() {
           
           <a 
             href="/"
-            className="px-8 py-3 bg-gold-500 text-slate-950 rounded-full font-bold text-sm hover:bg-gold-400 transition-all active:scale-95 shadow-[0_0_20px_rgba(212,175,55,0.2)]"
+            className="px-8 py-3 bg-gold-500 text-slate-950 rounded-full font-bold text-sm hover:bg-burgundy-500 transition-all active:scale-95 shadow-[0_0_20px_rgba(212,175,55,0.2)]"
           >
             Explorar Club
           </a>
@@ -31,3 +31,5 @@ export default function ReservasPage() {
     </div>
   );
 }
+
+

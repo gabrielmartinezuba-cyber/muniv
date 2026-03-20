@@ -1,8 +1,8 @@
 @import "tailwindcss";
 
 :root {
-  --background: #0B0F19; /* Elegant dark mode */
-  --foreground: #ededed;
+  --background: #0c0a09; /* Warm near-black, like scorched stone */
+  --foreground: #e8e0d5; /* Aged parchment white */
 }
 
 @theme inline {
@@ -10,11 +10,25 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-inter);
   --font-display: var(--font-playfair);
-  
-  --color-gold-200: #F3E5AB;
-  --color-gold-400: #E5C365;
-  --color-gold-500: #D4AF37;
-  --color-gold-600: #B39129;
+
+  /* === MEDIEVAL BRONZE / ANTIQUE GOLD PALETTE === */
+  /* Replaces the saturated "Luxury Gold" — now warmer, more opaque, envejecido */
+  --color-gold-200: #e8d5b0;   /* Warm parchment highlight */
+  --color-gold-400: #c9a96e;   /* Antique bronze mid */
+  --color-gold-500: #b69a68;   /* Bronce Antique — primary accent (was #D4AF37) */
+  --color-gold-600: #9a7d50;   /* Deep aged bronze */
+
+  /* === BURGUNDY / WINE RED PALETTE === */
+  /* Primary CTA color — Borgoña Profundo */
+  --color-burgundy-700: #6b1a1a;  /* Deep wine red, dominant */
+  --color-burgundy-600: #7c2020;  /* Standard primary CTA */
+  --color-burgundy-500: #8f2828;  /* Hover state */
+  --color-burgundy-400: #a33535;  /* Lighter accent */
+
+  /* === IRON / STONE BACKGROUNDS === */
+  --color-stone-950: #0c0a09;
+  --color-iron-900: #1c1917;    /* Forged iron containers */
+  --color-iron-800: #27231f;    /* Slightly lighter panels */
 }
 
 body {
@@ -24,21 +38,52 @@ body {
   overflow-x: hidden;
 }
 
-/* Glassmorphism Primitives for Top Tier feel */
+/* === AGED PARCHMENT TEXTURE OVERLAY === */
+/* Ultra-subtle noise texture for medieval tactility */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.03;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+}
+
+/* === GLASSMORPHISM PRIMITIVES === */
+/* Updated for Iron/Stone aesthetic */
 .glass-panel {
-  @apply bg-slate-900/40 backdrop-blur-xl border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.5)];
+  @apply backdrop-blur-xl border shadow-[0_8px_32px_rgba(0,0,0,0.6)];
+  background: rgba(28, 25, 23, 0.5);  /* iron-900 based */
+  border-color: rgba(182, 154, 104, 0.08);  /* Antique bronze border faint */
 }
 
 .glass-panel-glow {
   @apply relative z-10;
 }
 
+/* Button glow — updated to wine red / fire */
 .glass-panel-glow::before {
   content: "";
-  @apply absolute -inset-0.5 bg-gradient-to-br from-rose-700 to-orange-500 rounded-[inherit] blur-md opacity-0 transition-opacity duration-500;
+  @apply absolute -inset-0.5 rounded-[inherit] blur-md opacity-0 transition-opacity duration-500;
+  background: linear-gradient(135deg, #6b1a1a, #f97316);
   z-index: -1;
 }
 
 .glass-panel-glow:hover::before {
-  @apply opacity-40;
+  @apply opacity-50;
 }
+
+/* === SCROLLBAR STYLING === */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(182, 154, 104, 0.2);
+  border-radius: 99px;
+}
+

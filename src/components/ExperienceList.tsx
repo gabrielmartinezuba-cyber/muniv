@@ -51,7 +51,7 @@ export default function ExperienceList() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: index * 0.1 }}
-          className="group relative glass-panel rounded-3xl overflow-hidden border border-white/5 bg-slate-900/40 hover:border-gold-500/30 transition-all duration-500"
+          className="group relative glass-panel rounded-3xl overflow-hidden border hover:border-gold-500/20 transition-all duration-500"
         >
           {/* Image Container */}
           <div className="relative h-64 w-full overflow-hidden">
@@ -64,14 +64,14 @@ export default function ExperienceList() {
             <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent" />
 
             {/* Type Badge */}
-            <span className="absolute top-4 left-4 px-3 py-1 bg-slate-950/80 backdrop-blur-md border border-gold-500/30 text-gold-500 text-[10px] uppercase tracking-widest font-bold rounded-full">
+            <span className="absolute top-4 left-4 px-3 py-1 bg-stone-950/85 backdrop-blur-md border border-gold-500/25 text-gold-500 text-[10px] uppercase tracking-widest font-bold rounded-full">
               {exp.type}
             </span>
           </div>
 
           {/* Content */}
           <div className="p-6">
-            <h3 className="font-display text-2xl text-white mb-2 group-hover:text-gold-500 transition-colors">
+            <h3 className="font-display text-2xl text-white mb-2 group-hover:text-gold-400 transition-colors">
               {exp.title}
             </h3>
             <p className="text-slate-400 text-sm mb-6 font-light">
@@ -96,7 +96,7 @@ export default function ExperienceList() {
               ) : (
                 <button
                   onClick={() => handleBookingClick(exp)}
-                  className="flex items-center gap-2 px-5 py-2.5 bg-gold-500 text-slate-950 rounded-full font-bold text-sm hover:bg-gold-400 transition-all active:scale-95 shadow-[0_0_20px_rgba(212,175,55,0.2)]"
+                  className="flex items-center gap-2 px-5 py-2.5 bg-burgundy-600 text-white rounded-full font-bold text-sm hover:bg-burgundy-500 transition-all active:scale-95 shadow-[0_0_20px_rgba(108,26,26,0.4)]"
                 >
                   {exp.price === 0 ? 'Participar' : 'Reservar'} <Plus size={16} />
                 </button>
@@ -108,3 +108,5 @@ export default function ExperienceList() {
     </div>
   );
 }
+
+
