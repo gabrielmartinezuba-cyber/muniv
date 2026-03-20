@@ -74,7 +74,7 @@ export async function sendPasswordResetEmail(email: string) {
     const supabase = await createClient();
     const origin = (await headers()).get("origin") || process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${origin}/auth/callback?next=/actualizar-password`,
+      redirectTo: `${origin}/auth/callback?next=/actualizar-contrasena`,
     });
 
     if (error) {

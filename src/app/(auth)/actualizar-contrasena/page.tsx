@@ -12,7 +12,7 @@ import { updateUserPassword } from "@/actions/auth";
 
 type UpdateFormData = z.infer<typeof UpdatePasswordSchema>;
 
-export default function ActualizarPasswordPage() {
+export default function ActualizarContrasenaPage() {
   const [isPending, startTransition] = useTransition();
   const [serverState, setServerState] = useState<{ success: boolean; message: string } | null>(null);
 
