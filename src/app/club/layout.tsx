@@ -18,6 +18,8 @@ export default async function ClubLayout({
     redirect("/login");
   }
 
+  const isAdmin = user.email === 'gabrielmartinezuba@gmail.com';
+
   return (
     <div className="min-h-screen bg-[#0B0F19] text-white flex flex-col md:flex-row relative overflow-hidden">
       {/* Abstract Backgrounds */}
@@ -44,7 +46,7 @@ export default async function ClubLayout({
           </div>
         </div>
 
-        <SidebarNav />
+        <SidebarNav isAdmin={isAdmin} />
       </aside>
 
       {/* Main Content Area */}
@@ -54,7 +56,7 @@ export default async function ClubLayout({
         </div>
       </main>
 
-      <MobileNav />
+      <MobileNav isAdmin={isAdmin} />
     </div>
   );
 }

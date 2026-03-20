@@ -2,9 +2,9 @@
 
 import { usePathname } from "next/navigation";
 import Link from "next/link";
-import { User, Settings } from "lucide-react";
+import { User, Settings, ClipboardList, Package } from "lucide-react";
 
-export default function SidebarNav() {
+export default function SidebarNav({ isAdmin }: { isAdmin?: boolean }) {
   const pathname = usePathname();
 
   return (
@@ -19,6 +19,32 @@ export default function SidebarNav() {
       >
         <User size={18} /> Mi Perfil
       </Link>
+
+      {isAdmin && (
+        <>
+          <Link 
+            href="/admin" 
+            className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-colors ${
+              pathname === '/admin' 
+                ? 'bg-gold-500/10 border border-gold-500 text-gold-500 font-medium' 
+                : 'hover:bg-gold-500/10 text-gold-400 border border-gold-500/20'
+            }`}
+          >
+            <ClipboardList size={18} /> Reportes
+          </Link>
+          <Link 
+            href="/admin/experiencias" 
+            className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-colors ${
+              pathname === '/admin/experiencias' 
+                ? 'bg-gold-500/10 border border-gold-500 text-gold-500 font-medium' 
+                : 'hover:bg-gold-500/10 text-gold-400 border border-gold-500/20'
+            }`}
+          >
+            <Package size={18} /> Experiencias
+          </Link>
+        </>
+      )}
+
       <div className="mt-8 border-t border-white/5 pt-8">
         <Link 
           href="/club/perfil" 
