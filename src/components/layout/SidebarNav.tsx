@@ -2,7 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import Link from "next/link";
-import { User, Settings, ClipboardList, Package, Ticket } from "lucide-react";
+import { User, Settings, ClipboardList, Package, Ticket, Gift } from "lucide-react";
 
 export default function SidebarNav({ isAdmin }: { isAdmin?: boolean }) {
   const pathname = usePathname();
@@ -18,6 +18,16 @@ export default function SidebarNav({ isAdmin }: { isAdmin?: boolean }) {
         }`}
       >
         <Ticket size={18} /> Mis reservas
+      </Link>
+      <Link 
+        href="/club/beneficios" 
+        className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-colors ${
+          pathname === '/club/beneficios' 
+            ? 'bg-gold-500/10 border border-gold-500 text-gold-500 font-medium' 
+            : 'hover:bg-white/5 text-slate-300'
+        }`}
+      >
+        <Gift size={18} /> Mis Beneficios
       </Link>
 
       {isAdmin && (
@@ -41,6 +51,16 @@ export default function SidebarNav({ isAdmin }: { isAdmin?: boolean }) {
             }`}
           >
             <Package size={18} /> Experiencias
+          </Link>
+          <Link 
+            href="/admin/beneficios" 
+            className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-colors ${
+              pathname === '/admin/beneficios' 
+                ? 'bg-gold-500/10 border border-gold-500 text-gold-500 font-medium' 
+                : 'hover:bg-gold-500/10 text-gold-400 border border-gold-500/20'
+            }`}
+          >
+            <Gift size={18} /> Beneficios
           </Link>
           <Link 
             href="/admin/editar-web" 

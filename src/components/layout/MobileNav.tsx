@@ -2,7 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import Link from "next/link";
-import { User, Settings, ClipboardList, Package, Ticket } from "lucide-react";
+import { User, Settings, ClipboardList, Package, Ticket, Gift } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export default function MobileNav({ isAdmin }: { isAdmin?: boolean }) {
@@ -27,13 +27,19 @@ export default function MobileNav({ isAdmin }: { isAdmin?: boolean }) {
         label: "Experiencias",
         icon: Package,
         active: pathname === "/admin/experiencias",
+      },
+      {
+        href: "/admin/beneficios",
+        label: "Beneficios",
+        icon: Gift,
+        active: pathname === "/admin/beneficios",
       }
     ] : []),
     {
-      href: "/club/perfil",
-      label: "Configuración",
-      icon: Settings,
-      active: pathname === "/club/perfil",
+      href: "/club/beneficios",
+      label: "Beneficios",
+      icon: Gift,
+      active: pathname === "/club/beneficios",
     },
   ];
 
