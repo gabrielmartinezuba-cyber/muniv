@@ -13,6 +13,7 @@ import {
   closestCenter,
   KeyboardSensor,
   PointerSensor,
+  TouchSensor,
   useSensor,
   useSensors,
   DragEndEvent,
@@ -56,6 +57,7 @@ function SortableExperienceCard({
     transition,
     zIndex: isDragging ? 50 : 1,
     opacity: isDragging ? 0.6 : 1,
+    touchAction: 'none',
   };
 
   return (
@@ -116,7 +118,13 @@ export default function ExperienceManager() {
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
-        distance: 8, // Avoid accidental drags when clicking to select
+        distance: 8, 
+      },
+    }),
+    useSensor(TouchSensor, {
+      activationConstraint: {
+        delay: 250,
+        tolerance: 5,
       },
     }),
     useSensor(KeyboardSensor, {
