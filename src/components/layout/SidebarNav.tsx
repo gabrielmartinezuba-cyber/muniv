@@ -2,7 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import Link from "next/link";
-import { User, Settings, ClipboardList, Package } from "lucide-react";
+import { User, Settings, ClipboardList, Package, Ticket } from "lucide-react";
 
 export default function SidebarNav({ isAdmin }: { isAdmin?: boolean }) {
   const pathname = usePathname();
@@ -17,7 +17,7 @@ export default function SidebarNav({ isAdmin }: { isAdmin?: boolean }) {
             : 'hover:bg-white/5 text-slate-300'
         }`}
       >
-        <User size={18} /> Mi Perfil
+        <Ticket size={18} /> Mis reservas
       </Link>
 
       {isAdmin && (
@@ -41,6 +41,16 @@ export default function SidebarNav({ isAdmin }: { isAdmin?: boolean }) {
             }`}
           >
             <Package size={18} /> Experiencias
+          </Link>
+          <Link 
+            href="/admin/editar-web" 
+            className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-colors ${
+              pathname === '/admin/editar-web' 
+                ? 'bg-gold-500/10 border border-gold-500 text-gold-500 font-medium' 
+                : 'hover:bg-gold-500/10 text-gold-400 border border-gold-500/20'
+            }`}
+          >
+            <Settings size={18} /> Editar Web
           </Link>
         </>
       )}

@@ -1,0 +1,21 @@
+{
+  "name": "MUNIV",
+  "short_name": "MUNIV",
+  "description": "Club de experiencias vínicas curadas de alto perfil.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0c0a09",
+  "theme_color": "#7c2020",
+  "icons": [
+    {
+      "src": "/logo.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/logo.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

@@ -21,7 +21,27 @@ const Scene3D = dynamic(() => import('@/components/3d/HeroScene'), {
   )
 });
 
-export default function Hero() {
+interface HeroProps {
+  title?: string;
+  description?: string;
+  button_text?: string;
+  conoce_descripcion?: string;
+}
+
+const DEFAULT_CONOCE = `MUNIV es una marca creada para convertir el vino en una experiencia que se disfruta, se comparte y se recuerda. Nacimos con la intención de acercar vinos con identidad, calidad y sentido, pero sobre todo de darle a cada botella un lugar dentro de momentos reales: una juntada, una comida, un regalo, una celebración o simplemente el placer de frenar y disfrutar.
+
+En MUNIV no creemos en el vino como algo lejano o complicado. Creemos en una forma más simple, cercana y auténtica de vivirlo. Por eso seleccionamos propuestas con criterio, cuidamos cada detalle y buscamos que cada experiencia tenga valor, tanto en lo que ofrece como en lo que genera.
+
+Más que vender vino, en MUNIV queremos acompañar momentos. Crear una conexión entre buenas etiquetas, buenas historias y personas que valoran compartir algo distinto.
+
+MUNIV es calidad, experiencia y disfrute. Una invitación a descubrir vinos con personalidad y a hacer de cada ocasión algo digno de repetir.`;
+
+export default function Hero({ 
+  title = "Vinos y experiencias <br/> para compartir",
+  description = "Club de vinos y experiencias pensado para descubrir, regalar y disfrutar momentos que valen la pena repetir.",
+  button_text = "Conocé MUNIV",
+  conoce_descripcion = DEFAULT_CONOCE
+}: HeroProps) {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const textRef = useRef<HTMLDivElement>(null);
@@ -57,21 +77,19 @@ export default function Hero() {
       
       {/* Foreground Content */}
       <div ref={textRef} className="z-10 text-center flex flex-col items-center max-w-4xl px-4 pointer-events-none">
-        <h1 className="font-display font-medium text-5xl md:text-7xl lg:text-8xl tracking-tight text-white mb-6 drop-shadow-2xl">
-          Vinos y experiencias <br/>
-          <span className="font-bold text-transparent bg-clip-text bg-gradient-to-r from-gold-200 via-gold-400 to-gold-500">
-            para compartir
-          </span>
-        </h1>
+        <h1 
+          className="font-display font-medium text-5xl md:text-7xl lg:text-8xl tracking-tight text-white mb-6 drop-shadow-2xl h-auto"
+          dangerouslySetInnerHTML={{ __html: title }}
+        />
         <p className="text-lg md:text-xl text-slate-300 font-light max-w-2xl mb-10 leading-relaxed drop-shadow-lg">
-          Club de vinos y experiencias pensado para descubrir, regalar y disfrutar momentos que valen la pena repetir.
+          {description}
         </p>
         <div className="pointer-events-auto flex items-center gap-6">
           <button 
             onClick={() => setIsDrawerOpen(true)}
             className="glass-panel glass-panel-glow px-8 py-4 rounded-full text-gold-400 font-medium tracking-wide transition-all duration-500 transform hover:scale-105 flex items-center gap-2 group"
           >
-            <span className="group-hover:text-white transition-colors duration-300">Conocé MUNIV</span>
+            <span className="group-hover:text-white transition-colors duration-300">{button_text}</span>
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gold-400 group-hover:translate-x-1 group-hover:text-gold-200 transition-all duration-300" viewBox="0 0 20 20" fill="currentColor">
               <path fillRule="evenodd" d="M12.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd" />
             </svg>
@@ -124,18 +142,9 @@ export default function Hero() {
                   </h2>
                   
                   <div className="text-slate-300 font-light leading-relaxed space-y-6 text-lg">
-                    <p>
-                      MUNIV es una marca creada para convertir el vino en una experiencia que se disfruta, se comparte y se recuerda. Nacimos con la intención de acercar vinos con identidad, calidad y sentido, pero sobre todo de darle a cada botella un lugar dentro de momentos reales: una juntada, una comida, un regalo, una celebración o simplemente el placer de frenar y disfrutar.
-                    </p>
-                    <p>
-                      En MUNIV no creemos en el vino como algo lejano o complicado. Creemos en una forma más simple, cercana y auténtica de vivirlo. Por eso seleccionamos propuestas con criterio, cuidamos cada detalle y buscamos que cada experiencia tenga valor, tanto en lo que ofrece como en lo que genera.
-                    </p>
-                    <p>
-                      Más que vender vino, en MUNIV queremos acompañar momentos. Crear una conexión entre buenas etiquetas, buenas historias y personas que valoran compartir algo distinto.
-                    </p>
-                    <p>
-                      MUNIV es calidad, experiencia y disfrute. Una invitación a descubrir vinos con personalidad y a hacer de cada ocasión algo digno de repetir.
-                    </p>
+                    {conoce_descripcion.split('\n\n').map((paragraph, idx) => (
+                      <p key={idx}>{paragraph}</p>
+                    ))}
                   </div>
                 </div>
                 

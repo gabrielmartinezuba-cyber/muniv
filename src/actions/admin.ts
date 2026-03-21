@@ -347,3 +347,59 @@ export async function addAdmin(formData: FormData): Promise<{ success: boolean; 
   }
 }
 
+
+export async function getLandingContent() {
+  try {
+    const supabase = await createClient();
+    const { data, error } = await supabase
+      .from('landing_content')
+      .select('*')
+      .maybeSingle(); // handle case where table is empty without throwing error
+    
+    if (error) {
+       console.error("Error fetching landing content:", error);
+       return null;
+    }
+    return data;
+  } catch (error) {
+    return null;
+  }
+}
+
+export async function updateLandingContent(formData: FormData) {
+  try {
+    const isAdmin = await checkIsAdmin();
+    if (!isAdmin) return { success: false, error: "Unauthorized." };
+
+    const supabaseAdmin = createAdminClient();
+    const title = formData.get("title");
+    const description = formData.get("description");
+    const button_text = formData.get("button_text");
+    const conoce_descripcion = formData.get("conoce_descripcion");
+
+    const { data: existing } = await supabaseAdmin.from('landing_content').select('id').maybeSingle();
+    
+    let dbError;
+    if (existing) {
+      const { error } = await supabaseAdmin
+        .from('landing_content')
+        .update({ title, description, button_text, conoce_descripcion })
+        .eq('id', existing.id);
+      dbError = error;
+    } else {
+      const { error } = await supabaseAdmin
+        .from('landing_content')
+        .insert({ title, description, button_text, conoce_descripcion });
+      dbError = error;
+    }
+
+    if (dbError) {
+      console.error("Database error updating landing content:", dbError);
+      return { success: false, error: dbError.message };
+    }
+    return { success: true };
+  } catch (error: any) {
+    console.error("updateLandingContent exception:", error);
+    return { success: false, error: error.message };
+  }
+}

@@ -2,7 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import Link from "next/link";
-import { User, Settings, ClipboardList, Package } from "lucide-react";
+import { User, Settings, ClipboardList, Package, Ticket } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export default function MobileNav({ isAdmin }: { isAdmin?: boolean }) {
@@ -11,8 +11,8 @@ export default function MobileNav({ isAdmin }: { isAdmin?: boolean }) {
   const links = [
     {
       href: "/club",
-      label: "Mi Perfil",
-      icon: User,
+      label: "Mis reservas",
+      icon: Ticket,
       active: pathname === "/club",
     },
     ...(isAdmin ? [

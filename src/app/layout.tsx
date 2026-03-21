@@ -19,6 +19,15 @@ const playfair = Playfair_Display({
 export const metadata: Metadata = {
   title: "MUNIV | Diseñador de Momentos",
   description: "Club de experiencias vínicas curadas de alto perfil.",
+  manifest: "/manifest.json",
+  appleWebApp: {
+    title: "MUNIV",
+    statusBarStyle: "black-translucent",
+    capable: true,
+  },
+  icons: {
+    apple: "/logo.png",
+  }
 };
 
 export const viewport: Viewport = {
@@ -26,6 +35,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
+  themeColor: "#7c2020",
 };
 
 export default async function RootLayout({

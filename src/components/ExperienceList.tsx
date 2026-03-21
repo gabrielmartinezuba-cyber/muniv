@@ -80,7 +80,9 @@ export default function ExperienceList() {
 
             <div className="flex items-center justify-between mt-auto">
               <div className="flex flex-col">
-                <span className="text-xs text-slate-500 uppercase tracking-tighter">Inversión</span>
+                {exp.price > 0 && (
+                  <span className="text-xs text-slate-500 uppercase tracking-tighter">Precio</span>
+                )}
                 <span className="text-xl text-white font-medium">
                   {exp.price === 0 ? 'Gratis' : `$${exp.price.toLocaleString('es-AR')}`}
                 </span>
