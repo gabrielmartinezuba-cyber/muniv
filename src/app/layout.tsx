@@ -17,8 +17,8 @@ const playfair = Playfair_Display({
 });
 
 export const metadata: Metadata = {
-  title: "MUNIV | Diseñador de Momentos",
-  description: "Club de experiencias vínicas curadas de alto perfil.",
+  title: "MUNIV | La experiencia que nos gusta repetir 🍷",
+  description: "Experiencias de vino para descubrir cómo disfrutarlo.",
   manifest: "/manifest.json",
   appleWebApp: {
     title: "MUNIV",
@@ -27,6 +27,19 @@ export const metadata: Metadata = {
   },
   icons: {
     apple: "/logo.png",
+  },
+  openGraph: {
+    title: "MUNIV | La experiencia que nos gusta repetir 🍷",
+    description: "Experiencias de vino para descubrir cómo disfrutarlo.",
+    siteName: "MUNIV",
+    images: ["/logo.png"],
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "MUNIV | La experiencia que nos gusta repetir 🍷",
+    description: "Experiencias de vino para descubrir cómo disfrutarlo.",
+    images: ["/logo.png"],
   }
 };
 

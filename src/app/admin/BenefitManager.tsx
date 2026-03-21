@@ -1,42 +1,136 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { getBenefits, upsertBenefit, deleteBenefit } from "@/actions/benefits";
-import { ChevronDown, Check, Loader2, Save, Trash2, Image as ImageIcon, Upload, Gift } from "lucide-react";
+import { getBenefits, upsertBenefit, deleteBenefit, saveBenefitOrder } from "@/actions/benefits";
+import { Plus, Loader2, Save, Trash2, Image as ImageIcon, Upload, GripVertical, Gift } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import Image from "next/image";
 
+// D&D Kit imports
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  rectSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+
+interface BenefitItem {
+  id: string;
+  title: string;
+  image_url: string;
+}
+
+// Sub-component for Sortable Item
+function SortableBenefitCard({ 
+  benefit, 
+  isSelected, 
+  onSelect 
+}: { 
+  benefit: BenefitItem; 
+  isSelected: boolean; 
+  onSelect: (id: string) => void; 
+}) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: benefit.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    zIndex: isDragging ? 50 : 1,
+    opacity: isDragging ? 0.6 : 1,
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={`group relative rounded-2xl overflow-hidden cursor-pointer transition-all duration-300 border shadow-lg ${
+        isSelected 
+          ? "border-burgundy-500 ring-2 ring-burgundy-500/20 scale-[1.02]" 
+          : "border-white/10 hover:border-burgundy-500/50 bg-slate-900/60"
+      }`}
+      onClick={() => onSelect(benefit.id)}
+    >
+      <div className="aspect-video relative overflow-hidden">
+        <Image 
+          src={benefit.image_url || "/placeholder.jpg"} 
+          alt={benefit.title}
+          fill
+          className="object-cover transition-transform duration-500 group-hover:scale-110"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent opacity-60" />
+        
+        {/* Drag Handle */}
+        <div 
+          {...attributes} 
+          {...listeners}
+          className="absolute top-2 right-2 p-1.5 bg-slate-950/50 backdrop-blur-md rounded-lg text-white/50 hover:text-burgundy-400 transition-colors cursor-grab active:cursor-grabbing opacity-0 group-hover:opacity-100"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <GripVertical size={16} />
+        </div>
+      </div>
+      
+      <div className="p-3 bg-slate-900/40 backdrop-blur-md relative border-t border-white/5">
+        <h4 className="text-white text-[10px] font-display tracking-widest truncate pr-2 uppercase italic opacity-90">
+          {benefit.title}
+        </h4>
+      </div>
+    </div>
+  );
+}
+
 export default function BenefitManager() {
-  const [benefits, setBenefits] = useState<{ id: string; title: string }[]>([]);
+  const [benefits, setBenefits] = useState<BenefitItem[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
-  
   const [formData, setFormData] = useState<any>(null);
   const [isLoadingForm, setIsLoadingForm] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isOrdering, setIsOrdering] = useState(false);
   
+  // Image handling
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // DND Sensors
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
   const loadBenefits = async () => {
     const data = await getBenefits();
-    setBenefits(data.map(b => ({ id: b.id, title: b.title })));
+    setBenefits(data.map(b => ({ id: b.id, title: b.title, image_url: b.image_url })));
   };
 
   useEffect(() => {
     loadBenefits();
-
-    const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setIsDropdownOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   useEffect(() => {
@@ -57,6 +151,7 @@ export default function BenefitManager() {
       return;
     }
 
+    // Load existing
     setIsLoadingForm(true);
     getBenefits().then((all) => {
       const data = all.find(b => b.id === selectedId);
@@ -77,6 +172,31 @@ export default function BenefitManager() {
       const file = e.target.files[0];
       setImageFile(file);
       setPreviewUrl(URL.createObjectURL(file));
+    }
+  };
+
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (over && active.id !== over.id) {
+      const oldIndex = benefits.findIndex((item) => item.id === active.id);
+      const newIndex = benefits.findIndex((item) => item.id === over.id);
+
+      const newOrderArray = arrayMove(benefits, oldIndex, newIndex);
+      setBenefits(newOrderArray);
+
+      // Save to database
+      setIsOrdering(true);
+      const orderedIds = newOrderArray.map(b => b.id);
+      const result = await saveBenefitOrder(orderedIds);
+      setIsOrdering(false);
+
+      if (!result.success) {
+        toast.error("Error al guardar el nuevo orden");
+        loadBenefits();
+      } else {
+        toast.success("Orden actualizado");
+      }
     }
   };
 
@@ -126,165 +246,197 @@ export default function BenefitManager() {
     }
   };
 
-  const currentOptionLabel = selectedId === "NEW" 
-    ? "Crear nuevo"
-    : benefits.find(b => b.id === selectedId)?.title || "Seleccionar Beneficio";
-
   return (
-    <div className="space-y-6 animate-in fade-in duration-500 mt-6 pb-20">
-      <div>
-        <div className="glass-panel rounded-2xl border border-white/10 bg-slate-900/60 p-5 relative z-40">
-          <div className="flex-1 relative" ref={dropdownRef}>
-            <button
-              onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-              className="w-full bg-slate-950/80 border border-slate-800 rounded-xl px-4 py-3 text-sm text-gold-500 flex items-center justify-between hover:border-gold-500/30 transition-all shadow-lg active:scale-[0.99]"
+    <div className="space-y-12 animate-in fade-in duration-500 mt-6 pb-20">
+      
+      {/* Visual Orderable Grid */}
+      <section className="relative">
+        <div className="flex items-center justify-between mb-6">
+          <h3 className="text-sm font-bold text-burgundy-500 uppercase tracking-widest flex items-center gap-2">
+            Catálogo de Beneficios
+            {isOrdering && <Loader2 size={12} className="animate-spin text-burgundy-500/50" />}
+          </h3>
+          <p className="text-[10px] text-slate-500 italic">Arrastrá para reordenar los beneficios del club</p>
+        </div>
+
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragEnd={handleDragEnd}
+        >
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+            <SortableContext
+              items={benefits.map((b) => b.id)}
+              strategy={rectSortingStrategy}
             >
-              <span className="truncate pr-4 font-medium">{currentOptionLabel}</span>
-              <ChevronDown className={`w-4 h-4 transition-transform duration-300 ${isDropdownOpen ? 'rotate-180' : ''}`} />
-            </button>
+              {benefits.map((b) => (
+                <SortableBenefitCard
+                  key={b.id}
+                  benefit={b}
+                  isSelected={selectedId === b.id}
+                  onSelect={setSelectedId}
+                />
+              ))}
+            </SortableContext>
 
-            <AnimatePresence>
-              {isDropdownOpen && (
-                <motion.div
-                  initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                  animate={{ opacity: 1, y: 5, scale: 1 }}
-                  exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                  transition={{ duration: 0.2 }}
-                  className="absolute left-0 right-0 z-[999] mt-1 bg-slate-950/95 backdrop-blur-md border border-gold-500/20 rounded-2xl shadow-2xl overflow-hidden py-2"
-                >
-                  <div className="max-h-[300px] overflow-y-auto custom-scrollbar">
-                    {benefits.map((b) => (
-                      <div
-                        key={b.id}
-                        onClick={() => { setSelectedId(b.id); setIsDropdownOpen(false); }}
-                        className={`px-4 py-3 text-sm cursor-pointer flex items-center justify-between transition-all duration-200 ${
-                          selectedId === b.id ? "bg-gold-500/20 text-gold-400" : "text-slate-100 hover:bg-gold-500/10 hover:text-gold-400"
-                        }`}
-                      >
-                        <span className="truncate">{b.title}</span>
-                        {selectedId === b.id && <Check className="w-4 h-4 shrink-0 ml-2" />}
-                      </div>
-                    ))}
-                    
-                    <div className="h-px bg-white/5 mx-2 my-1" />
-                    
-                    <div
-                      onClick={() => { setSelectedId("NEW"); setIsDropdownOpen(false); }}
-                      className={`px-4 py-3 text-sm cursor-pointer flex items-center justify-between transition-all duration-200 ${
-                        selectedId === "NEW" ? "bg-gold-500/20 text-gold-400" : "text-gold-500 hover:bg-gold-500/10"
-                      }`}
-                    >
-                      <span className="font-bold">✨ Crear nuevo beneficio</span>
-                      {selectedId === "NEW" && <Check className="w-4 h-4 shrink-0 ml-2" />}
-                    </div>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
+            {/* Create New Card */}
+            <div
+              onClick={() => setSelectedId("NEW")}
+              className={`aspect-video rounded-2xl border-2 border-dashed flex flex-col items-center justify-center gap-2 transition-all duration-300 group cursor-pointer ${
+                selectedId === "NEW" 
+                  ? "border-burgundy-500 bg-burgundy-500/5 text-burgundy-500" 
+                  : "border-white/10 hover:border-burgundy-500/30 text-slate-500 hover:text-burgundy-500 bg-slate-900/20"
+              }`}
+            >
+              <div className="p-3 rounded-full bg-slate-950/50 group-hover:scale-110 transition-transform">
+                <Plus size={24} />
+              </div>
+              <span className="text-[10px] uppercase font-bold tracking-widest italic group-hover:tracking-[0.15em] transition-all">
+                Crear nuevo
+              </span>
+            </div>
           </div>
-        </div>
-      </div>
+        </DndContext>
+      </section>
 
-      {isLoadingForm && (
-        <div className="flex justify-center items-center py-20 min-h-[300px] glass-panel rounded-3xl border border-white/5 bg-slate-900/40">
-          <Loader2 className="w-8 h-8 text-gold-500 animate-spin" />
-        </div>
-      )}
-
-      {!isLoadingForm && formData && selectedId && (
-        <form onSubmit={handleSave} className="glass-panel rounded-3xl border border-white/5 bg-slate-900/40 p-6 md:p-8 space-y-8 relative overflow-hidden">
-          {isSaving && (
-            <div className="absolute inset-0 bg-slate-950/50 z-20 flex items-center justify-center backdrop-blur-sm rounded-3xl">
-              <Loader2 className="w-8 h-8 text-gold-500 animate-spin" />
-            </div>
-          )}
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div className="space-y-5">
-              <div>
-                <label className="text-xs text-slate-400 uppercase tracking-widest font-bold mb-2 block">Título del Beneficio</label>
-                <input
-                  type="text"
-                  required
-                  value={formData.title}
-                  onChange={e => setFormData({ ...formData, title: e.target.value })}
-                  className="w-full bg-slate-950/50 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-gold-500/50 transition-colors"
-                  placeholder="Ej. 20% en Bodega X"
-                />
+      {/* Editor Panel */}
+      <AnimatePresence mode="wait">
+        {selectedId && (
+          <motion.div
+            key={selectedId}
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 30 }}
+            className="pt-8 border-t border-white/5"
+          >
+            <div className="flex items-center gap-3 mb-8">
+              <div className="w-10 h-10 rounded-xl bg-burgundy-500/10 flex items-center justify-center text-burgundy-500 border border-burgundy-500/20">
+                 <Gift size={20} />
               </div>
-
               <div>
-                <label className="text-xs text-slate-400 uppercase tracking-widest font-bold mb-2 block">Descripción / Instrucciones</label>
-                <textarea
-                  required
-                  rows={6}
-                  value={formData.description}
-                  onChange={e => setFormData({ ...formData, description: e.target.value })}
-                  className="w-full bg-slate-950/50 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-gold-500/50 transition-colors resize-none"
-                  placeholder="Describe el beneficio y cómo usarlo..."
-                />
+                <h2 className="font-display text-2xl text-white tracking-wide">
+                  {selectedId === "NEW" ? "Nuevo Beneficio" : "Editar Beneficio"}
+                </h2>
+                <p className="text-xs text-slate-400">
+                  {selectedId === "NEW" ? "Define las ventajas exclusivas para los miembros" : `ID: ${selectedId}`}
+                </p>
               </div>
             </div>
 
-            <div>
-              <label className="text-xs text-slate-400 uppercase tracking-widest font-bold mb-2 block">Imagen Representativa</label>
-              <div 
-                className={`relative w-full aspect-video rounded-2xl overflow-hidden border-2 border-dashed ${!previewUrl ? 'border-white/20 bg-slate-950/50' : 'border-transparent'} group transition-all`}
-              >
-                {previewUrl ? (
-                  <>
-                    <Image src={previewUrl} alt="Preview" fill className="object-cover" unoptimized />
-                    <div className="absolute inset-0 bg-slate-950/70 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                      <button
-                        type="button"
-                        onClick={() => fileInputRef.current?.click()}
-                        className="px-6 py-2 bg-slate-900 border border-white/10 rounded-full text-sm font-medium hover:bg-white/5 transition-colors flex items-center gap-2"
-                      >
-                        <Upload size={16} /> Reemplazar
-                      </button>
-                    </div>
-                  </>
-                ) : (
-                  <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-slate-500 cursor-pointer hover:bg-white/5 transition-colors" onClick={() => fileInputRef.current?.click()}>
-                    <ImageIcon size={32} className="opacity-50" />
-                    <span className="text-sm font-medium">Adjuntar imagen</span>
+            {isLoadingForm ? (
+              <div className="flex justify-center items-center py-20 glass-panel rounded-3xl border border-white/5 bg-slate-900/40">
+                <Loader2 className="w-8 h-8 text-burgundy-500 animate-spin" />
+              </div>
+            ) : (
+              <form onSubmit={handleSave} className="glass-panel rounded-3xl border border-white/5 bg-slate-900/40 p-6 md:p-8 space-y-8 relative overflow-hidden shadow-2xl">
+                {isSaving && (
+                  <div className="absolute inset-0 bg-slate-950/60 z-20 flex items-center justify-center backdrop-blur-sm rounded-3xl">
+                    <Loader2 className="w-8 h-8 text-burgundy-500 animate-spin" />
                   </div>
                 )}
-                
-                <input 
-                  type="file" 
-                  accept="image/*" 
-                  ref={fileInputRef} 
-                  onChange={handleImageChange}
-                  className="hidden" 
-                />
-              </div>
-            </div>
-          </div>
 
-          <div className="pt-6 border-t border-white/5 flex items-center justify-between gap-4">
-            {selectedId !== "NEW" && (
-              <button
-                type="button"
-                onClick={handleDelete}
-                disabled={isDeleting || isSaving}
-                className="px-6 py-3 rounded-xl border border-red-500/30 text-red-400 text-sm font-bold hover:bg-red-500/10 transition-colors flex items-center gap-2"
-              >
-                {isDeleting ? <Loader2 size={16} className="animate-spin" /> : <Trash2 size={16} />} 
-                Eliminar
-              </button>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                  <div className="space-y-6">
+                    <div>
+                      <label className="text-[10px] text-slate-400 uppercase tracking-[0.2em] font-bold mb-3 block">Título del Beneficio</label>
+                      <input
+                        type="text"
+                        required
+                        value={formData.title}
+                        onChange={e => setFormData({ ...formData, title: e.target.value })}
+                        className="w-full bg-slate-950/70 border border-white/10 rounded-xl px-4 py-3.5 text-sm text-white focus:outline-none focus:border-burgundy-500/50 transition-all font-light"
+                        placeholder="Ej. 20% de Descuento en Bodegas"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="text-[10px] text-slate-400 uppercase tracking-[0.2em] font-bold mb-3 block">Instrucciones de Canje</label>
+                      <textarea
+                        rows={6}
+                        required
+                        value={formData.description}
+                        onChange={e => setFormData({ ...formData, description: e.target.value })}
+                        className="w-full bg-slate-950/70 border border-white/10 rounded-xl px-4 py-3.5 text-sm text-white focus:outline-none focus:border-burgundy-500/50 transition-all resize-none font-light leading-relaxed"
+                        placeholder="Explica cómo usar este beneficio..."
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="text-[10px] text-slate-400 uppercase tracking-[0.2em] font-bold mb-3 block">Miniatura Representativa</label>
+                    <div 
+                      className={`relative w-full aspect-video rounded-3xl overflow-hidden border-2 border-dashed ${!previewUrl ? 'border-white/10 bg-slate-950/50' : 'border-transparent'} group transition-all duration-500 shadow-inner`}
+                    >
+                      {previewUrl ? (
+                        <>
+                          <Image src={previewUrl} alt="Preview" fill className="object-cover" unoptimized />
+                          <div className="absolute inset-0 bg-slate-950/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-sm">
+                            <button
+                              type="button"
+                              onClick={() => fileInputRef.current?.click()}
+                              className="px-6 py-2.5 bg-burgundy-600 text-white rounded-full text-xs font-bold hover:bg-burgundy-500 transition-all flex items-center gap-2 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300 shadow-xl"
+                            >
+                              <Upload size={14} /> REEMPLAZAR
+                            </button>
+                          </div>
+                        </>
+                      ) : (
+                        <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 text-slate-600 cursor-pointer hover:bg-white/5 transition-all" onClick={() => fileInputRef.current?.click()}>
+                          <div className="w-16 h-16 rounded-full bg-slate-900/50 flex items-center justify-center border border-white/5">
+                            <ImageIcon size={32} className="opacity-40" />
+                          </div>
+                          <span className="text-[10px] uppercase font-bold tracking-[0.2em]">Click para subir</span>
+                        </div>
+                      )}
+                      
+                      <input 
+                        type="file" 
+                        accept="image/*" 
+                        ref={fileInputRef} 
+                        onChange={handleImageChange}
+                        className="hidden" 
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="pt-8 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between gap-6">
+                  {selectedId !== "NEW" ? (
+                    <button
+                      type="button"
+                      onClick={handleDelete}
+                      disabled={isDeleting || isSaving}
+                      className="w-full sm:w-auto px-8 py-3.5 rounded-xl border border-red-500/20 text-red-500/70 text-[10px] font-bold uppercase tracking-widest hover:bg-red-500/10 hover:text-red-500 transition-all flex items-center justify-center gap-2"
+                    >
+                      {isDeleting ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />} 
+                      Eliminar
+                    </button>
+                  ) : (
+                    <div />
+                  )}
+
+                  <div className="flex gap-3 w-full sm:w-auto">
+                    <button
+                      type="button"
+                      onClick={() => setSelectedId(null)}
+                      className="flex-1 sm:flex-initial px-8 py-3.5 border border-white/10 text-slate-400 rounded-xl text-[10px] font-bold uppercase tracking-widest hover:bg-white/5 transition-all"
+                    >
+                      Cerrar
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={isSaving || isDeleting}
+                      className="flex-1 sm:flex-initial px-10 py-3.5 bg-burgundy-600 text-white rounded-xl font-bold text-[10px] uppercase tracking-widest hover:bg-burgundy-500 transition-all shadow-lg hover:shadow-burgundy-500/20 disabled:opacity-50 flex items-center justify-center gap-2"
+                    >
+                      <Save size={14} /> Guardar Beneficio
+                    </button>
+                  </div>
+                </div>
+              </form>
             )}
-
-            <button
-              type="submit"
-              disabled={isSaving || isDeleting}
-              className="ml-auto px-8 py-3 bg-gold-500 text-slate-950 rounded-xl font-bold text-sm hover:bg-gold-400 transition-all shadow-[0_0_15px_rgba(212,175,55,0.2)] disabled:opacity-50 flex items-center gap-2"
-            >
-              <Save size={16} /> Guardar Beneficio
-            </button>
-          </div>
-        </form>
-      )}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

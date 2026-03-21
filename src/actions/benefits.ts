@@ -21,7 +21,7 @@ export async function getBenefits(): Promise<Benefit[]> {
     const { data, error } = await supabase
       .from('benefits')
       .select('*')
-      .order('title', { ascending: true });
+      .order('display_order', { ascending: true });
 
     if (error) throw error;
     return data || [];
@@ -95,6 +95,32 @@ export async function deleteBenefit(id: string): Promise<{ success: boolean; err
     return { success: false, error: error.message };
   }
 }
+
+export async function saveBenefitOrder(orderedIds: string[]): Promise<{ success: boolean; error?: string }> {
+  try {
+    const isAdmin = await checkIsAdmin();
+    if (!isAdmin) return { success: false, error: "Unauthorized." };
+
+    const supabaseAdmin = createAdminClient();
+    
+    for (let i = 0; i < orderedIds.length; i++) {
+      const { error } = await supabaseAdmin
+        .from('benefits')
+        .update({ display_order: i + 1 })
+        .eq('id', orderedIds[i]);
+      
+      if (error) throw error;
+    }
+
+    revalidatePath('/admin/beneficios');
+    revalidatePath('/');
+    return { success: true };
+  } catch (error: any) {
+    console.error("saveBenefitOrder error:", error);
+    return { success: false, error: error.message };
+  }
+}
+
 
 
 

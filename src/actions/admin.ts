@@ -2,6 +2,7 @@
 
 import { createClient } from "@/utils/supabase/server";
 import { createAdminClient } from "@/utils/supabase/admin";
+import { revalidatePath } from "next/cache";
 
 export type AdminReportRow = {
   id: string;
@@ -16,7 +17,7 @@ export type AdminReportRow = {
   status: string;
 };
 
-export async function getAdminExperiences(): Promise<{ id: string; title: string }[]> {
+export async function getAdminExperiences(): Promise<{ id: string; title: string, image_url: string }[]> {
   try {
     const isAdmin = await checkIsAdmin();
     if (!isAdmin) {
@@ -26,8 +27,8 @@ export async function getAdminExperiences(): Promise<{ id: string; title: string
     const supabaseSession = await createClient();
     const { data, error } = await supabaseSession
       .from('experiences')
-      .select('id, title')
-      .order('title', { ascending: true });
+      .select('id, title, image_url')
+      .order('display_order', { ascending: true });
 
     if (error || !data) {
       console.error("Error fetching admin experiences:", error);
@@ -403,3 +404,30 @@ export async function updateLandingContent(formData: FormData) {
     return { success: false, error: error.message };
   }
 }
+
+export async function saveExperienceOrder(orderedIds: string[]): Promise<{ success: boolean; error?: string }> {
+  try {
+    const isAdmin = await checkIsAdmin();
+    if (!isAdmin) return { success: false, error: "Unauthorized." };
+
+    const supabaseAdmin = createAdminClient();
+    
+    // Serial updates for order to ensure consistency
+    for (let i = 0; i < orderedIds.length; i++) {
+      const { error } = await supabaseAdmin
+        .from('experiences')
+        .update({ display_order: i + 1 })
+        .eq('id', orderedIds[i]);
+      
+      if (error) throw error;
+    }
+
+    revalidatePath('/admin/experiencias');
+    revalidatePath('/');
+    return { success: true };
+  } catch (error: any) {
+    console.error("saveExperienceOrder error:", error);
+    return { success: false, error: error.message };
+  }
+}
+

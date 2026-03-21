@@ -20,7 +20,7 @@ export async function getActiveExperiences(): Promise<Experience[]> {
     .from('experiences')
     .select('*')
     .in('status', ['ACTIVE', 'SOLD_OUT', 'COMING_SOON'])
-    .order('created_at', { ascending: false });
+    .order('display_order', { ascending: true });
 
   if (error) {
     console.error("Error fetching experiences:", error);
