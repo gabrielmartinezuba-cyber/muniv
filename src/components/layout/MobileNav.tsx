@@ -43,7 +43,7 @@ export default function MobileNav({ isAdmin }: { isAdmin?: boolean }) {
 
   return (
     <>
-      <nav className="md:hidden fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] z-50 bg-slate-950/90 backdrop-blur-2xl border border-white/10 rounded-[2.5rem] px-4 py-3 flex items-center justify-around shadow-[0_20px_40px_rgba(0,0,0,0.6)] animate-in slide-in-from-bottom duration-500">
+      <nav className="md:hidden fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] z-50 bg-black/90 backdrop-blur-2xl border border-white/10 rounded-[2.5rem] px-4 py-3 flex items-center justify-around shadow-[0_20px_40px_rgba(0,0,0,0.6)] animate-in slide-in-from-bottom duration-500">
         {mainLinks.map((link) => {
           const Icon = link.icon;
           return (
@@ -108,7 +108,7 @@ export default function MobileNav({ isAdmin }: { isAdmin?: boolean }) {
               animate={{ y: 0 }}
               exit={{ y: "100%" }}
               transition={{ type: "spring", damping: 25, stiffness: 200 }}
-              className="fixed bottom-0 left-0 w-full bg-slate-900 border-t border-white/10 rounded-t-[3rem] z-[70] md:hidden p-8 pb-16 shadow-[0_-20px_60px_rgba(0,0,0,0.8)]"
+              className="fixed bottom-0 left-0 w-full bg-black border-t border-white/10 rounded-t-[3rem] z-[70] md:hidden p-8 pb-16 shadow-[0_-20px_60px_rgba(0,0,0,0.8)]"
             >
               {/* Handle */}
               <div className="w-16 h-1.5 bg-white/10 rounded-full mx-auto mb-10" />
@@ -145,7 +145,7 @@ export default function MobileNav({ isAdmin }: { isAdmin?: boolean }) {
                     >
                       <div className={cn(
                         "w-12 h-12 rounded-2xl flex items-center justify-center transition-transform duration-300 group-hover:scale-110",
-                        isActive ? "bg-gold-500 text-slate-950" : "bg-slate-950 text-gold-500 border border-gold-500/10"
+                        isActive ? "bg-gold-500 text-slate-950" : "bg-black text-gold-500 border border-gold-500/10"
                       )}>
                         <Icon size={24} strokeWidth={isActive ? 2.5 : 2} />
                       </div>

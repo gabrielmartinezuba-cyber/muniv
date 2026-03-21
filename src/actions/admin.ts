@@ -373,24 +373,31 @@ export async function updateLandingContent(formData: FormData) {
     if (!isAdmin) return { success: false, error: "Unauthorized." };
 
     const supabaseAdmin = createAdminClient();
-    const title = formData.get("title");
-    const description = formData.get("description");
-    const button_text = formData.get("button_text");
+    const hero_title = formData.get("title");
+    const hero_description = formData.get("description");
+    const hero_button_text = formData.get("button_text");
     const conoce_descripcion = formData.get("conoce_descripcion");
 
     const { data: existing } = await supabaseAdmin.from('landing_content').select('id').maybeSingle();
     
     let dbError;
+    const payload = { 
+      hero_title, 
+      hero_description, 
+      hero_button_text, 
+      conoce_descripcion 
+    };
+
     if (existing) {
       const { error } = await supabaseAdmin
         .from('landing_content')
-        .update({ title, description, button_text, conoce_descripcion })
+        .update(payload)
         .eq('id', existing.id);
       dbError = error;
     } else {
       const { error } = await supabaseAdmin
         .from('landing_content')
-        .insert({ title, description, button_text, conoce_descripcion });
+        .insert(payload);
       dbError = error;
     }
 

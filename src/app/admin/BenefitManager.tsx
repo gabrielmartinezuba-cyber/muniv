@@ -78,7 +78,7 @@ function SortableBenefitCard({
           fill
           className="object-cover transition-transform duration-500 group-hover:scale-110"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent opacity-60" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent opacity-60" />
         
         {/* Drag Handle */}
         <div 
@@ -352,7 +352,7 @@ export default function BenefitManager() {
                         required
                         value={formData.title}
                         onChange={e => setFormData({ ...formData, title: e.target.value })}
-                        className="w-full bg-slate-950/70 border border-white/10 rounded-xl px-4 py-3.5 text-sm text-white focus:outline-none focus:border-burgundy-500/50 transition-all font-light"
+                        className="w-full bg-black/70 border border-white/10 rounded-xl px-4 py-3.5 text-sm text-white focus:outline-none focus:border-burgundy-500/50 transition-all font-light"
                         placeholder="Ej. 20% de Descuento en Bodegas"
                       />
                     </div>

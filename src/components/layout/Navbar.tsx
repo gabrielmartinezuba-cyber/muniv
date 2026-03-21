@@ -62,7 +62,7 @@ export default function Navbar({ initialUser }: NavbarProps) {
         className={cn(
           "fixed top-0 w-full z-50 transition-all duration-500 flex items-center justify-between px-6 md:px-12",
           scrolled
-            ? "bg-slate-950/50 backdrop-blur-md border-b border-white/5 py-4 shadow-[0_4px_30px_rgba(0,0,0,0.1)]"
+            ? "bg-black/40 backdrop-blur-md border-b border-white/5 py-4 shadow-[0_4px_30px_rgba(0,0,0,0.1)]"
             : "bg-transparent py-6"
         )}
       >
@@ -116,7 +116,7 @@ export default function Navbar({ initialUser }: NavbarProps) {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
             transition={{ duration: 0.4, ease: "easeOut" }}
-            className="fixed inset-0 z-[60] bg-slate-950/90 backdrop-blur-xl flex flex-col pt-6 px-6"
+            className="fixed inset-0 z-[60] bg-black/90 backdrop-blur-2xl flex flex-col pt-6 px-6"
           >
             <div className="flex justify-between items-center w-full">
               <Link href="/" onClick={() => setIsMenuOpen(false)}>
