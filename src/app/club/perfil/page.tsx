@@ -76,10 +76,10 @@ export default function ProfilePage() {
     <div className="flex flex-col h-full animate-in fade-in duration-700 max-w-2xl gap-8 pb-12">
       <header className="mb-4">
         <h1 className="font-display text-4xl text-white tracking-wide">
-          Mi <span className="italic text-gold-500">Configuración</span>
+          Bienvenido a la <span className="italic text-gold-500">Comunidad,</span> {initialData.nombre || 'Miembro'}.
         </h1>
         <p className="text-slate-400 mt-3 text-lg font-light">
-          Gestioná tus datos personales y credenciales de acceso.
+          Gestioná tus datos personales y credenciales de acceso de forma segura.
         </p>
       </header>
 

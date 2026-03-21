@@ -4,6 +4,8 @@ import BenefitList from "@/components/BenefitList";
 import { getLandingContent } from "@/actions/admin";
 import { getRedeemedBenefitIds } from "@/actions/benefits";
 
+export const dynamic = 'force-dynamic';
+
 export default async function Home() {
   const landingData = await getLandingContent();
   const redeemedIds = await getRedeemedBenefitIds();
@@ -11,9 +13,9 @@ export default async function Home() {
   return (
     <main className="min-h-screen bg-[#0c0a09]">
       <Hero 
-        title={landingData?.title}
-        description={landingData?.description}
-        button_text={landingData?.button_text}
+        title={landingData?.hero_title}
+        description={landingData?.hero_description}
+        button_text={landingData?.hero_button_text}
         conoce_descripcion={landingData?.conoce_descripcion}
       />
       <div className="px-4 py-32 mx-auto max-w-7xl relative z-10">

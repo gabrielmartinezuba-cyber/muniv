@@ -2,8 +2,9 @@
 
 import { useEffect, useState, useRef } from "react";
 import { getAdminReport, getAdminExperiences, type AdminReportRow } from "@/actions/admin";
-import { Loader2, Download, Search, Filter, ChevronDown, Check } from "lucide-react";
+import { Loader2, Download, Search, Filter, Check } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { cn } from "@/lib/utils";
 
 export default function AdminDashboardPage() {
   const [report, setReport] = useState<AdminReportRow[]>([]);
@@ -14,9 +15,6 @@ export default function AdminDashboardPage() {
   const [filterExpId, setFilterExpId] = useState<string>("ALL");
   const [isFiltering, setIsFiltering] = useState(false);
   
-  // Dropdown UI state
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Initial Load
   useEffect(() => {
@@ -29,14 +27,6 @@ export default function AdminDashboardPage() {
       setLoading(false);
     });
 
-    // Close dropdown on click outside
-    const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setIsDropdownOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   // Handle Filter Application
@@ -128,186 +118,99 @@ export default function AdminDashboardPage() {
   }
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-500">
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+    <div className="space-y-8 animate-in fade-in duration-500 max-w-5xl">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 border-b border-white/5 pb-8">
         <div>
-          <h2 className="text-xl text-white font-medium flex items-center gap-2">
-            <Filter size={20} className="text-gold-500" /> Generador de Reportes Detallado 
+          <h2 className="text-3xl font-serif text-white flex items-center gap-3">
+            <Filter size={28} className="text-gold-500" /> 
+            Generador de <span className="italic text-gold-500">Reportes</span>
           </h2>
+          <p className="text-slate-400 mt-2 text-sm font-light">Seleccioná un tipo de reporte para exportar los datos actualizados.</p>
         </div>
          <button 
            onClick={downloadCSV}
            disabled={!report.length || isFiltering}
-           className="flex items-center gap-2 px-5 py-2.5 bg-gold-500 text-slate-950 rounded-full font-bold text-sm hover:bg-gold-400 transition-all shadow-[0_0_15px_rgba(212,175,55,0.2)] disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap active:scale-95 transition-transform"
+           className="flex items-center gap-3 px-8 py-4 bg-gold-500 text-slate-950 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-gold-400 transition-all shadow-[0_0_20px_rgba(212,175,55,0.1)] disabled:opacity-50 disabled:cursor-not-allowed active:scale-95 transition-transform"
          >
-            <Download size={16} /> Descargar Reporte (CSV)
+            <Download size={18} /> {isFiltering ? "PROCESANDO..." : "Descargar Reporte (CSV)"}
          </button>
       </div>
 
-      {/* Filter Bar Glassmorphism - Added positioning and z-index to manage dropdown stacking */}
-      <div className="glass-panel rounded-2xl border border-white/10 bg-slate-900/60 p-5 flex flex-col md:flex-row md:items-center gap-4 relative z-40">
+      <div className="space-y-6">
+        <label className="text-[10px] text-slate-500 uppercase tracking-[0.3em] font-black block ml-1">
+          Tipo de Reporte a Generar
+        </label>
         
-        {/* Custom Experience Dropdown */}
-        <div className="flex-1 relative" ref={dropdownRef}>
-          <label className="text-xs text-slate-400 uppercase tracking-widest font-bold mb-1.5 block">
-            Tipo de Reporte
-          </label>
-          
+        <div className="flex flex-wrap gap-3">
+          {/* Special Option: Members */}
           <button
-            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-            className="w-full bg-slate-950/80 border border-slate-800 rounded-xl px-4 py-3 text-sm text-gold-500 flex items-center justify-between hover:border-gold-500/30 transition-all shadow-lg active:scale-[0.99]"
-          >
-            <span className="truncate pr-4 font-medium">{currentOptionLabel}</span>
-            <ChevronDown className={`w-4 h-4 transition-transform duration-300 ${isDropdownOpen ? 'rotate-180' : ''}`} />
-          </button>
-
-          <AnimatePresence>
-            {isDropdownOpen && (
-              <motion.div
-                initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                animate={{ opacity: 1, y: 5, scale: 1 }}
-                exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                transition={{ duration: 0.2 }}
-                className="absolute left-0 right-0 z-[999] mt-1 bg-slate-950/95 backdrop-blur-md border border-gold-500/20 rounded-2xl shadow-2xl overflow-hidden py-2"
-              >
-                <div className="max-h-[300px] overflow-y-auto custom-scrollbar">
-                  {/* Special Options */}
-                  <div
-                    onClick={() => { setFilterExpId("MEMBERS_ONLY"); setIsDropdownOpen(false); }}
-                    className={`px-4 py-3 text-sm cursor-pointer flex items-center justify-between transition-all duration-200 ${
-                      filterExpId === "MEMBERS_ONLY" ? "bg-gold-500/20 text-gold-400" : "text-slate-100 hover:bg-gold-500/10 hover:text-gold-400"
-                    }`}
-                  >
-                    <span className="font-bold italic">Todos los Miembros Registrados</span>
-                    {filterExpId === "MEMBERS_ONLY" && <Check className="w-4 h-4" />}
-                  </div>
-                  
-                  <div
-                    onClick={() => { setFilterExpId("ALL"); setIsDropdownOpen(false); }}
-                    className={`px-4 py-3 text-sm cursor-pointer flex items-center justify-between transition-all duration-200 ${
-                      filterExpId === "ALL" ? "bg-gold-500/20 text-gold-400" : "text-slate-100 hover:bg-gold-500/10 hover:text-gold-400"
-                    }`}
-                  >
-                    <span>Todas las Reservas (Ventas)</span>
-                    {filterExpId === "ALL" && <Check className="w-4 h-4" />}
-                  </div>
-
-                  <div className="h-px bg-white/5 mx-2 my-1" />
-
-                  {/* Dynamic Experiences */}
-                  {experiences.map((exp) => (
-                    <div
-                      key={exp.id}
-                      onClick={() => { setFilterExpId(exp.id); setIsDropdownOpen(false); }}
-                      className={`px-4 py-3 text-sm cursor-pointer flex items-center justify-between transition-all duration-200 ${
-                        filterExpId === exp.id ? "bg-gold-500/20 text-gold-400" : "text-slate-100 hover:bg-gold-500/10 hover:text-gold-400"
-                      }`}
-                    >
-                      <span>{exp.title}</span>
-                      {filterExpId === exp.id && <Check className="w-4 h-4" />}
-                    </div>
-                  ))}
-                </div>
-              </motion.div>
+            onClick={() => setFilterExpId("MEMBERS_ONLY")}
+            className={cn(
+              "px-6 py-4 rounded-xl text-xs font-black uppercase tracking-widest transition-all border flex items-center gap-2",
+              filterExpId === "MEMBERS_ONLY"
+                ? "bg-burgundy-600 border-burgundy-400 text-white shadow-[0_0_20px_rgba(153,27,27,0.3)] scale-105"
+                : "bg-white/5 border-white/5 text-slate-400 hover:border-white/20 hover:bg-white/[0.08]"
             )}
-          </AnimatePresence>
-        </div>
-
-        <div className="flex items-end self-end">
-          <button 
-            onClick={() => { setFilterExpId("ALL"); setIsDropdownOpen(false); }}
-            className="w-full md:w-auto h-[46px] px-8 rounded-xl border border-white/10 text-sm text-slate-300 hover:bg-white/5 transition-colors"
           >
-            Limpiar Filtro
+            {filterExpId === "MEMBERS_ONLY" && <Check size={14} className="animate-in zoom-in" />}
+            Todos los Miembros
           </button>
+
+          {/* Special Option: All Sales */}
+          <button
+            onClick={() => setFilterExpId("ALL")}
+            className={cn(
+              "px-6 py-4 rounded-xl text-xs font-black uppercase tracking-widest transition-all border flex items-center gap-2",
+              filterExpId === "ALL"
+                ? "bg-burgundy-600 border-burgundy-400 text-white shadow-[0_0_20px_rgba(153,27,27,0.3)] scale-105"
+                : "bg-white/5 border-white/5 text-slate-400 hover:border-white/20 hover:bg-white/[0.08]"
+            )}
+          >
+            {filterExpId === "ALL" && <Check size={14} className="animate-in zoom-in" />}
+            Todas las Reservas
+          </button>
+
+          {/* Divider */}
+          <div className="w-px h-12 bg-white/5 mx-2 hidden md:block" />
+
+          {/* Dynamic Experiences */}
+          {experiences.map((exp) => (
+            <button
+              key={exp.id}
+              onClick={() => setFilterExpId(exp.id)}
+              className={cn(
+                "px-6 py-4 rounded-xl text-xs font-black uppercase tracking-widest transition-all border flex items-center gap-2",
+                filterExpId === exp.id
+                  ? "bg-burgundy-600 border-burgundy-400 text-white shadow-[0_0_20px_rgba(153,27,27,0.3)] scale-105"
+                  : "bg-white/5 border-white/5 text-slate-300 hover:border-white/20 hover:bg-white/[0.08]"
+              )}
+            >
+              {filterExpId === exp.id && <Check size={14} className="animate-in zoom-in" />}
+              {exp.title}
+            </button>
+          ))}
         </div>
       </div>
 
-      {/* Table Container - Removed overflow-hidden to allow dropdown visibility */}
-      <div className="glass-panel rounded-3xl border border-white/5 bg-slate-900/40 relative">
-        {isFiltering && (
-           <div className="absolute inset-0 bg-slate-950/50 z-20 flex items-center justify-center backdrop-blur-sm rounded-3xl">
-             <Loader2 className="w-8 h-8 text-gold-500 animate-spin" />
-           </div>
-        )}
+      <div className="mt-12 p-10 glass-panel rounded-[2.5rem] border border-white/5 bg-slate-900/40 text-center space-y-4">
+        <div className="w-16 h-16 bg-gold-500/10 rounded-full flex items-center justify-center mx-auto mb-6 text-gold-500 border border-gold-500/10">
+          <Download size={32} strokeWidth={1.5} />
+        </div>
+        <h3 className="text-xl text-white font-medium">Previsualización de Reporte Optimizada</h3>
+        <p className="max-w-md mx-auto text-slate-400 text-sm font-light">
+          Para mejorar el rendimiento del panel, la previsualización en tabla ha sido desactivada.
+          Utilice el botón superior para descargar el archivo <span className="text-gold-500 font-bold">CSV completo</span> con todos los datos procesados.
+        </p>
         
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm text-slate-300">
-            <thead className="bg-slate-950/90 text-[11px] uppercase tracking-wider text-slate-400 border-b border-white/10">
-              <tr>
-                <th className="px-8 py-5 font-bold align-middle">Fecha</th>
-                <th className="px-8 py-5 font-bold align-middle">Cliente</th>
-                <th className="px-8 py-5 font-bold align-middle">
-                  {filterExpId === 'MEMBERS_ONLY' ? 'ROL' : 'EXPERIENCIA'}
-                </th>
-                {filterExpId !== 'MEMBERS_ONLY' && (
-                  <>
-                    <th className="px-8 py-5 font-bold text-center align-middle">Cant.</th>
-                    <th className="px-8 py-5 font-bold text-right align-middle">Monto</th>
-                  </>
-                )}
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-white/5">
-              {report.map((row) => (
-                <tr key={row.id} className="hover:bg-white/5 transition-colors duration-200">
-                  <td className="px-8 py-5 whitespace-nowrap align-middle">
-                    {new Date(row.created_at).toLocaleDateString("es-AR", {
-                      day: "2-digit",
-                      month: "2-digit",
-                      year: "numeric"
-                    })}
-                  </td>
-                  <td className="px-8 py-5 align-middle">
-                    <div className="font-medium text-white mb-0.5">{row.client_name}</div>
-                    <div className="text-[11px] text-slate-500">{row.client_email}</div>
-                  </td>
-                  <td className="px-8 py-5 align-middle">
-                    {filterExpId === 'MEMBERS_ONLY' || !row.experience_title ? (
-                      <div className="text-base text-gold-500 font-semibold uppercase tracking-wider">
-                        {row.experience_type}
-                      </div>
-                    ) : (
-                      <>
-                        <div className="font-medium text-white mb-0.5">{row.experience_title}</div>
-                        <div className="text-[10px] text-gold-500 font-bold uppercase tracking-wider">{row.experience_type}</div>
-                      </>
-                    )}
-                  </td>
-                  {filterExpId !== 'MEMBERS_ONLY' && (
-                    <>
-                      <td className="px-8 py-5 text-center align-middle font-display text-xl text-white">
-                        {row.experience_title === 'Socio Registrado' || !row.experience_title ? '-' : row.guests_count}
-                      </td>
-                      <td className="px-8 py-5 text-right align-middle">
-                        {row.experience_title === 'Socio Registrado' || !row.experience_title ? (
-                          <span className="text-slate-500">-</span>
-                        ) : row.total_price === 0 ? (
-                          <span className="inline-block px-3 py-1 bg-white/5 border border-white/10 rounded text-xs font-bold text-slate-300 tracking-widest">
-                            SORTEO
-                          </span>
-                        ) : (
-                          <span className="font-medium text-white text-base">
-                            ${row.total_price?.toLocaleString('es-AR')}
-                          </span>
-                        )}
-                      </td>
-                    </>
-                  )}
-                </tr>
-              ))}
-              {!report.length && (
-                <tr>
-                  <td colSpan={filterExpId === 'MEMBERS_ONLY' ? 3 : 5} className="px-8 py-16 text-center text-slate-500 bg-slate-900/20">
-                     No se encontraron registros para estos filtros.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+        <div className="pt-6 flex justify-center items-center gap-4 text-[10px] text-slate-500 uppercase tracking-widest font-black">
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+            Sincronizado
+          </div>
+          <div className="w-1 h-1 rounded-full bg-white/20" />
+          <div>CSV Export Ready</div>
         </div>
       </div>
     </div>
   );
 }
-

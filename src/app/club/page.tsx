@@ -15,13 +15,10 @@ export default async function ClubDashboard() {
   return (
     <div className="flex flex-col h-full animate-in fade-in duration-700">
       
-      <header className="mb-12">
-        <h1 className="font-display text-4xl md:text-5xl text-white tracking-wide">
-          Bienvenido al <span className="italic text-gold-500">Club,</span><br className="hidden md:block"/> {firstName}.
+      <header className="mb-10">
+        <h1 className="text-3xl font-serif text-gold-500 tracking-wide uppercase italic">
+          Mis <span className="text-white">reservas</span>
         </h1>
-        <p className="text-slate-400 mt-4 text-lg max-w-xl font-light">
-          Desde tu panel podés gestionar tus experiencias adquiridas y acceder a nuestro catálogo privado.
-        </p>
       </header>
 
       <div className="max-w-4xl">

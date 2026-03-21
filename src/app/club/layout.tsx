@@ -8,7 +8,7 @@ import SidebarNav from "@/components/layout/SidebarNav";
 import MobileNav from "@/components/layout/MobileNav";
 import AuraBackground from "@/components/AuraBackground";
 
-export default async function ClubLayout({
+export default async function ComunidadLayout({
   children,
 }: {
   children: React.ReactNode;

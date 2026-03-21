@@ -48,7 +48,7 @@ export default function Navbar({ initialUser }: NavbarProps) {
     }
   });
 
-  // Prevent double navbar/logo on club dashboard or admin
+  // Prevent double navbar/logo on comunidad dashboard or admin
   if (pathname.startsWith("/club") || pathname.startsWith("/admin")) {
     return null;
   }
@@ -83,7 +83,7 @@ export default function Navbar({ initialUser }: NavbarProps) {
 
         {/* Desktop Links */}
         <div className="hidden md:flex items-center gap-8 text-sm tracking-widest uppercase font-medium z-10">
-          <Link href="/" className="text-slate-300 hover:text-gold-500 transition-colors">Club</Link>
+          <Link href="/" className="text-slate-300 hover:text-gold-500 transition-colors">Comunidad</Link>
           {user ? (
             <>
               <Link href="/club" className="text-gold-500 hover:text-white transition-colors">Mi Perfil</Link>
@@ -139,7 +139,7 @@ export default function Navbar({ initialUser }: NavbarProps) {
             </div>
             
             <div className="flex flex-col items-center justify-center flex-grow gap-12 pb-20">
-              <Link href="/" onClick={() => setIsMenuOpen(false)} className="font-display text-4xl text-white hover:text-gold-500 transition-colors tracking-wide">CLUB</Link>
+              <Link href="/" onClick={() => setIsMenuOpen(false)} className="font-display text-4xl text-white hover:text-gold-500 transition-colors tracking-wide">COMUNIDAD</Link>
               <div className="flex flex-col items-center gap-6 mt-4 w-full px-6 text-center">
                 {user ? (
                   <>

@@ -38,7 +38,7 @@ MUNIV es calidad, experiencia y disfrute. Una invitación a descubrir vinos con 
 
 export default function Hero({ 
   title = "Vinos y experiencias <br/> para compartir",
-  description = "Club de vinos y experiencias pensado para descubrir, regalar y disfrutar momentos que valen la pena repetir.",
+  description = "Comunidad de vinos y experiencias pensado para descubrir, regalar y disfrutar momentos que valen la pena repetir.",
   button_text = "Conocé MUNIV",
   conoce_descripcion = DEFAULT_CONOCE
 }: HeroProps) {

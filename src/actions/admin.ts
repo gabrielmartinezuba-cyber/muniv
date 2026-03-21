@@ -405,6 +405,9 @@ export async function updateLandingContent(formData: FormData) {
       console.error("Database error updating landing content:", dbError);
       return { success: false, error: dbError.message };
     }
+
+    revalidatePath('/');
+    revalidatePath('/', 'layout');
     return { success: true };
   } catch (error: any) {
     console.error("updateLandingContent exception:", error);
