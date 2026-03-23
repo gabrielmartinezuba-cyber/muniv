@@ -33,7 +33,7 @@ export default function LoginPage() {
       const result = await signIn(data);
       if (result.success) {
         // Redirigimos al Dashboard del Club
-        router.push("/club");
+        router.push("/comunidad");
         router.refresh();
       } else {
         setServerState(result);

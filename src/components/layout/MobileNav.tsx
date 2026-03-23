@@ -14,22 +14,22 @@ export default function MobileNav({ isAdmin }: { isAdmin?: boolean }) {
   // Unified links for all users (3 items)
   const mainLinks = [
     {
-      href: "/club",
+      href: "/comunidad",
       label: "Reservas",
       icon: Ticket,
-      active: pathname === "/club",
+      active: pathname === "/comunidad",
     },
     {
-      href: "/club/beneficios",
+      href: "/comunidad/beneficios",
       label: "Beneficios",
       icon: Gift,
-      active: pathname === "/club/beneficios",
+      active: pathname === "/comunidad/beneficios",
     },
     {
-      href: "/club/perfil",
+      href: "/comunidad/perfil",
       label: "Mi Perfil",
       icon: Settings,
-      active: pathname === "/club/perfil",
+      active: pathname === "/comunidad/perfil",
     },
   ];
 

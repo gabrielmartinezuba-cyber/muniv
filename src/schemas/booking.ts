@@ -6,7 +6,10 @@ export const BookingSubmitSchema = z.object({
   date: z.string().min(1, "La fecha es requerida"),
   time: z.string().min(1, "El horario es requerido"),
   guests: z.number().int().min(1).max(20),
-  upSells: z.array(z.string())
+  upSells: z.array(z.string()),
+  guest_name: z.string().optional(),
+  guest_email: z.string().email().optional().or(z.literal("")),
+  final_price: z.number().optional()
 });
 
 export const GiftingSubmitSchema = z.object({

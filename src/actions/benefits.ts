@@ -10,6 +10,7 @@ export type Benefit = {
   title: string;
   description: string;
   image_url: string;
+  discount_percentage: number | null;
   created_at?: string;
 };
 
@@ -43,6 +44,8 @@ export async function upsertBenefit(formData: FormData): Promise<{ success: bool
     const updates: any = {
       title: formData.get('title') as string,
       description: formData.get('description') as string,
+      discount_percentage: parseInt(formData.get('discount_percentage') as string, 10) || 0,
+      display_order: parseInt(formData.get('display_order') as string, 10) || 0,
     };
 
     // Image Upload Logic (reused from experiences)
@@ -71,10 +74,40 @@ export async function upsertBenefit(formData: FormData): Promise<{ success: bool
       const { error } = await supabaseAdmin.from('benefits').insert(updates);
       if (error) throw error;
     } else {
+      // SWAP LOGIC: Manual positions exchange
+      const { data: current } = await supabaseAdmin
+        .from('benefits')
+        .select('display_order')
+        .eq('id', id)
+        .single();
+      
+      const oldOrder = current?.display_order;
+      const newOrder = updates.display_order;
+
+      if (oldOrder !== undefined && newOrder !== undefined && oldOrder !== newOrder) {
+        // Step A: Find the item currently at 'newOrder'
+        const { data: targetItem } = await supabaseAdmin
+          .from('benefits')
+          .select('id')
+          .eq('display_order', newOrder)
+          .single();
+
+        if (targetItem) {
+          // Step B: Move that target item to the current item's old position
+          await supabaseAdmin
+            .from('benefits')
+            .update({ display_order: oldOrder })
+            .eq('id', targetItem.id);
+        }
+      }
+
       const { error } = await supabaseAdmin.from('benefits').update(updates).eq('id', id);
       if (error) throw error;
     }
 
+    revalidatePath('/');
+    revalidatePath('/admin/beneficios');
+    revalidatePath('/comunidad/beneficios');
     return { success: true };
   } catch (error: any) {
     console.error("upsertBenefit error:", error);
@@ -121,6 +154,23 @@ export async function saveBenefitOrder(orderedIds: string[]): Promise<{ success:
   }
 }
 
+export async function getNextBenefitOrder(): Promise<number> {
+  try {
+    const supabase = await createClient();
+    const { data } = await supabase
+      .from('benefits')
+      .select('display_order')
+      .order('display_order', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    return (data?.display_order || 0) + 1;
+  } catch (error) {
+    console.error("getNextBenefitOrder error:", error);
+    return 1;
+  }
+}
+
 
 
 
@@ -156,7 +206,7 @@ export async function redeemBenefit(benefitId: string): Promise<{ success: boole
 
     // 3. Purge Cache
     revalidatePath('/', 'layout');
-    revalidatePath('/club/beneficios');
+    revalidatePath('/comunidad/beneficios');
 
     return { success: true };
   } catch (error: any) {

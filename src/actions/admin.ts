@@ -172,7 +172,12 @@ export async function upsertExperience(formData: FormData): Promise<{ success: b
       type: formData.get('type') as string,
       status: formData.get('status') as string,
       price: parseFloat(formData.get('price') as string) || 0,
+      display_order: parseInt(formData.get('display_order') as string, 10) || 0,
     };
+    
+    if (formData.get('event_date')) {
+      updates.event_date = formData.get('event_date') as string;
+    }
 
     if (!isNew) {
       updates.id = id;
@@ -216,6 +221,33 @@ export async function upsertExperience(formData: FormData): Promise<{ success: b
         return { success: false, error: dbError.message };
       }
     } else {
+      // SWAP LOGIC: Manual positions exchange
+      const { data: current } = await supabaseAdmin
+        .from('experiences')
+        .select('display_order')
+        .eq('id', id)
+        .single();
+      
+      const oldOrder = current?.display_order;
+      const newOrder = updates.display_order;
+
+      if (oldOrder !== undefined && newOrder !== undefined && oldOrder !== newOrder) {
+        // Step A: Find the item currently at 'newOrder'
+        const { data: targetItem } = await supabaseAdmin
+          .from('experiences')
+          .select('id')
+          .eq('display_order', newOrder)
+          .single();
+
+        if (targetItem) {
+          // Step B: Move that target item to the current item's old position
+          await supabaseAdmin
+            .from('experiences')
+            .update({ display_order: oldOrder })
+            .eq('id', targetItem.id);
+        }
+      }
+
       const { error: dbError } = await supabaseAdmin
         .from('experiences')
         .update(updates)
@@ -227,6 +259,8 @@ export async function upsertExperience(formData: FormData): Promise<{ success: b
       }
     }
 
+    revalidatePath('/');
+    revalidatePath('/admin/experiencias');
     return { success: true };
   } catch (error: any) {
     console.error("upsertExperience exception:", error);
@@ -438,6 +472,23 @@ export async function saveExperienceOrder(orderedIds: string[]): Promise<{ succe
   } catch (error: any) {
     console.error("saveExperienceOrder error:", error);
     return { success: false, error: error.message };
+  }
+}
+
+export async function getNextExperienceOrder(): Promise<number> {
+  try {
+    const supabase = await createClient();
+    const { data } = await supabase
+      .from('experiences')
+      .select('display_order')
+      .order('display_order', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    return (data?.display_order || 0) + 1;
+  } catch (error) {
+    console.error("getNextExperienceOrder error:", error);
+    return 1;
   }
 }
 

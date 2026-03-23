@@ -19,9 +19,9 @@ export default function EditarWebPage() {
     getLandingContent().then(data => {
       if (data) {
         setFormData({
-          title: data.title || "",
-          description: data.description || "",
-          button_text: data.button_text || "",
+          title: data.hero_title || "",
+          description: data.hero_description || "",
+          button_text: data.hero_button_text || "",
           conoce_descripcion: data.conoce_descripcion || ""
         });
       }

@@ -72,7 +72,7 @@ export default function ActualizarContrasenaPage() {
                   {serverState.message}
                 </p>
                 <Link 
-                  href="/club"
+                  href="/comunidad"
                   className="w-full glass-panel-glow bg-burgundy-600 text-white py-3 rounded-xl font-bold flex items-center justify-center hover:bg-burgundy-500 transition-all"
                 >
                   Ir a mi Club

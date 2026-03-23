@@ -2,6 +2,9 @@
 
 import { createClient } from "@/utils/supabase/server";
 import { BookingSubmitSchema, GiftingSubmitSchema } from "@/schemas/booking";
+import { revalidatePath } from "next/cache";
+import { Resend } from "resend";
+import { generateReceiptEmailHtml } from "@/emails/ReceiptEmail";
 
 /**
  * Procesa la reserva B2C y la guarda en Supabase
@@ -13,12 +16,12 @@ export async function submitBooking(data: unknown) {
 
     // 2. Obtener sesión del servidor
     const supabase = await createClient();
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    const { data: { user } } = await supabase.auth.getUser();
 
-    if (authError || !user) {
+    if (!user && (!formData.guest_name || !formData.guest_email)) {
       return { 
         success: false, 
-        message: "Sesión expirada o inválida. Por favor, iniciá sesión para reservar." 
+        message: "Sesión expirada o inválida. Por favor, iniciá sesión o ingresá tus datos como invitado." 
       };
     }
 
@@ -33,49 +36,91 @@ export async function submitBooking(data: unknown) {
       return { success: false, message: "La experiencia seleccionada no es válida." };
     }
 
-    // 4. Protección contra duplicados: Buscar si ya existe una reserva activa para este usuario y experiencia
-    const { data: existingBooking, error: checkError } = await supabase
-      .from('bookings')
-      .select('id')
-      .eq('user_id', user.id)
-      .eq('experience_id', formData.experienceId)
-      .maybeSingle();
+    // 4. Protección contra duplicados: Solo para usuarios registrados
+    if (user) {
+      const { data: existingBooking, error: checkError } = await supabase
+        .from('bookings')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('experience_id', formData.experienceId)
+        .maybeSingle();
 
-    if (checkError) {
-      console.error("Error checking existing booking:", checkError);
+      if (checkError) {
+        console.error("Error checking existing booking:", checkError);
+      }
+
+      if (existingBooking) {
+        return { 
+          success: false, 
+          error: 'ALREADY_BOOKED', 
+          message: 'Ya estás participando de este sorteo o experiencia.' 
+        };
+      }
     }
 
-    if (existingBooking) {
-      return { 
-        success: false, 
-        error: 'ALREADY_BOOKED', 
-        message: 'Ya estás participando de este sorteo o experiencia.' 
-      };
+    // Cálculo del precio final
+    const totalPrice = formData.final_price !== undefined 
+      ? formData.final_price 
+      : (experience.price * formData.guests);
+
+    // 5. Insertar en tabla bookings
+    const payloadInsert: any = {
+      experience_id: formData.experienceId,
+      guests_count: Number(formData.guests),
+      total_price: Number(totalPrice),
+      status: 'CONFIRMED'
+    };
+
+    if (user) {
+      payloadInsert.user_id = user.id;
+    } else {
+      payloadInsert.guest_name = formData.guest_name;
+      payloadInsert.guest_email = formData.guest_email;
     }
 
-    // Cálculo del precio (simplificado, acá se podrían sumar up-sells si estuvieran en DB)
-    const totalPrice = experience.price * formData.guests;
-
-    // 5. Insertar en tabla bookings (Mapeo estricto para evitar errores de Postgres)
     const { error: insertError } = await supabase
       .from('bookings')
-      .insert({
-        user_id: user.id,
-        experience_id: formData.experienceId,
-        guests_count: Number(formData.guests),
-        total_price: Number(totalPrice),
-        status: 'CONFIRMED'
-      });
+      .insert(payloadInsert);
 
     if (insertError) {
-      console.error("Supabase Booking Error:", {
-        code: insertError.code,
-        message: insertError.message,
-        details: insertError.details,
-        hint: insertError.hint
-      });
+      console.error("Supabase Booking Error:", insertError);
       throw new Error("Error al registrar la reserva en la base de datos.");
     }
+
+    // 6. Enviar Mail Transaccional
+    try {
+      const resendApiKey = process.env.RESEND_API_KEY;
+      if (resendApiKey) {
+        const resend = new Resend(resendApiKey);
+        const targetEmail = user ? user.email : formData.guest_email;
+        const targetName = user ? (user.user_metadata?.full_name || user.email?.split('@')[0]) : formData.guest_name;
+
+        if (targetEmail) {
+          const htmlContent = generateReceiptEmailHtml({
+            name: targetName || "Comunidad MUNIV",
+            experienceName: formData.experienceTitle || "Experiencia de Cata",
+            date: formData.date,
+            time: formData.time,
+            guests: Number(formData.guests),
+            totalPaid: Number(totalPrice),
+          });
+
+          await resend.emails.send({
+            from: 'onboarding@resend.dev',
+            to: targetEmail,
+            subject: '🍷 Confirmación de tu compra - MUNIV',
+            html: htmlContent,
+          });
+        }
+      } else {
+        console.warn("No RESEND_API_KEY found. Skipped transactional email.");
+      }
+    } catch (emailError) {
+      console.error("Error enviando email de reserva (non-blocking):", emailError);
+    }
+
+    revalidatePath("/");
+    revalidatePath("/comunidad");
 
     return { 
       success: true, 

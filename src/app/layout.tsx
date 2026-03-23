@@ -32,14 +32,14 @@ export const metadata: Metadata = {
     title: "MUNIV | La experiencia que nos gusta repetir 🍷",
     description: "Experiencias de vino para descubrir cómo disfrutarlo.",
     siteName: "MUNIV",
-    images: ["/logo.png"],
+    images: ["/logo-share.jpg"],
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
     title: "MUNIV | La experiencia que nos gusta repetir 🍷",
     description: "Experiencias de vino para descubrir cómo disfrutarlo.",
-    images: ["/logo.png"],
+    images: ["/logo-share.jpg"],
   }
 };
 

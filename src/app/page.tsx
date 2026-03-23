@@ -8,7 +8,7 @@ export const dynamic = 'force-dynamic';
 
 export default async function Home() {
   const landingData = await getLandingContent();
-  const redeemedIds = await getRedeemedBenefitIds();
+
 
   return (
     <main className="min-h-screen bg-[#0c0a09]">
@@ -38,7 +38,7 @@ export default async function Home() {
             Accedé a recompensas exclusivas, descuentos en bodegas y experiencias de cortesía por ser parte de MUNIV.
           </p>
         </div>
-        <BenefitList initialRedeemedIds={redeemedIds} />
+        <BenefitList />
       </div>
     </main>
   );

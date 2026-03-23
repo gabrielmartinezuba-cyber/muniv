@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { getBenefits, upsertBenefit, deleteBenefit, saveBenefitOrder } from "@/actions/benefits";
+import { getBenefits, upsertBenefit, deleteBenefit, saveBenefitOrder, getNextBenefitOrder } from "@/actions/benefits";
 import { Plus, Loader2, Save, Trash2, Image as ImageIcon, Upload, GripVertical, Gift } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
@@ -150,9 +150,15 @@ export default function BenefitManager() {
     }
 
     if (selectedId === "NEW") {
-      setFormData({
-        title: "",
-        description: "",
+      setIsLoadingForm(true);
+      getNextBenefitOrder().then(nextOrder => {
+        setFormData({
+          title: "",
+          description: "",
+          discount_percentage: 0,
+          display_order: nextOrder
+        });
+        setIsLoadingForm(false);
       });
       setImageFile(null);
       setPreviewUrl(null);
@@ -220,6 +226,8 @@ export default function BenefitManager() {
     if (selectedId !== "NEW") formPayload.append("id", selectedId!);
     formPayload.append("title", formData.title);
     formPayload.append("description", formData.description);
+    formPayload.append("discount_percentage", formData.discount_percentage?.toString() || "0");
+    formPayload.append("display_order", formData.display_order?.toString() || "0");
     
     if (imageFile) {
       formPayload.append("image", imageFile);
@@ -274,17 +282,20 @@ export default function BenefitManager() {
         >
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
             <SortableContext
-              items={benefits.map((b) => b.id)}
+              items={benefits.filter(b => b !== null).map((b) => b.id)}
               strategy={rectSortingStrategy}
             >
-              {benefits.map((b) => (
-                <SortableBenefitCard
-                  key={b.id}
-                  benefit={b}
-                  isSelected={selectedId === b.id}
-                  onSelect={setSelectedId}
-                />
-              ))}
+              {benefits.map((b) => {
+                if (!b) return null;
+                return (
+                  <SortableBenefitCard
+                    key={b.id}
+                    benefit={b}
+                    isSelected={selectedId === b.id}
+                    onSelect={setSelectedId}
+                  />
+                );
+              })}
             </SortableContext>
 
             {/* Create New Card */}
@@ -331,7 +342,7 @@ export default function BenefitManager() {
               </div>
             </div>
 
-            {isLoadingForm ? (
+            {(isLoadingForm || !formData) ? (
               <div className="flex justify-center items-center py-20 glass-panel rounded-3xl border border-white/5 bg-slate-900/40">
                 <Loader2 className="w-8 h-8 text-burgundy-500 animate-spin" />
               </div>
@@ -345,6 +356,18 @@ export default function BenefitManager() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
                   <div className="space-y-6">
+                    <div>
+                      <label className="text-[10px] text-slate-400 uppercase tracking-[0.2em] font-bold mb-3 block">Posición / Orden</label>
+                      <input
+                        type="number"
+                        required
+                        value={formData.display_order || 0}
+                        onChange={e => setFormData({ ...formData, display_order: parseInt(e.target.value) || 0 })}
+                        className="w-full bg-black/70 border border-white/10 rounded-xl px-4 py-3.5 text-sm text-burgundy-500 focus:outline-none focus:border-burgundy-500/50 transition-all font-bold"
+                        placeholder="1"
+                      />
+                    </div>
+
                     <div>
                       <label className="text-[10px] text-slate-400 uppercase tracking-[0.2em] font-bold mb-3 block">Título del Beneficio</label>
                       <input
@@ -367,6 +390,22 @@ export default function BenefitManager() {
                         className="w-full bg-slate-950/70 border border-white/10 rounded-xl px-4 py-3.5 text-sm text-white focus:outline-none focus:border-burgundy-500/50 transition-all resize-none font-light leading-relaxed"
                         placeholder="Explica cómo usar este beneficio..."
                       />
+                    </div>
+
+                    <div>
+                      <label className="text-[10px] text-slate-400 uppercase tracking-[0.2em] font-bold mb-3 block">Porcentaje de Descuento (%)</label>
+                      <input
+                        type="number"
+                        min="0"
+                        max="100"
+                        value={formData.discount_percentage || 0}
+                        onChange={e => setFormData({ ...formData, discount_percentage: parseInt(e.target.value) || 0 })}
+                        className="w-full bg-slate-950/70 border border-white/10 rounded-xl px-4 py-3.5 text-sm text-white focus:outline-none focus:border-burgundy-500/50 transition-all font-light"
+                        placeholder="Ej. 15 (0 si es físico)"
+                      />
+                      <p className="text-[9px] text-slate-500 uppercase tracking-widest mt-2 px-1">
+                        Si el beneficio es para usar en otro local o presencialmente (sin descuento dentro de la web), dejalo en 0.
+                      </p>
                     </div>
                   </div>
 

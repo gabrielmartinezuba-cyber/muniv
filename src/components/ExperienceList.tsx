@@ -4,28 +4,29 @@ import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import { getActiveExperiences, type Experience } from "@/actions/experiences";
-import { useBookingStore } from "@/store/useBookingStore";
-import { Loader2, Plus } from "lucide-react";
+import { useCartStore } from "@/store/useCartStore";
+import { Loader2, Plus, Calendar } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
 
 export default function ExperienceList() {
   const [experiences, setExperiences] = useState<Experience[]>([]);
   const [loading, setLoading] = useState(true);
-  const { openBooking } = useBookingStore();
+  const { addItem, openCart } = useCartStore();
   const router = useRouter();
   const supabase = createClient();
 
   const handleBookingClick = async (exp: Experience) => {
-    const { data: { session } } = await supabase.auth.getSession();
-    
-    if (!session) {
-      // No session, redirect to login
-      router.push("/login");
-      return;
-    }
-
-    openBooking(exp.id, exp.title, exp.price, exp.status);
+    addItem({
+      experienceId: exp.id,
+      title: exp.title,
+      price: exp.price,
+      status: exp.status,
+      eventDate: exp.event_date,
+      guests: 1,
+      upSells: []
+    });
+    openCart();
   };
 
   useEffect(() => {
@@ -74,9 +75,18 @@ export default function ExperienceList() {
             <h3 className="font-display text-2xl text-white mb-2 group-hover:text-gold-400 transition-colors">
               {exp.title}
             </h3>
-            <p className="text-slate-400 text-sm mb-6 font-light">
+            <p className="text-slate-400 text-sm mb-4 font-light">
               {exp.description}
             </p>
+
+            {exp.event_date && (
+              <div className="flex items-center gap-2 text-gold-500 text-[11px] tracking-wider uppercase font-bold mb-6">
+                <Calendar size={14} />
+                <span>
+                  {new Date(exp.event_date).toLocaleDateString('es-AR', { weekday: 'short', day: 'numeric', month: 'short' }).replace('.', '')} - {new Date(exp.event_date).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })}hs
+                </span>
+              </div>
+            )}
 
             <div className="flex items-center justify-between mt-auto">
               <div className="flex flex-col">

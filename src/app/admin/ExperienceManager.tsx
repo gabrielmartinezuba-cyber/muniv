@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { getAdminExperiences, getAdminExperienceDetails, upsertExperience, deleteExperience, saveExperienceOrder } from "@/actions/admin";
+import { getAdminExperiences, getAdminExperienceDetails, upsertExperience, deleteExperience, saveExperienceOrder, getNextExperienceOrder } from "@/actions/admin";
 import { Plus, Loader2, Save, Trash2, Image as ImageIcon, Upload, GripVertical } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
@@ -150,12 +150,18 @@ export default function ExperienceManager() {
     }
 
     if (selectedId === "NEW") {
-      setFormData({
-        title: "",
-        status: "ACTIVE",
-        type: "sorteo",
-        price: "",
-        description: "",
+      setIsLoadingForm(true);
+      getNextExperienceOrder().then(nextOrder => {
+        setFormData({
+          title: "",
+          status: "ACTIVE",
+          type: "sorteo",
+          price: "",
+          description: "",
+          event_date: "",
+          display_order: nextOrder
+        });
+        setIsLoadingForm(false);
       });
       setImageFile(null);
       setPreviewUrl(null);
@@ -168,7 +174,16 @@ export default function ExperienceManager() {
       if (data) {
         // Format price with thousands separator for display
         const formattedPrice = data.price ? data.price.toLocaleString("es-AR") : "";
-        setFormData({ ...data, price: formattedPrice });
+        
+        let eventDateVal = "";
+        if (data.event_date) {
+          // Format ISO strictly for datetime-local (YYYY-MM-DDThh:mm)
+          const localDate = new Date(data.event_date);
+          const offset = localDate.getTimezoneOffset() * 60000;
+          eventDateVal = (new Date(localDate.getTime() - offset)).toISOString().slice(0, 16);
+        }
+
+        setFormData({ ...data, price: formattedPrice, event_date: eventDateVal });
         setPreviewUrl(data.image_url);
         setImageFile(null);
       } else {
@@ -230,7 +245,13 @@ export default function ExperienceManager() {
     const cleanPrice = formData.price?.toString().replace(/\./g, "") || "0";
     formPayload.append("price", cleanPrice);
     formPayload.append("description", formData.description || "");
+    formPayload.append("display_order", formData.display_order?.toString() || "0");
     
+    if (formData.event_date) {
+      // It's in local format "YYYY-MM-DDThh:mm", convert to ISO string for Supabase
+      formPayload.append("event_date", new Date(formData.event_date).toISOString());
+    }
+
     if (imageFile) {
       formPayload.append("image", imageFile);
     }
@@ -356,6 +377,18 @@ export default function ExperienceManager() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
                   <div className="space-y-6">
                     <div>
+                      <label className="text-[10px] text-slate-400 uppercase tracking-[0.2em] font-bold mb-3 block">Posición / Orden</label>
+                      <input
+                        type="number"
+                        required
+                        value={formData.display_order || 0}
+                        onChange={e => setFormData({ ...formData, display_order: parseInt(e.target.value) || 0 })}
+                        className="w-full bg-black/70 border border-white/10 rounded-xl px-4 py-3.5 text-sm text-gold-500 focus:outline-none focus:border-gold-500/50 transition-all font-bold"
+                        placeholder="1"
+                      />
+                    </div>
+
+                    <div>
                       <label className="text-[10px] text-slate-400 uppercase tracking-[0.2em] font-bold mb-3 block">Título</label>
                       <input
                         type="text"
@@ -411,12 +444,12 @@ export default function ExperienceManager() {
                         />
                       </div>
                       <div>
-                        <label className="text-[10px] text-slate-400 uppercase tracking-[0.2em] font-bold mb-3 block">Fecha</label>
+                        <label className="text-[10px] text-slate-400 uppercase tracking-[0.2em] font-bold mb-3 block">Fecha y hora del evento</label>
                         <input
-                          type="date"
-                          value={formData.date || ''}
-                          onChange={e => setFormData({ ...formData, date: e.target.value })}
-                          className="w-full bg-slate-950/70 border border-white/10 rounded-xl px-4 py-3.5 text-sm text-white focus:outline-none focus:border-gold-500/50 transition-all"
+                          type="datetime-local"
+                          value={formData.event_date || ''}
+                          onChange={e => setFormData({ ...formData, event_date: e.target.value })}
+                          className="w-full bg-slate-950/70 border border-white/10 rounded-xl px-4 py-3.5 text-sm text-white focus:outline-none focus:border-gold-500/50 transition-all font-sans"
                         />
                       </div>
                     </div>

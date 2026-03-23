@@ -35,17 +35,17 @@ export async function proxy(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser()
 
-  // Proteger rutas bajo /club
-  if (!user && request.nextUrl.pathname.startsWith('/club')) {
+  // Proteger rutas bajo /comunidad
+  if (!user && request.nextUrl.pathname.startsWith('/comunidad')) {
     const url = request.nextUrl.clone()
     url.pathname = '/login'
     return NextResponse.redirect(url)
   }
 
-  // Redirect a /club si ya está logueado y va a login/registro
+  // Redirect a /comunidad si ya está logueado y va a login/registro
   if (user && (request.nextUrl.pathname === '/login' || request.nextUrl.pathname === '/registro')) {
     const url = request.nextUrl.clone()
-    url.pathname = '/club'
+    url.pathname = '/comunidad'
     return NextResponse.redirect(url)
   }
 
