@@ -47,7 +47,7 @@ function StatusBadge({ status }: { status: string }) {
 }
 
 export function BookingCard({ booking }: { booking: any }) {
-  const type = booking.experiences?.type?.toLowerCase();
+  const type = booking.experiences?.type?.trim().toLowerCase();
   const experience = booking.experiences;
 
   const [showCancelForm, setShowCancelForm] = useState(false);

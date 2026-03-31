@@ -8,7 +8,7 @@ export default async function ClubDashboard() {
 
   // Lógica de visibilidad inteligente (Auto-Limpieza)
   const activeBookings = bookings.filter((b: any) => {
-    const type = b.experiences?.type?.toLowerCase();
+    const type = b.experiences?.type?.trim().toLowerCase();
     const now = new Date();
 
     if (type === 'caja') {
@@ -16,7 +16,15 @@ export default async function ClubDashboard() {
       return b.status !== 'ENTREGADO' && b.status !== 'CANCELADO';
     } else {
       // Para Eventos/Sorteos: Se ocultan si están cancelados O si la fecha ya pasó
-      const isPast = b.experiences?.event_date ? now > new Date(b.experiences.event_date) : false;
+      // Se ajusta la comparación reseteando las horas para que no se oculte prematuramente el mismo día
+      let isPast = false;
+      if (b.experiences?.event_date) {
+        const eventDate = new Date(b.experiences.event_date);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0); 
+        eventDate.setHours(0, 0, 0, 0);
+        isPast = today > eventDate;
+      }
       return b.status !== 'CANCELADO' && !isPast;
     }
   });
@@ -40,13 +48,13 @@ export default async function ClubDashboard() {
           {hasBookings ? (
             <div className="space-y-12">
               {/* Eventos */}
-              {activeBookings.some((b: any) => b.experiences?.type?.toLowerCase() === 'evento') && (
+              {activeBookings.some((b: any) => b.experiences?.type?.trim().toLowerCase() === 'evento') && (
                 <section>
                   <h3 className="text-gold-500 text-[10px] font-black tracking-[0.3em] uppercase mb-6 flex items-center gap-3">
                     <span className="w-8 h-[1px] bg-gold-500/30" /> Próximos Eventos <span className="w-full h-[1px] bg-gold-500/30" />
                   </h3>
                   <div className="space-y-4">
-                    {activeBookings.filter((b: any) => b.experiences?.type?.toLowerCase() === 'evento').map((booking: any) => (
+                    {activeBookings.filter((b: any) => b.experiences?.type?.trim().toLowerCase() === 'evento').map((booking: any) => (
                       <BookingCard key={booking.id} booking={booking} />
                     ))}
                   </div>
@@ -54,13 +62,13 @@ export default async function ClubDashboard() {
               )}
 
               {/* Cajas */}
-              {activeBookings.some((b: any) => b.experiences?.type?.toLowerCase() === 'caja') && (
+              {activeBookings.some((b: any) => b.experiences?.type?.trim().toLowerCase() === 'caja') && (
                 <section>
                   <h3 className="text-gold-500 text-[10px] font-black tracking-[0.3em] uppercase mb-6 flex items-center gap-3">
                     <span className="w-8 h-[1px] bg-gold-500/30" /> Cajas <span className="w-full h-[1px] bg-gold-500/30" />
                   </h3>
                   <div className="space-y-4">
-                    {activeBookings.filter((b: any) => b.experiences?.type?.toLowerCase() === 'caja').map((booking: any) => (
+                    {activeBookings.filter((b: any) => b.experiences?.type?.trim().toLowerCase() === 'caja').map((booking: any) => (
                       <BookingCard key={booking.id} booking={booking} />
                     ))}
                   </div>
@@ -68,13 +76,13 @@ export default async function ClubDashboard() {
               )}
 
               {/* Sorteos */}
-              {activeBookings.some((b: any) => b.experiences?.type?.toLowerCase() === 'sorteo') && (
+              {activeBookings.some((b: any) => b.experiences?.type?.trim().toLowerCase() === 'sorteo') && (
                 <section>
                   <h3 className="text-gold-500 text-[10px] font-black tracking-[0.3em] uppercase mb-6 flex items-center gap-3">
                     <span className="w-8 h-[1px] bg-gold-500/30" /> Sorteos <span className="w-full h-[1px] bg-gold-500/30" />
                   </h3>
                   <div className="space-y-4">
-                    {activeBookings.filter((b: any) => b.experiences?.type?.toLowerCase() === 'sorteo').map((booking: any) => (
+                    {activeBookings.filter((b: any) => b.experiences?.type?.trim().toLowerCase() === 'sorteo').map((booking: any) => (
                       <BookingCard key={booking.id} booking={booking} />
                     ))}
                   </div>
