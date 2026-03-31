@@ -69,15 +69,13 @@ export async function submitBooking(data: unknown) {
       guests_count: Number(formData.guests),
       total_price: Number(totalPrice),
       status: 'PENDIENTE',
-      selected_wines: formData.selected_wines || []
+      selected_wines: formData.selected_wines || [],
+      user_id: user?.id || null, // Asegurar que sea null si no hay user
+      guest_name: user ? null : formData.guest_name,
+      guest_email: user ? null : formData.guest_email
     };
 
-    if (user) {
-      payloadInsert.user_id = user.id;
-    } else {
-      payloadInsert.guest_name = formData.guest_name;
-      payloadInsert.guest_email = formData.guest_email;
-    }
+    console.log(`[SUBMIT BOOKING] Processing for user ${user?.id || 'GUEST'}`);
 
     const { error: insertError } = await supabase
       .from('bookings')
@@ -122,6 +120,8 @@ export async function submitBooking(data: unknown) {
 
     revalidatePath("/");
     revalidatePath("/comunidad");
+    revalidatePath("/mis-experiencias"); // Por si existe el alias o rewrite
+    revalidatePath("/comunidad/page"); // Forzar revalidación profunda de la vista principal
 
     return { 
       success: true, 
@@ -209,7 +209,12 @@ export async function getUserBookings() {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
 
-    if (!user) return [];
+    if (!user) {
+      console.warn("[GET USER BOOKINGS] No session found.");
+      return [];
+    }
+
+    console.log(`[GET USER BOOKINGS] Fetching for user: ${user.id}`);
 
     const { data, error } = await supabase
       .from('bookings')
