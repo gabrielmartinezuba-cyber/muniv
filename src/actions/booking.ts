@@ -77,14 +77,18 @@ export async function submitBooking(data: unknown) {
 
     console.log(`[SUBMIT BOOKING] Processing for user ${user?.id || 'GUEST'}`);
 
-    const { error: insertError } = await supabase
+    const { data: insertedBooking, error: insertError } = await supabase
       .from('bookings')
-      .insert(payloadInsert);
+      .insert(payloadInsert)
+      .select('id')
+      .single();
 
     if (insertError) {
       console.error("Supabase Booking Error:", insertError);
       throw new Error("Error al registrar la reserva en la base de datos.");
     }
+
+    const bookingId = insertedBooking.id;
 
     // 6. Enviar Mail Transaccional
     try {
@@ -124,7 +128,8 @@ export async function submitBooking(data: unknown) {
     revalidatePath("/comunidad/page"); // Forzar revalidación profunda de la vista principal
 
     return { 
-      success: true, 
+      success: true,
+      bookingId: bookingId,
       message: "Reserva confirmada. Podés ver los detalles en tu perfil del Club."
     };
 

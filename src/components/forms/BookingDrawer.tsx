@@ -5,6 +5,7 @@ import { useCartStore } from "@/store/useCartStore";
 import { X, Users, ShieldCheck, Loader2, AlertCircle, ShoppingCart, Trash2, CalendarDays, Package, Minus, Plus } from "lucide-react";
 import { useEffect, useState, useTransition } from "react";
 import { submitBooking } from "@/actions/booking";
+import { createCheckoutPreference } from "@/actions/payments";
 import { getBenefits } from "@/actions/benefits";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -90,6 +91,7 @@ export default function BookingDrawer() {
     startTransition(async () => {
       let hasError = false;
       let lastErrMsg = "";
+      const bookingIds: string[] = [];
 
       for (const item of items) {
         const payload = {
@@ -106,7 +108,9 @@ export default function BookingDrawer() {
         };
 
         const res = await submitBooking(payload);
-        if (!res.success) {
+        if (res.success && res.bookingId) {
+          bookingIds.push(res.bookingId);
+        } else if (!res.success) {
           hasError = true;
           lastErrMsg = res.message || "Error al procesar la reserva.";
         }
@@ -116,13 +120,28 @@ export default function BookingDrawer() {
         toast.error(lastErrMsg);
         setGlobalError(lastErrMsg);
       } else {
-        toast.success("¡Compra confirmada con éxito!");
-        setTimeout(() => {
-          clearCart();
-          router.push(user ? "/comunidad" : "/");
-          router.refresh();
-          closeCart();
-        }, 1500);
+        if (finalPrice > 0 && bookingIds.length > 0) {
+          toast.loading("Redirigiendo a Mercado Pago...", { duration: 3000 });
+          const prefTitle = items.length === 1 ? items[0].title : `${items.length} experiencias MUNIV`;
+          const prefRes = await createCheckoutPreference(bookingIds, prefTitle, finalPrice);
+          
+          if (prefRes.success && prefRes.init_point) {
+            clearCart();
+            closeCart();
+            window.location.href = prefRes.init_point;
+          } else {
+            toast.error(prefRes.message || "No se pudo iniciar el pago. Podrás abonar tu orden desde tu perfil.");
+            setGlobalError(prefRes.message || "No se pudo iniciar el pago.");
+          }
+        } else {
+          toast.success("¡Reserva confirmada con éxito!");
+          setTimeout(() => {
+            clearCart();
+            router.push(user ? "/comunidad" : "/");
+            router.refresh();
+            closeCart();
+          }, 1500);
+        }
       }
     });
   };
