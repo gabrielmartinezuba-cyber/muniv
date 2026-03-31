@@ -62,8 +62,12 @@ export async function POST(req: Request) {
           .eq('id', bookingId.trim())
           .single();
 
+        const experienceType = Array.isArray(bookingDetails?.experiences) 
+          ? (bookingDetails?.experiences[0] as any)?.type 
+          : (bookingDetails?.experiences as any)?.type;
+
         let newStatus = 'CONFIRMADO';
-        if (bookingDetails?.experiences?.type?.trim().toLowerCase() === 'caja') {
+        if (experienceType?.trim().toLowerCase() === 'caja') {
           newStatus = 'EN_PREPARACION';
         }
 
