@@ -86,6 +86,7 @@ export default function Navbar({ initialUser }: NavbarProps) {
 
         {/* Desktop Links */}
         <div className="hidden md:flex items-center gap-8 text-sm tracking-widest uppercase font-medium z-10">
+          <Link href="/#experiencias" className="text-slate-300 hover:text-gold-500 transition-colors">Experiencias</Link>
           <Link href="/" className="text-slate-300 hover:text-gold-500 transition-colors">Comunidad</Link>
           {user ? (
             <>
@@ -167,6 +168,7 @@ export default function Navbar({ initialUser }: NavbarProps) {
             </div>
             
             <div className="flex flex-col items-center justify-center flex-grow gap-12 pb-20">
+              <Link href="/#experiencias" onClick={() => setIsMenuOpen(false)} className="font-display text-4xl text-white hover:text-gold-500 transition-colors tracking-wide uppercase">Experiencias</Link>
               <Link href="/" onClick={() => setIsMenuOpen(false)} className="font-display text-4xl text-white hover:text-gold-500 transition-colors tracking-wide">COMUNIDAD</Link>
               <div className="flex flex-col items-center gap-6 mt-4 w-full px-6 text-center">
                 {user ? (

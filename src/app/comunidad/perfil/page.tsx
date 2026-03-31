@@ -19,7 +19,7 @@ export default function ProfilePage() {
   const [serverState, setServerState] = useState<{ success: boolean; message: string } | null>(null);
   const [dataServerState, setDataServerState] = useState<{ success: boolean; message: string } | null>(null);
   const [userEmail, setUserEmail] = useState("");
-  const [initialData, setInitialData] = useState({ nombre: "", apellido: "" });
+  const [initialData, setInitialData] = useState({ nombre: "", apellido: "", telefono: "" });
 
   const {
     register: registerPass,
@@ -36,7 +36,7 @@ export default function ProfilePage() {
     handleSubmit: handleSubmitData,
     setValue: setDataValue,
   } = useForm({
-    defaultValues: { nombre: "", apellido: "" }
+    defaultValues: { nombre: "", apellido: "", telefono: "" }
   });
 
   useEffect(() => {
@@ -47,9 +47,11 @@ export default function ProfilePage() {
         setUserEmail(user.email || "");
         const nombre = user.user_metadata?.first_name || "";
         const apellido = user.user_metadata?.last_name || "";
-        setInitialData({ nombre, apellido });
+        const telefono = user.user_metadata?.phone || "";
+        setInitialData({ nombre, apellido, telefono });
         setDataValue("nombre", nombre);
         setDataValue("apellido", apellido);
+        setDataValue("telefono", telefono);
       }
     };
     fetchUser();
@@ -64,7 +66,7 @@ export default function ProfilePage() {
     });
   };
 
-  const onDataSubmit = (data: { nombre: string; apellido: string }) => {
+  const onDataSubmit = (data: { nombre: string; apellido: string; telefono: string }) => {
     setDataServerState(null);
     startDataTransition(async () => {
       const result = await updateUserData(data);
@@ -142,6 +144,19 @@ export default function ProfilePage() {
                   className="w-full bg-slate-900/50 border border-white/10 rounded-xl px-4 py-4 text-white text-sm focus:outline-none focus:border-gold-500 focus:ring-1 focus:ring-gold-500 transition-all font-sans"
                 />
               </div>
+            </div>
+          </div>
+
+          <div className="group">
+            <label className="text-white/60 text-xs font-medium mb-2 ml-1 flex items-center gap-1.5 uppercase tracking-wider">
+              Teléfono (WhatsApp)
+            </label>
+            <div className="relative">
+              <input 
+                {...registerData("telefono")}
+                placeholder="+54 9 11 ..."
+                className="w-full bg-slate-900/50 border border-white/10 rounded-xl px-4 py-4 text-white text-sm focus:outline-none focus:border-gold-500 focus:ring-1 focus:ring-gold-500 transition-all font-sans"
+              />
             </div>
           </div>
 

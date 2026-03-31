@@ -159,7 +159,13 @@ export default function ExperienceManager() {
           price: "",
           description: "",
           event_date: "",
-          display_order: nextOrder
+          display_order: nextOrder,
+          wine_quantity: 0,
+          wine_options: [],
+          location_name: "",
+          location_address: "",
+          max_capacity: 0,
+          temp_discount: 0
         });
         setIsLoadingForm(false);
       });
@@ -183,7 +189,12 @@ export default function ExperienceManager() {
           eventDateVal = (new Date(localDate.getTime() - offset)).toISOString().slice(0, 16);
         }
 
-        setFormData({ ...data, price: formattedPrice, event_date: eventDateVal });
+        setFormData({ 
+          ...data, 
+          price: formattedPrice, 
+          event_date: eventDateVal,
+          wine_options: data.wine_options || [] 
+        });
         setPreviewUrl(data.image_url);
         setImageFile(null);
       } else {
@@ -220,7 +231,6 @@ export default function ExperienceManager() {
 
       if (!result.success) {
         toast.error("Error al guardar el nuevo orden");
-        // Revert UI to previous state if wanted, but usually better to let user try again
         loadExperiences();
       } else {
         toast.success("Orden actualizado");
@@ -247,9 +257,18 @@ export default function ExperienceManager() {
     formPayload.append("description", formData.description || "");
     formPayload.append("display_order", formData.display_order?.toString() || "0");
     
+    // Poly fields
+    formPayload.append("wine_quantity", formData.wine_quantity?.toString() || "0");
+    formPayload.append("wine_options", JSON.stringify(formData.wine_options || []));
+    formPayload.append("location_name", formData.location_name || "");
+    formPayload.append("location_address", formData.location_address || "");
+    formPayload.append("max_capacity", formData.max_capacity?.toString() || "0");
+    formPayload.append("temp_discount", formData.temp_discount?.toString() || "0");
+    
     if (formData.event_date) {
-      // It's in local format "YYYY-MM-DDThh:mm", convert to ISO string for Supabase
       formPayload.append("event_date", new Date(formData.event_date).toISOString());
+    } else {
+      formPayload.append("event_date", "");
     }
 
     if (imageFile) {
@@ -277,7 +296,7 @@ export default function ExperienceManager() {
     setIsDeleting(false);
 
     if (success) {
-      toast.success("Experiencia eliminada");
+      toast.success("Experiencia eliminado");
       setSelectedId(null);
       await loadExperiences();
     } else {
@@ -288,7 +307,6 @@ export default function ExperienceManager() {
   return (
     <div className="space-y-12 animate-in fade-in duration-500 mt-6 pb-20">
       
-      {/* Visual Orderable Grid */}
       <section className="relative">
         <div className="flex items-center justify-between mb-6">
           <h3 className="text-sm font-bold text-gold-500 uppercase tracking-widest flex items-center gap-2">
@@ -318,7 +336,6 @@ export default function ExperienceManager() {
               ))}
             </SortableContext>
 
-            {/* Create New Card */}
             <div
               onClick={() => setSelectedId("NEW")}
               className={`aspect-[4/3] rounded-2xl border-2 border-dashed flex flex-col items-center justify-center gap-2 transition-all duration-300 group cursor-pointer ${
@@ -338,7 +355,6 @@ export default function ExperienceManager() {
         </DndContext>
       </section>
 
-      {/* Editor Panel */}
       <AnimatePresence mode="wait">
         {selectedId && (
           <motion.div
@@ -366,7 +382,7 @@ export default function ExperienceManager() {
               <div className="flex justify-center items-center py-20 glass-panel rounded-3xl border border-white/5 bg-slate-900/40">
                 <Loader2 className="w-8 h-8 text-gold-500 animate-spin" />
               </div>
-            ) : formData ? (
+            ) : formData && (
               <form onSubmit={handleSave} className="glass-panel rounded-3xl border border-white/5 bg-slate-900/40 p-6 md:p-8 space-y-8 relative overflow-hidden shadow-2xl">
                 {isSaving && (
                   <div className="absolute inset-0 bg-slate-950/60 z-20 flex items-center justify-center backdrop-blur-sm rounded-3xl">
@@ -423,10 +439,101 @@ export default function ExperienceManager() {
                         >
                           <option value="sorteo">Sorteo</option>
                           <option value="evento">Evento</option>
-                          <option value="caja">Caja / Gifting</option>
+                          <option value="caja">Caja</option>
                         </select>
                       </div>
                     </div>
+
+                    {/* Conditional: EVENTO */}
+                    {(formData.type?.toLowerCase() === 'evento') && (
+                      <div className="pt-4 space-y-4 border-t border-white/5">
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <label className="text-[10px] text-gold-500/50 uppercase tracking-[0.2em] font-bold mb-3 block">Lugar / Venue</label>
+                            <input
+                              type="text"
+                              value={formData.location_name || ""}
+                              onChange={e => setFormData({ ...formData, location_name: e.target.value })}
+                              className="w-full bg-slate-950/70 border border-white/10 rounded-xl px-4 py-3.5 text-sm text-white focus:outline-none focus:border-gold-500/50"
+                              placeholder="Ej. Palacio Duhau"
+                            />
+                          </div>
+                          <div>
+                            <label className="text-[10px] text-gold-500/50 uppercase tracking-[0.2em] font-bold mb-3 block">Capacidad Máxima</label>
+                            <input
+                              type="number"
+                              value={formData.max_capacity || 0}
+                              onChange={e => setFormData({ ...formData, max_capacity: parseInt(e.target.value) || 0 })}
+                              className="w-full bg-slate-950/70 border border-white/10 rounded-xl px-4 py-3.5 text-sm text-white focus:outline-none focus:border-gold-500/50"
+                            />
+                          </div>
+                        </div>
+                        <div>
+                          <label className="text-[10px] text-gold-500/50 uppercase tracking-[0.2em] font-bold mb-3 block">Dirección Completa</label>
+                          <input
+                            type="text"
+                            value={formData.location_address || ""}
+                            onChange={e => setFormData({ ...formData, location_address: e.target.value })}
+                            className="w-full bg-slate-950/70 border border-white/10 rounded-xl px-4 py-3.5 text-sm text-white focus:outline-none focus:border-gold-500/50"
+                            placeholder="Av. Alvear 1661, CABA"
+                          />
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Conditional: CAJA */}
+                    {(formData.type?.toLowerCase() === 'caja') && (
+                      <div className="pt-4 space-y-4 border-t border-white/5">
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <label className="text-[10px] text-burgundy-400 uppercase tracking-[0.2em] font-bold mb-3 block">Cant. Vinos p/ Caja</label>
+                            <input
+                              type="number"
+                              value={formData.wine_quantity || 0}
+                              onChange={e => setFormData({ ...formData, wine_quantity: parseInt(e.target.value) || 0 })}
+                              className="w-full bg-slate-950/70 border border-white/10 rounded-xl px-4 py-3.5 text-sm text-white focus:outline-none focus:border-gold-500/50"
+                            />
+                          </div>
+                        </div>
+                        <div>
+                          <label className="text-[10px] text-burgundy-400 uppercase tracking-[0.2em] font-bold mb-3 block">Variedades disponibles (Opciones)</label>
+                          <div className="space-y-2">
+                             {(formData.wine_options || []).map((wine: string, idx: number) => (
+                               <div key={idx} className="flex gap-2">
+                                 <input
+                                   type="text"
+                                   value={wine}
+                                   onChange={e => {
+                                     const newOptions = [...formData.wine_options];
+                                     newOptions[idx] = e.target.value;
+                                     setFormData({ ...formData, wine_options: newOptions });
+                                   }}
+                                   className="flex-1 bg-slate-950/70 border border-white/10 rounded-xl px-4 py-2 text-xs text-white"
+                                   placeholder={`Vino ${idx + 1}`}
+                                 />
+                                 <button 
+                                   type="button"
+                                   onClick={() => {
+                                     const newOptions = formData.wine_options.filter((_: any, i: number) => i !== idx);
+                                     setFormData({ ...formData, wine_options: newOptions });
+                                   }}
+                                   className="text-red-500 p-2"
+                                 >
+                                   ×
+                                 </button>
+                               </div>
+                             ))}
+                             <button
+                               type="button"
+                               onClick={() => setFormData({ ...formData, wine_options: [...(formData.wine_options || []), ""] })}
+                               className="text-[10px] text-gold-500 uppercase font-black tracking-widest p-2 hover:bg-gold-500/10 rounded-lg transition-all"
+                             >
+                               + Añadir Vino
+                             </button>
+                          </div>
+                        </div>
+                      </div>
+                    )}
 
                     <div className="grid grid-cols-2 gap-4">
                       <div>
@@ -444,7 +551,19 @@ export default function ExperienceManager() {
                         />
                       </div>
                       <div>
-                        <label className="text-[10px] text-slate-400 uppercase tracking-[0.2em] font-bold mb-3 block">Fecha y hora del evento</label>
+                        <label className="text-[10px] text-slate-400 uppercase tracking-[0.2em] font-bold mb-3 block">Descuento Temp (%)</label>
+                        <input
+                          type="number"
+                          value={formData.temp_discount || 0}
+                          onChange={e => setFormData({ ...formData, temp_discount: parseInt(e.target.value) || 0 })}
+                          className="w-full bg-slate-950/70 border border-white/10 rounded-xl px-4 py-3.5 text-sm text-gold-500 focus:outline-none focus:border-gold-500/50"
+                        />
+                      </div>
+                    </div>
+
+                    {formData.type?.toLowerCase() !== 'caja' && (
+                      <div>
+                        <label className="text-[10px] text-slate-400 uppercase tracking-[0.2em] font-bold mb-3 block">Fecha y hora</label>
                         <input
                           type="datetime-local"
                           value={formData.event_date || ''}
@@ -452,7 +571,7 @@ export default function ExperienceManager() {
                           className="w-full bg-slate-950/70 border border-white/10 rounded-xl px-4 py-3.5 text-sm text-white focus:outline-none focus:border-gold-500/50 transition-all font-sans"
                         />
                       </div>
-                    </div>
+                    )}
 
                     <div>
                       <label className="text-[10px] text-slate-400 uppercase tracking-[0.2em] font-bold mb-3 block">Descripción</label>
@@ -542,7 +661,7 @@ export default function ExperienceManager() {
                   </div>
                 </div>
               </form>
-            ) : null}
+            )}
           </motion.div>
         )}
       </AnimatePresence>

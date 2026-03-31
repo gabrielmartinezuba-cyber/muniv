@@ -15,6 +15,9 @@ export type AdminReportRow = {
   guests_count: number | null;
   total_price: number | null;
   status: string;
+  selected_wines: string[] | null;
+  cancel_requested: boolean;
+  cancel_reason: string | null;
 };
 
 export async function getAdminExperiences(): Promise<{ id: string; title: string, image_url: string }[]> {
@@ -44,6 +47,9 @@ export async function getAdminExperiences(): Promise<{ id: string; title: string
 
 export type AdminReportFilters = {
   experience_id?: string;
+  status?: string;
+  type?: string;
+  date_range?: string;
 }
 
 export async function getAdminReport(filters?: AdminReportFilters): Promise<AdminReportRow[]> {
@@ -86,7 +92,10 @@ export async function getAdminReport(filters?: AdminReportFilters): Promise<Admi
           experience_type: isAdminUser ? 'ADMIN' : 'MIEMBRO',
           guests_count: null,
           total_price: null,
-          status: '-'
+          status: '-',
+          selected_wines: null,
+          cancel_requested: false,
+          cancel_reason: null
         };
       }).sort((a, b) => {
         if (a.experience_type === 'ADMIN' && b.experience_type !== 'ADMIN') return -1;
@@ -103,6 +112,24 @@ export async function getAdminReport(filters?: AdminReportFilters): Promise<Admi
     // Apply filters
     if (filters?.experience_id && filters.experience_id !== "ALL") {
       query = query.eq('experience_id', filters.experience_id);
+    }
+    if (filters?.status && filters.status !== "ALL") {
+      query = query.eq('status', filters.status);
+    }
+    if (filters?.type && filters.type !== "ALL") {
+      query = query.eq('experiences.type', filters.type);
+    }
+    if (filters?.date_range && filters.date_range !== "ALL") {
+       const now = new Date();
+       let start;
+       if (filters.date_range === 'HOY') {
+         start = new Date(now.setHours(0,0,0,0));
+       } else if (filters.date_range === 'SEMANA') {
+         start = new Date(now.setDate(now.getDate() - 7));
+       } else if (filters.date_range === 'MES') {
+         start = new Date(now.setMonth(now.getMonth() - 1));
+       }
+       if (start) query = query.gte('created_at', start.toISOString());
     }
 
     const { data: bookings, error: bookingsError } = await query;
@@ -139,7 +166,10 @@ export async function getAdminReport(filters?: AdminReportFilters): Promise<Admi
         experience_type: booking.experiences?.type || "N/A",
         guests_count: booking.guests_count,
         total_price: booking.total_price,
-        status: booking.status
+        status: booking.status,
+        selected_wines: booking.selected_wines,
+        cancel_requested: booking.cancel_requested ?? false,
+        cancel_reason: booking.cancel_reason ?? null
       };
     });
 
@@ -173,10 +203,20 @@ export async function upsertExperience(formData: FormData): Promise<{ success: b
       status: formData.get('status') as string,
       price: parseFloat(formData.get('price') as string) || 0,
       display_order: parseInt(formData.get('display_order') as string, 10) || 0,
+      wine_quantity: parseInt(formData.get('wine_quantity') as string, 10) || null,
+      wine_options: formData.get('wine_options') ? JSON.parse(formData.get('wine_options') as string) : null,
+      location_name: formData.get('location_name') as string || null,
+      location_address: formData.get('location_address') as string || null,
+      max_capacity: parseInt(formData.get('max_capacity') as string, 10) || null,
+      temp_discount: parseInt(formData.get('temp_discount') as string, 10) || null,
     };
     
-    if (formData.get('event_date')) {
+    if (updates.type?.toLowerCase() === 'caja') {
+      updates.event_date = null;
+    } else if (formData.get('event_date') && formData.get('event_date') !== "") {
       updates.event_date = formData.get('event_date') as string;
+    } else {
+      updates.event_date = null;
     }
 
     if (!isNew) {
@@ -492,3 +532,25 @@ export async function getNextExperienceOrder(): Promise<number> {
   }
 }
 
+
+export async function updateBookingStatus(bookingId: string, newStatus: string): Promise<{ success: boolean; error?: string }> {
+  try {
+    const isAdmin = await checkIsAdmin();
+    if (!isAdmin) return { success: false, error: "Unauthorized." };
+
+    const supabaseAdmin = createAdminClient();
+    const { error } = await supabaseAdmin
+      .from('bookings')
+      .update({ status: newStatus })
+      .eq('id', bookingId);
+    
+    if (error) throw error;
+
+    revalidatePath('/admin/ordenes');
+    revalidatePath('/comunidad');
+    return { success: true };
+  } catch (error: any) {
+    console.error("updateBookingStatus error:", error);
+    return { success: false, error: error.message };
+  }
+}

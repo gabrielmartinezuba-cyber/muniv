@@ -17,6 +17,7 @@ export async function signUp(data: unknown) {
         data: {
           first_name: formData.firstName,
           last_name: formData.lastName,
+          phone: formData.phone,
           dob: formData.dob,
         },
       },
@@ -106,13 +107,14 @@ export async function updateUserPassword(data: unknown) {
   }
 }
 
-export async function updateUserData(data: { nombre: string; apellido: string }) {
+export async function updateUserData(data: { nombre: string; apellido: string; telefono: string }) {
   try {
     const supabase = await createClient();
     const { error } = await supabase.auth.updateUser({
       data: {
         first_name: data.nombre,
         last_name: data.apellido,
+        phone: data.telefono,
       },
     });
 

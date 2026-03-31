@@ -2,7 +2,7 @@
 
 import { motion, AnimatePresence } from "framer-motion";
 import { useCartStore } from "@/store/useCartStore";
-import { X, Users, ShieldCheck, Loader2, AlertCircle, ShoppingCart, Trash2, CalendarDays } from "lucide-react";
+import { X, Users, ShieldCheck, Loader2, AlertCircle, ShoppingCart, Trash2, CalendarDays, Package, Minus, Plus } from "lucide-react";
 import { useEffect, useState, useTransition } from "react";
 import { submitBooking } from "@/actions/booking";
 import { getBenefits } from "@/actions/benefits";
@@ -14,7 +14,8 @@ import Link from "next/link";
 
 export default function BookingDrawer() {
   const { 
-    isOpen, closeCart, items, removeItem, updateItemGuests, toggleItemUpSell, clearCart, getTotal
+    isOpen, closeCart, items, removeItem, updateItemGuests, updateItemWines, toggleItemUpSell, clearCart, 
+    getSubtotal, getDiscountAmount, getTotal, setBenefit, benefit
   } = useCartStore();
 
   const [mounted, setMounted] = useState(false);
@@ -22,9 +23,8 @@ export default function BookingDrawer() {
   const [isPending, startTransition] = useTransition();
   const [globalError, setGlobalError] = useState<string | null>(null);
   
-  // Auth & Discount State
+  // Auth State
   const [user, setUser] = useState<User | null>(null);
-  const [maxDiscount, setMaxDiscount] = useState<number>(0);
   const [checkingAuth, setCheckingAuth] = useState(true);
 
   // Guest Form
@@ -51,12 +51,17 @@ export default function BookingDrawer() {
           const { data: { session } } = await supabase.auth.getSession();
           setUser(session?.user || null);
 
-          // Get max discount
+          // Get max benefit with cap
           const benefits = await getBenefits();
-          const maxPerc = benefits.reduce((max, b) => {
-            return b.discount_percentage ? Math.max(max, b.discount_percentage) : max;
-          }, 0);
-          setMaxDiscount(maxPerc);
+          const bestBenefit = benefits.reduce((best, b) => {
+            if (!b.discount_percentage) return best;
+            if (!best || b.discount_percentage > best.percentage) {
+              return { percentage: b.discount_percentage, cap: (b as any).discount_cap };
+            }
+            return best;
+          }, null as { percentage: number; cap: number | null } | null);
+          
+          setBenefit(session?.user ? bestBenefit : null);
         } catch (err) {
           console.error("Error loading auth/discounts:", err);
         } finally {
@@ -65,18 +70,13 @@ export default function BookingDrawer() {
       };
       fetchAuthAndDiscounts();
     }
-  }, [isOpen]);
+  }, [isOpen, setBenefit]);
 
   if (!mounted) return null;
 
-  const UPSELL_OPTIONS = [
-    { id: "SOMMELIER", label: "Sommelier Bilingüe (ENG/POR)", price: 15000 },
-    { id: "PREMIUM_PAIRING", label: "Upgrade Maridaje", price: 25000 },
-  ];
-
-  const subtotal = getTotal();
-  const rawDiscountAmount = subtotal * (maxDiscount / 100);
-  const finalPrice = user ? subtotal - rawDiscountAmount : subtotal;
+  const subtotal = getSubtotal();
+  const discountAmount = getDiscountAmount();
+  const finalPrice = user ? getTotal() : subtotal;
 
   const handleCheckout = () => {
     if (items.length === 0) return;
@@ -88,9 +88,6 @@ export default function BookingDrawer() {
 
     setGlobalError(null);
     startTransition(async () => {
-      // In a real e-commerce with multiple items, we would iterate and call submitBooking for each,
-      // or the backend would be refactored to accept an array. For now, we process them iteratively.
-      
       let hasError = false;
       let lastErrMsg = "";
 
@@ -104,7 +101,8 @@ export default function BookingDrawer() {
           upSells: item.upSells,
           guest_name: user ? "" : guestName,
           guest_email: user ? "" : guestEmail,
-          final_price: user ? ((item.price * item.guests) * (1 - maxDiscount / 100)) : (item.price * item.guests)
+          final_price: user ? ((item.price * item.guests) * (1 - (benefit?.percentage || 0) / 100)) : (item.price * item.guests),
+          selected_wines: item.selected_wines
         };
 
         const res = await submitBooking(payload);
@@ -179,7 +177,7 @@ export default function BookingDrawer() {
               </button>
             </div>
 
-            <div className="p-6 flex-grow overflow-y-auto space-y-6">
+            <div className="p-6 flex-grow overflow-y-auto space-y-6 custom-scrollbar">
               {items.length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-full text-slate-500 gap-4 mt-20">
                   <ShoppingCart size={48} className="opacity-20" />
@@ -187,128 +185,185 @@ export default function BookingDrawer() {
                 </div>
               ) : (
                 <>
-                  {items.map((item) => (
-                    <motion.div key={item.id} layout className="bg-slate-900/40 border border-white/5 rounded-2xl p-4 flex flex-col gap-4 relative">
-                      <button onClick={() => removeItem(item.id)} className="absolute top-4 right-4 text-slate-500 hover:text-red-400 transition-colors">
-                        <Trash2 size={16} />
-                      </button>
-                      
-                      <div>
-                        <h3 className="font-display text-lg text-white pr-6">{item.title}</h3>
-                        {item.eventDate && (
-                          <p className="text-xs text-gold-500 uppercase tracking-widest mt-1">
-                             {new Date(item.eventDate).toLocaleDateString('es-AR', { weekday: 'short', day: 'numeric', month: 'short' })} - {new Date(item.eventDate).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })}hs
-                          </p>
-                        )}
-                      </div>
+                  {items.map((item) => {
+                    const isSorteo = item.type?.toLowerCase() === 'sorteo';
+                    const isCaja = item.type?.toLowerCase() === 'caja';
+                    const isEvento = item.type?.toLowerCase() === 'evento';
+                    
+                    const totalBottles = (item.wine_quantity || 0) * item.guests;
 
-                      <div className="flex items-center justify-between mt-2">
-                        <div className="flex items-center gap-3 bg-slate-950/50 rounded-full border border-white/10 p-1">
-                          <button onClick={() => item.guests > 1 && updateItemGuests(item.id, item.guests - 1)} className="w-8 h-8 rounded-full text-white flex items-center justify-center hover:bg-white/5">-</button>
-                          <span className="text-sm font-bold text-white w-4 text-center">{item.guests}</span>
-                          <button onClick={() => updateItemGuests(item.id, item.guests + 1)} className="w-8 h-8 rounded-full text-white flex items-center justify-center hover:bg-white/5">+</button>
+                    return (
+                      <motion.div key={item.id} layout className="bg-slate-900/40 border border-white/5 rounded-2xl p-5 flex flex-col gap-5 relative">
+                        <button onClick={() => removeItem(item.id)} className="absolute top-4 right-4 text-slate-500 hover:text-red-400 transition-colors">
+                          <Trash2 size={16} />
+                        </button>
+                        
+                        <div className="flex gap-4">
+                           <div className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center border border-white/10 shrink-0">
+                              {isCaja ? <Package className="text-gold-500" /> : <CalendarDays className="text-gold-500" />}
+                           </div>
+                           <div>
+                            <h3 className="font-display text-lg text-white pr-6 leading-tight">{item.title}</h3>
+                            {item.eventDate && !isCaja && (
+                              <p className="text-[10px] text-gold-500 uppercase tracking-widest font-bold mt-1">
+                                 {new Date(item.eventDate).toLocaleDateString('es-AR', { weekday: 'short', day: 'numeric', month: 'short' })} • {new Date(item.eventDate).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })}hs
+                              </p>
+                            )}
+                            <p className="text-[10px] text-slate-500 uppercase font-black tracking-widest mt-0.5">{item.type}</p>
+                          </div>
                         </div>
-                        <span className="text-lg font-medium text-white">${(item.price * item.guests).toLocaleString('es-AR')}</span>
-                      </div>
-                    </motion.div>
-                  ))}
+
+                        <div className="flex items-center justify-between mt-2 pt-4 border-t border-white/5">
+                          {isSorteo ? (
+                            <span className="text-[10px] uppercase font-bold tracking-widest text-gold-500/60 bg-gold-500/5 px-3 py-1 rounded-full border border-gold-500/10">1 participación</span>
+                          ) : (
+                            <div className="flex items-center gap-3 bg-slate-950/50 rounded-full border border-white/10 p-1">
+                              <button onClick={() => item.guests > 1 && updateItemGuests(item.id, item.guests - 1)} className="w-8 h-8 rounded-full text-white flex items-center justify-center hover:bg-white/10 transition-colors">
+                                <Minus size={14} />
+                              </button>
+                              <div className="flex items-center gap-1.5 px-2">
+                                <span className="text-sm font-bold text-white min-w-[1ch] text-center">{item.guests}</span>
+                                <span className="text-[10px] text-slate-400 uppercase font-bold tracking-tighter">{isCaja ? 'cajas' : 'personas'}</span>
+                              </div>
+                              <button onClick={() => updateItemGuests(item.id, item.guests + 1)} className="w-8 h-8 rounded-full text-white flex items-center justify-center hover:bg-white/10 transition-colors">
+                                <Plus size={14} />
+                              </button>
+                            </div>
+                          )}
+                          <span className="text-lg font-display text-white italic">${(item.price * item.guests).toLocaleString('es-AR')}</span>
+                        </div>
+
+                        {/* Wine Selection for Cajas */}
+                        {isCaja && item.wine_options && item.wine_options.length > 0 && (
+                          <div className="mt-2 space-y-4 pt-4 border-t border-white/5 bg-black/20 -mx-5 px-5 pb-5">
+                            <label className="text-[10px] text-gold-500/70 uppercase font-black tracking-widest flex items-center gap-2">
+                              Elegí tus vinos ({item.selected_wines?.length || 0}/{totalBottles}):
+                            </label>
+                            <div className="grid grid-cols-1 gap-3">
+                               {Array.from({ length: totalBottles }).map((_, idx) => (
+                                 <select
+                                   key={idx}
+                                   value={item.selected_wines?.[idx] || ""}
+                                   onChange={(e) => {
+                                      const newWines = [...(item.selected_wines || [])];
+                                      newWines[idx] = e.target.value;
+                                      updateItemWines(item.id, newWines);
+                                   }}
+                                   className="w-full bg-slate-900 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-gold-500/50 transition-all appearance-none cursor-pointer"
+                                 >
+                                   <option value="" disabled>Seleccionar vino {idx + 1}...</option>
+                                   {item.wine_options?.map((opt, oIdx) => (
+                                     <option key={oIdx} value={opt}>{opt}</option>
+                                   ))}
+                                 </select>
+                               ))}
+                            </div>
+                          </div>
+                        )}
+                      </motion.div>
+                    );
+                  })}
 
                   {/* Summary & Checkout Logic */}
-                  <div className="pt-6 border-t border-white/10 space-y-6">
+                  <div className="pt-6 border-t border-white/10 space-y-6 pb-20">
                     {checkingAuth ? (
                       <div className="flex justify-center p-4"><Loader2 className="animate-spin text-gold-500" /></div>
                     ) : (
                       <>
-                        {!user && maxDiscount > 0 && (
-                          <div className="border border-gold-500/50 bg-gold-500/10 p-4 rounded-xl flex flex-col gap-3">
+                        {!user && benefit && benefit.percentage > 0 && (
+                          <div className="border border-gold-500/50 bg-gold-500/10 p-4 rounded-3xl flex flex-col gap-3">
                             <div className="flex items-start gap-3">
                               <AlertCircle className="text-gold-500 shrink-0 mt-0.5" size={18} />
-                              <p className="text-sm text-gold-200">
-                                <strong>¡No te pierdas este beneficio!</strong> Registrate gratis a la Comunidad y ahorrá un {maxDiscount}% en esta compra (${rawDiscountAmount.toLocaleString('es-AR')} de ahorro).
+                              <p className="text-xs text-gold-200 leading-relaxed">
+                                <strong>¡Aprovechá tu beneficio!</strong> Si fueras Miembro MUNIV estarías ahorrando un <strong>{benefit.percentage}%</strong> en esta compra (máximo ${benefit.cap?.toLocaleString('es-AR')}).
                               </p>
                             </div>
-                            <Link href="/login" onClick={closeCart} className="text-xs uppercase tracking-widest bg-gold-500 text-slate-950 font-bold py-2 px-4 rounded-full text-center hover:bg-gold-400 mt-2">
+                            <Link href="/login" onClick={closeCart} className="text-[10px] uppercase tracking-widest bg-gold-500 text-slate-950 font-black py-2.5 px-6 rounded-full text-center hover:bg-gold-400 mt-1 transition-all">
                               Ingresar / Registrarme
                             </Link>
                           </div>
                         )}
 
-                        <div className="bg-slate-950/50 rounded-2xl p-5 border border-white/5">
-                          <div className="flex justify-between items-center mb-2">
-                            <span className="text-slate-400">Subtotal</span>
-                            <span className={user && maxDiscount > 0 ? "line-through text-slate-500" : "text-white"}>
+                        <div className="bg-slate-950/80 rounded-3xl p-6 border border-white/5 shadow-2xl">
+                          <div className="flex justify-between items-center mb-3">
+                            <span className="text-slate-500 text-xs uppercase font-bold tracking-widest">Subtotal</span>
+                            <span className={user && discountAmount > 0 ? "line-through text-slate-600 text-sm" : "text-white font-display text-lg"}>
                               ${subtotal.toLocaleString('es-AR')}
                             </span>
                           </div>
                           
-                          {user && maxDiscount > 0 && (
-                            <div className="flex justify-between items-center mb-2">
-                              <span className="text-burgundy-400">Beneficio Comunidad (-{maxDiscount}%)</span>
-                              <span className="text-burgundy-400 font-bold">-${rawDiscountAmount.toLocaleString('es-AR')}</span>
+                          {user && discountAmount > 0 && (
+                            <div className="flex justify-between items-center mb-3">
+                              <span className="text-burgundy-400 text-xs uppercase font-bold tracking-widest">
+                                Comunidad (-{benefit?.percentage}%)
+                                {benefit?.cap && discountAmount === benefit.cap && <span className="text-[8px] ml-1 opacity-70">(Tope alcanzado)</span>}
+                              </span>
+                              <span className="text-burgundy-400 font-display text-lg font-bold">-${discountAmount.toLocaleString('es-AR')}</span>
                             </div>
                           )}
 
-                          <div className="pt-4 mt-4 border-t border-white/10 flex justify-between items-center">
-                            <span className="text-white font-bold uppercase tracking-widest text-sm">
-                              {user ? "Total Miembro" : "Total Final"}
+                          <div className="pt-5 mt-5 border-t border-white/10 flex justify-between items-center">
+                            <span className="text-white font-black uppercase tracking-[0.2em] text-[10px]">
+                              Total Final
                             </span>
-                            <span className="text-2xl text-gold-500 font-display">
+                            <span className="text-3xl text-gold-500 font-display italic">
                               ${finalPrice.toLocaleString('es-AR')}
                             </span>
                           </div>
                         </div>
 
                         {!user && (
-                          <div className="pt-6 mt-2 border-t border-white/5 space-y-4">
-                            <div className="flex items-center gap-2 mb-2">
-                              <div className="w-1 h-4 bg-gold-500 rounded-full" />
-                              <h4 className="text-[10px] uppercase tracking-[0.2em] text-slate-400 font-bold">Datos para tu reserva</h4>
+                          <div className="pt-2 space-y-4">
+                            <div className="flex items-center gap-3">
+                              <div className="w-1.5 h-1.5 bg-gold-500 rounded-full" />
+                              <h4 className="text-[9px] uppercase tracking-[0.3em] text-slate-500 font-black">Datos del Comprador</h4>
+                              <div className="flex-grow h-[1px] bg-white/5" />
                             </div>
                             
-                            <div className="grid grid-cols-1 gap-4 p-4 bg-black/40 border border-gold-500/20 rounded-2xl shadow-inner group-hover:border-gold-500/40 transition-colors">
-                              <div className="space-y-1.5">
-                                <label className="text-[9px] uppercase tracking-widest text-gold-500/70 ml-1 font-bold">Nombre Completo</label>
+                            <div className="grid grid-cols-1 gap-4 p-5 bg-black/40 border border-white/5 rounded-3xl shadow-inner group-hover:border-gold-500/40 transition-colors">
+                              <div className="space-y-2">
+                                <label className="text-[8px] uppercase tracking-widest text-slate-500 ml-1 font-black">Nombre Completo</label>
                                 <input 
                                   type="text" 
                                   placeholder="Ej: Juan Pérez"
                                   value={guestName}
                                   onChange={e => setGuestName(e.target.value)}
-                                  className="w-full bg-slate-900/60 border border-white/5 text-white rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-gold-500/50 transition-all placeholder:text-slate-600 font-light"
+                                  className="w-full bg-slate-900/60 border border-white/5 text-white rounded-2xl px-5 py-3.5 text-sm focus:outline-none focus:border-gold-500/50 transition-all placeholder:text-slate-700 font-light"
                                   required
                                 />
                               </div>
                               
-                              <div className="space-y-1.5">
-                                <label className="text-[9px] uppercase tracking-widest text-gold-500/70 ml-1 font-bold">Email de Contacto</label>
+                              <div className="space-y-2">
+                                <label className="text-[8px] uppercase tracking-widest text-slate-500 ml-1 font-black">Email de Contacto</label>
                                 <input 
                                   type="email" 
                                   placeholder="juan@ejemplo.com"
                                   value={guestEmail}
                                   onChange={e => setGuestEmail(e.target.value)}
-                                  className="w-full bg-slate-900/60 border border-white/5 text-white rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-gold-500/50 transition-all placeholder:text-slate-600 font-light"
+                                  className="w-full bg-slate-900/60 border border-white/5 text-white rounded-2xl px-5 py-3.5 text-sm focus:outline-none focus:border-gold-500/50 transition-all placeholder:text-slate-700 font-light"
                                   required
                                 />
-                                <p className="text-[8px] text-slate-500 italic mt-1 ml-1 leading-tight">Enviaremos tus entradas y confirmación a este correo.</p>
+                                <p className="text-[8px] text-slate-600 italic mt-1 ml-1 leading-tight">Enviaremos tus comprobantes a este correo.</p>
                               </div>
                             </div>
                           </div>
                         )}
 
                         {globalError && (
-                          <div className="p-3 border border-red-500/30 bg-red-500/10 text-red-400 rounded-xl text-xs flex gap-2 items-center">
-                            <AlertCircle size={14} /> {globalError}
+                          <div className="p-4 border border-red-500/30 bg-red-500/10 text-red-100 rounded-2xl text-[10px] font-bold uppercase tracking-widest flex gap-3 items-center">
+                            <AlertCircle size={16} className="text-red-500" /> {globalError}
                           </div>
                         )}
 
                         <button 
                           onClick={handleCheckout}
                           disabled={isPending}
-                          className="w-full mt-4 glass-panel-glow bg-burgundy-600 text-white font-bold py-4 rounded-full flex items-center justify-center gap-2 hover:bg-burgundy-500 transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
+                          className="w-full mt-4 glass-panel-glow bg-burgundy-700 text-white font-black py-5 rounded-2xl flex items-center justify-center gap-3 hover:bg-burgundy-600 transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed shadow-2xl tracking-[0.2em] text-[10px] uppercase"
                         >
                           {isPending ? (
                             <>Procesando <Loader2 size={18} className="animate-spin" /></>
                           ) : (
-                            <>Confirmar Reserva Segura <ShieldCheck size={18} /></>
+                            <>Confirmar Compra Segura <ShieldCheck size={18} /></>
                           )}
                         </button>
                       </>

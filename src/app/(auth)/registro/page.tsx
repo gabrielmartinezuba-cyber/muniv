@@ -113,24 +113,42 @@ export default function RegisterPage() {
                   </div>
                 </div>
 
-                {/* Date of Birth Field -> strict age validation */}
-                <div className="group">
-                  <label className="text-white/60 text-xs font-medium mb-1.5 ml-1 flex items-center gap-1.5 uppercase tracking-wider">
-                    <Calendar size={12} /> Fecha de Nacimiento
-                  </label>
-                  <div className="relative">
-                    <input 
-                      type="date"
-                      {...register("dob")}
-                      className="w-full bg-slate-900/50 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-gold-500 focus:ring-1 focus:ring-gold-500 transition-all font-sans appearance-none min-h-[46px]"
-                    />
+                {/* Phone & Date of Birth Field -> strict age validation */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="group">
+                    <label className="text-white/60 text-[10px] font-medium mb-1.5 ml-1 flex items-center gap-1.5 uppercase tracking-wider">
+                      Teléfono (WhatsApp)
+                    </label>
+                    <div className="relative">
+                      <input 
+                        type="tel"
+                        {...register("phone")}
+                        placeholder="+54 9 11 ..."
+                        className="w-full bg-slate-900/50 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-gold-500 focus:ring-1 focus:ring-gold-500 transition-all font-sans placeholder:text-slate-600 h-[46px]"
+                      />
+                    </div>
+                    {errors.phone && <span className="text-rose-500 text-[10px] mt-1 block px-2 italic">{errors.phone.message}</span>}
                   </div>
-                  {errors.dob && (
-                    <motion.span initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="text-rose-500 font-medium text-xs mt-1.5 flex items-center gap-1 bg-rose-500/10 border border-rose-500/20 px-3 py-2 rounded-lg">
-                      <AlertCircle size={14} /> {errors.dob.message}
-                    </motion.span>
-                  )}
+
+                  <div className="group">
+                    <label className="text-white/60 text-[10px] font-medium mb-1.5 ml-1 flex items-center gap-1.5 uppercase tracking-wider">
+                      Fecha de Nacimiento
+                    </label>
+                    <div className="relative">
+                      <input 
+                        type="date"
+                        {...register("dob")}
+                        className="w-full bg-slate-900/50 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-gold-500 focus:ring-1 focus:ring-gold-500 transition-all font-sans appearance-none h-[46px]"
+                      />
+                    </div>
+                  </div>
                 </div>
+
+                {errors.dob && (
+                  <motion.span initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="text-rose-500 font-medium text-[10px] mt-1 flex items-center gap-1 bg-rose-500/10 border border-rose-500/20 px-3 py-2 rounded-lg">
+                    <AlertCircle size={14} /> {errors.dob.message}
+                  </motion.span>
+                )}
 
                 {/* Email Field */}
                 <div className="group mt-1">

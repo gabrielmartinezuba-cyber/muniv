@@ -19,12 +19,15 @@ export default function ExperienceList() {
   const handleBookingClick = async (exp: Experience) => {
     addItem({
       experienceId: exp.id,
+      type: exp.type, // Pass type
       title: exp.title,
       price: exp.price,
       status: exp.status,
       eventDate: exp.event_date,
       guests: 1,
-      upSells: []
+      upSells: [],
+      wine_quantity: (exp as any).wine_quantity,
+      wine_options: (exp as any).wine_options,
     });
     openCart();
   };
@@ -80,12 +83,19 @@ export default function ExperienceList() {
             </p>
 
             {exp.event_date && (
-              <div className="flex items-center gap-2 text-gold-500 text-[11px] tracking-wider uppercase font-bold mb-6">
+              <div className="flex items-center gap-2 text-gold-500 text-[11px] tracking-wider uppercase font-bold mb-2">
                 <Calendar size={14} />
                 <span>
                   {new Date(exp.event_date).toLocaleDateString('es-AR', { weekday: 'short', day: 'numeric', month: 'short' }).replace('.', '')} - {new Date(exp.event_date).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })}hs
                 </span>
               </div>
+            )}
+
+            {(exp as any).location_name && (
+               <div className="flex items-center gap-2 text-slate-500 text-[10px] tracking-widest uppercase font-black mb-6">
+                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="text-gold-500/70"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+                 <span className="truncate">{(exp as any).location_name} • {(exp as any).location_address}</span>
+               </div>
             )}
 
             <div className="flex items-center justify-between mt-auto">
@@ -110,7 +120,7 @@ export default function ExperienceList() {
                   onClick={() => handleBookingClick(exp)}
                   className="flex items-center gap-2 px-5 py-2.5 bg-burgundy-600 text-white rounded-full font-bold text-sm hover:bg-burgundy-500 transition-all active:scale-95 shadow-[0_0_20px_rgba(108,26,26,0.4)]"
                 >
-                  {exp.price === 0 ? 'Participar' : 'Reservar'} <Plus size={16} />
+                  {exp.type?.toLowerCase() === 'caja' ? 'COMPRAR' : (exp.price === 0 ? 'Participar' : 'Reservar')} <Plus size={16} />
                 </button>
               )}
             </div>

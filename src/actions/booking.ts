@@ -28,7 +28,7 @@ export async function submitBooking(data: unknown) {
     // 3. Obtener precio base de la experiencia para calcular el total
     const { data: experience, error: expError } = await supabase
       .from('experiences')
-      .select('price')
+      .select('price, type')
       .eq('id', formData.experienceId)
       .single();
 
@@ -36,8 +36,8 @@ export async function submitBooking(data: unknown) {
       return { success: false, message: "La experiencia seleccionada no es válida." };
     }
 
-    // 4. Protección contra duplicados: Solo para usuarios registrados
-    if (user) {
+    // 4. Protección contra duplicados: Solo para usuarios registrados Y tipo Sorteo
+    if (user && (experience.type === 'Sorteo' || experience.type === 'sorteo')) {
       const { data: existingBooking, error: checkError } = await supabase
         .from('bookings')
         .select('id')
@@ -53,7 +53,7 @@ export async function submitBooking(data: unknown) {
         return { 
           success: false, 
           error: 'ALREADY_BOOKED', 
-          message: 'Ya estás participando de este sorteo o experiencia.' 
+          message: 'Ya estás participando de este sorteo.' 
         };
       }
     }
@@ -68,7 +68,8 @@ export async function submitBooking(data: unknown) {
       experience_id: formData.experienceId,
       guests_count: Number(formData.guests),
       total_price: Number(totalPrice),
-      status: 'CONFIRMED'
+      status: 'PENDIENTE',
+      selected_wines: formData.selected_wines || []
     };
 
     if (user) {
@@ -155,6 +156,48 @@ export async function submitGifting(data: unknown) {
       success: false, 
       message: "Problema interno procesando la estructura B2B." 
     };
+  }
+}
+
+export async function requestBookingCancellation(bookingId: string, reason: string) {
+  try {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) {
+      console.warn("Attempted cancellation without valid session.");
+      return { success: false, message: "Sesión inválida." };
+    }
+
+    // UPDATE with return count to verify success
+    const { error, count } = await supabase
+      .from('bookings')
+      .update({ cancel_requested: true, cancel_reason: reason }, { count: 'exact' })
+      .eq('id', bookingId)
+      .eq('user_id', user.id); // Security: only owner can request
+
+    if (error) {
+      console.error(`[CANCELLATION ERROR] Booking ${bookingId}:`, error);
+      return { success: false, message: "Error técnico al procesar la solicitud." };
+    }
+
+    if (count === 0) {
+      console.error(`[CANCELLATION FAILED] No rows updated for booking ${bookingId}. User: ${user.id}`);
+      return { success: false, message: "No se encontró la reserva o no tenés permisos." };
+    }
+
+    console.log(`[CANCELLATION SUCCESS] Booking ${bookingId} requested by ${user.id}`);
+
+    revalidatePath("/comunidad");
+    revalidatePath("/admin/ordenes");
+
+    return { 
+      success: true, 
+      message: "Muniv te contactará para seguir el proceso de cancelación." 
+    };
+  } catch (error) {
+    console.error("[CANCELLATION CRASH]:", error);
+    return { success: false, message: "Error inesperado en el servidor." };
   }
 }
 

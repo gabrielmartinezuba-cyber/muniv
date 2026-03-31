@@ -227,6 +227,7 @@ export default function BenefitManager() {
     formPayload.append("title", formData.title);
     formPayload.append("description", formData.description);
     formPayload.append("discount_percentage", formData.discount_percentage?.toString() || "0");
+    formPayload.append("discount_cap", formData.discount_cap?.toString() || "");
     formPayload.append("display_order", formData.display_order?.toString() || "0");
     
     if (imageFile) {
@@ -407,6 +408,26 @@ export default function BenefitManager() {
                         Si el beneficio es para usar en otro local o presencialmente (sin descuento dentro de la web), dejalo en 0.
                       </p>
                     </div>
+
+                    {(formData.discount_percentage > 0) && (
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        className="overflow-hidden"
+                      >
+                        <label className="text-[10px] text-burgundy-400 uppercase tracking-[0.2em] font-bold mb-3 block">Tope máximo de descuento ($) (Opcional)</label>
+                        <input
+                          type="number"
+                          value={formData.discount_cap || ""}
+                          onChange={e => setFormData({ ...formData, discount_cap: parseInt(e.target.value) || null })}
+                          className="w-full bg-slate-950/70 border border-white/10 rounded-xl px-4 py-3.5 text-sm text-white focus:outline-none focus:border-burgundy-500/50 transition-all font-light"
+                          placeholder="Ej. 5000"
+                        />
+                        <p className="text-[9px] text-slate-500 uppercase tracking-widest mt-2 px-1">
+                          Define el monto máximo que se restará en esta compra.
+                        </p>
+                      </motion.div>
+                    )}
                   </div>
 
                   <div>

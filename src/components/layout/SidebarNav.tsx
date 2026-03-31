@@ -17,7 +17,7 @@ export default function SidebarNav({ isAdmin }: { isAdmin?: boolean }) {
             : 'hover:bg-white/5 text-slate-300'
         }`}
       >
-        <Ticket size={18} /> Mis reservas
+        <Ticket size={18} /> Mis Experiencias
       </Link>
       <Link 
         href="/comunidad/beneficios" 
@@ -31,16 +31,32 @@ export default function SidebarNav({ isAdmin }: { isAdmin?: boolean }) {
       </Link>
 
       {isAdmin && (
-        <>
+        <div className="mt-8 pt-8 border-t border-white/5 space-y-2">
+           <div className="flex items-center gap-2 mb-2 px-4">
+              <div className="w-1.5 h-1.5 bg-gold-500 rounded-full" />
+              <h4 className="text-[9px] uppercase tracking-[0.3em] text-slate-500 font-black">ADMINISTRACIÓN</h4>
+           </div>
+
+           <Link 
+            href="/admin/ordenes" 
+            className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-colors ${
+              pathname === '/admin/ordenes' 
+                ? 'bg-gold-500/10 border border-gold-500 text-gold-500 font-medium font-bold' 
+                : 'hover:bg-gold-500/10 text-gold-400 border border-gold-500/20'
+            }`}
+          >
+            <ClipboardList size={18} /> Órdenes Activas
+          </Link>
+
           <Link 
             href="/admin" 
             className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-colors ${
               pathname === '/admin' 
-                ? 'bg-gold-500/10 border border-gold-500 text-gold-500 font-medium' 
+                ? 'bg-gold-500/10 border border-gold-500 text-gold-500 font-medium font-bold' 
                 : 'hover:bg-gold-500/10 text-gold-400 border border-gold-500/20'
             }`}
           >
-            <ClipboardList size={18} /> Reportes
+            <Package size={18} /> Reportes
           </Link>
           <Link 
             href="/admin/experiencias" 
@@ -72,7 +88,7 @@ export default function SidebarNav({ isAdmin }: { isAdmin?: boolean }) {
           >
             <Settings size={18} /> Editar Web
           </Link>
-        </>
+        </div>
       )}
 
       <div className="mt-8 border-t border-white/5 pt-8">

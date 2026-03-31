@@ -4,6 +4,7 @@ import { differenceInYears, parseISO, isValid } from "date-fns";
 export const SignUpSchema = z.object({
   firstName: z.string().min(2, "Ingresá tu nombre real"),
   lastName: z.string().min(2, "Ingresá tu apellido"),
+  phone: z.string().min(8, "El teléfono es obligatorio para la gestión de su cuenta"),
   email: z.string().email("El formato del email no es válido"),
   password: z.string()
     .min(8, "La contraseña debe tener mínimo 8 caracteres")

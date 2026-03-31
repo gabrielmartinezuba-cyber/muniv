@@ -2,7 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import Link from "next/link";
-import { Ticket, Gift, Settings, Menu, X, ClipboardList, Package, ExternalLink } from "lucide-react";
+import { Ticket, Gift, Settings, Menu, X, ClipboardList, Package, ExternalLink, History } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -15,7 +15,7 @@ export default function MobileNav({ isAdmin }: { isAdmin?: boolean }) {
   const mainLinks = [
     {
       href: "/comunidad",
-      label: "Reservas",
+      label: "Experiencias",
       icon: Ticket,
       active: pathname === "/comunidad",
     },
@@ -35,7 +35,8 @@ export default function MobileNav({ isAdmin }: { isAdmin?: boolean }) {
 
   // Admin specific modules for the drawer
   const adminModules = [
-    { href: "/admin", label: "Reportes", icon: ClipboardList },
+    { href: "/admin/ordenes", label: "Órdenes", icon: ClipboardList },
+    { href: "/admin", label: "Reportes", icon: History },
     { href: "/admin/experiencias", label: "Experiencias", icon: Package },
     { href: "/admin/beneficios", label: "Beneficios", icon: Gift },
     { href: "/admin/editar-web", label: "Editar Web", icon: ExternalLink },
@@ -127,7 +128,7 @@ export default function MobileNav({ isAdmin }: { isAdmin?: boolean }) {
               </div>
 
               {/* Modules Grid */}
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 xs:grid-cols-3 gap-3 md:grid-cols-2">
                 {adminModules.map((mod) => {
                   const Icon = mod.icon;
                   const isActive = pathname === mod.href;
@@ -137,20 +138,20 @@ export default function MobileNav({ isAdmin }: { isAdmin?: boolean }) {
                       href={mod.href}
                       onClick={() => setIsMenuOpen(false)}
                       className={cn(
-                        "flex flex-col gap-4 p-5 rounded-[2rem] transition-all group active:scale-95 border",
+                        "flex flex-col gap-3 p-4 rounded-[2rem] transition-all group active:scale-95 border",
                         isActive 
                           ? "bg-gold-500/10 border-gold-500/30" 
                           : "bg-white/5 border-white/5 hover:border-white/10"
                       )}
                     >
                       <div className={cn(
-                        "w-12 h-12 rounded-2xl flex items-center justify-center transition-transform duration-300 group-hover:scale-110",
+                        "w-10 h-10 rounded-2xl flex items-center justify-center transition-transform duration-300 group-hover:scale-110",
                         isActive ? "bg-gold-500 text-slate-950" : "bg-black text-gold-500 border border-gold-500/10"
                       )}>
-                        <Icon size={24} strokeWidth={isActive ? 2.5 : 2} />
+                        <Icon size={20} strokeWidth={isActive ? 2.5 : 2} />
                       </div>
                       <span className={cn(
-                        "text-[10px] font-black uppercase tracking-[0.2em]",
+                        "text-[9px] font-black uppercase tracking-widest",
                         isActive ? "text-gold-500" : "text-slate-300"
                       )}>
                         {mod.label}

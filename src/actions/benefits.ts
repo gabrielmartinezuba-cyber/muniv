@@ -45,6 +45,7 @@ export async function upsertBenefit(formData: FormData): Promise<{ success: bool
       title: formData.get('title') as string,
       description: formData.get('description') as string,
       discount_percentage: parseInt(formData.get('discount_percentage') as string, 10) || 0,
+      discount_cap: parseInt(formData.get('discount_cap') as string, 10) || null,
       display_order: parseInt(formData.get('display_order') as string, 10) || 0,
     };
 

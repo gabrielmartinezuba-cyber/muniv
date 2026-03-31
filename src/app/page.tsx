@@ -18,7 +18,7 @@ export default async function Home() {
         button_text={landingData?.hero_button_text}
         conoce_descripcion={landingData?.conoce_descripcion}
       />
-      <div className="px-4 py-32 mx-auto max-w-7xl relative z-10">
+      <div id="experiencias" className="px-4 py-32 mx-auto max-w-7xl relative z-10">
         <div className="text-center mb-16">
           <h2 className="font-display text-4xl md:text-5xl lg:text-6xl text-white mb-4 drop-shadow-lg">
             Catálogo de <span className="text-gold-400 italic">Experiencias</span>
