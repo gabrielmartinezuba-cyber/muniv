@@ -54,22 +54,7 @@ export async function POST(req: Request) {
 
       for (const bookingId of bookingIds) {
         if (!bookingId.trim()) continue;
-        
-        // Determinar el nuevo estado basado en el tipo de experiencia
-        const { data: bookingDetails } = await supabaseAdmin
-          .from('bookings')
-          .select('id, experiences(type)')
-          .eq('id', bookingId.trim())
-          .single();
-
-        const experienceType = Array.isArray(bookingDetails?.experiences) 
-          ? (bookingDetails?.experiences[0] as any)?.type 
-          : (bookingDetails?.experiences as any)?.type;
-
-        let newStatus = 'CONFIRMADO';
-        if (experienceType?.trim().toLowerCase() === 'caja') {
-          newStatus = 'EN_PREPARACION';
-        }
+        const newStatus = 'PAGADO';
 
         // 4. Actualizar estado
         const { error } = await supabaseAdmin

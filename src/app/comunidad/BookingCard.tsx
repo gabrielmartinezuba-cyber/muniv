@@ -15,6 +15,13 @@ function StatusBadge({ status }: { status: string }) {
       </span>
     );
   }
+  if (status === 'PAGADO') {
+    return (
+      <span className="flex items-center gap-1.5 px-4 py-1.5 bg-sky-500/10 border border-sky-500/30 text-sky-500 rounded-full text-[9px] font-black tracking-widest uppercase shadow-[0_0_15px_rgba(14,165,233,0.1)]">
+        <CheckCircle2 size={10} /> Pagado
+      </span>
+    );
+  }
   if (status === 'CONFIRMADO') {
     return (
       <span className="flex items-center gap-1.5 px-4 py-1.5 bg-emerald-500/10 border border-emerald-500/30 text-emerald-500 rounded-full text-[9px] font-black tracking-widest uppercase shadow-[0_0_15px_rgba(16,185,129,0.1)]">

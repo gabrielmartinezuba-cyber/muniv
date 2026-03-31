@@ -12,6 +12,7 @@ interface OrderManagerProps {
 
 const STATUS_CONFIG: Record<string, { label: string; bg: string; text: string; icon: any }> = {
   'PENDIENTE': { label: 'Pendiente', bg: 'bg-slate-500/10', text: 'text-slate-400', icon: Clock },
+  'PAGADO': { label: 'Pagado', bg: 'bg-sky-500/10', text: 'text-sky-500', icon: CheckCircle2 },
   'CONFIRMADO': { label: 'Confirmado', bg: 'bg-emerald-500/10', text: 'text-emerald-500', icon: CheckCircle2 },
   'EN_PREPARACION': { label: 'En preparación', bg: 'bg-gold-500/10', text: 'text-gold-500', icon: Package },
   'ENTREGADO': { label: 'Entregado', bg: 'bg-emerald-500/10', text: 'text-emerald-500', icon: CheckCircle2 },
@@ -114,6 +115,7 @@ export default function OrderManager({ orders }: OrderManagerProps) {
               >
                 <option className="bg-slate-950 text-slate-100" value="ALL">Todos los estados</option>
                 <option className="bg-slate-950 text-slate-100" value="PENDIENTE">Pendientes</option>
+                <option className="bg-slate-950 text-slate-100" value="PAGADO">Pagados (Nuevos)</option>
                 <option className="bg-slate-950 text-slate-100" value="CONFIRMADO">Confirmados</option>
                 <option className="bg-slate-950 text-slate-100" value="EN_PREPARACION">En preparación</option>
                 <option className="bg-slate-950 text-slate-100" value="ENTREGADO">Entregados</option>
@@ -266,12 +268,14 @@ export default function OrderManager({ orders }: OrderManagerProps) {
                       className={cn(
                         "w-full bg-slate-900 border border-white/10 rounded-xl px-3 py-2 text-[10px] uppercase font-black tracking-widest focus:outline-none transition-all cursor-pointer",
                         order.status === 'PENDIENTE' ? 'text-slate-400 border-slate-500/20' :
+                        order.status === 'PAGADO' ? 'text-sky-500 border-sky-500/40 bg-sky-500/5' :
                         (order.status === 'EN_PREPARACION' || order.status === 'CONFIRMADO') ? 'text-gold-500 border-gold-500/40 bg-gold-500/5' :
                         order.status === 'ENTREGADO' ? 'text-emerald-500 border-emerald-500/40 bg-emerald-500/5' :
                         'text-red-500 border-red-500/40 bg-red-500/5'
                       )}
                     >
                       <option className="bg-slate-950 text-slate-100" value="PENDIENTE">PENDIENTE</option>
+                      <option className="bg-slate-950 text-slate-100" value="PAGADO">PAGADO (MP)</option>
 
                       {isCaja ? (
                         <>
