@@ -154,16 +154,16 @@ export async function getAdminReport(filters?: AdminReportFilters): Promise<Admi
       const clientUser = users.find(u => u.id === booking.user_id);
       
       const rawMeta = clientUser?.user_metadata || {};
-      const clientName = rawMeta.first_name 
+      const clientName = booking.guest_name || (rawMeta.first_name 
         ? `${rawMeta.first_name} ${rawMeta.last_name || ''}`.trim() 
-        : rawMeta.name || "Sin Nombre";
+        : rawMeta.name || "Sin Nombre");
         
       return {
         id: booking.id,
         created_at: booking.created_at,
         user_id: booking.user_id,
         client_name: clientName,
-        client_email: clientUser?.email || "Sin Email",
+        client_email: booking.guest_email || clientUser?.email || "Sin Email",
         experience_title: booking.experiences?.title || "N/A",
         experience_type: booking.experiences?.type || "N/A",
         guests_count: booking.guests_count,
@@ -172,7 +172,7 @@ export async function getAdminReport(filters?: AdminReportFilters): Promise<Admi
         selected_wines: booking.selected_wines,
         cancel_requested: booking.cancel_requested ?? false,
         cancel_reason: booking.cancel_reason ?? null,
-        client_phone: clientUser?.phone || rawMeta.phone || null
+        client_phone: booking.guest_phone || clientUser?.phone || rawMeta.phone || null
       };
     });
 
