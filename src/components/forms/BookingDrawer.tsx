@@ -63,7 +63,7 @@ export default function BookingDrawer() {
             return best;
           }, null as { percentage: number; cap: number | null } | null);
           
-          setBenefit(session?.user ? bestBenefit : null);
+          setBenefit(bestBenefit);
         } catch (err) {
           console.error("Error loading auth/discounts:", err);
         } finally {
@@ -304,10 +304,10 @@ export default function BookingDrawer() {
                       <div className="flex justify-center p-4"><Loader2 className="animate-spin text-gold-500" /></div>
                     ) : (
                       <>
-                        {!user && benefit && benefit.percentage > 0 && (
+                        {!user && (
                           <motion.div 
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, scale: 1 }}
                             className="relative overflow-hidden group p-5 rounded-[2rem] border border-gold-500/30 bg-gradient-to-br from-gold-500/5 via-gold-500/10 to-transparent backdrop-blur-md shadow-[0_0_40px_rgba(212,175,55,0.05)]"
                           >
                             <div className="absolute top-0 right-0 w-32 h-32 bg-gold-400/10 blur-[50px] -mr-16 -mt-16 rounded-full group-hover:bg-gold-500/20 transition-all duration-700" />
@@ -322,7 +322,7 @@ export default function BookingDrawer() {
                                 </h4>
                               </div>
                               <p className="text-[11px] text-slate-400 leading-relaxed max-w-[90%]">
-                                Registrate ahora para acceder a un <strong className="text-gold-400">{benefit.percentage}% de descuento</strong> en esta compra y ahorrar hasta <strong className="text-white">${benefit.cap?.toLocaleString('es-AR')}</strong>.
+                                Registrate ahora para acceder a un <strong className="text-gold-400">{benefit?.percentage || 20}% de descuento</strong> en esta compra y ahorrar hasta <strong className="text-white">${(benefit?.cap || 5000).toLocaleString('es-AR')}</strong>.
                               </p>
                               <Link href="/login" onClick={closeCart} className="w-full text-[9px] uppercase tracking-[0.3em] bg-gold-500 text-slate-950 font-black py-4 px-6 rounded-2xl text-center hover:bg-gold-400 hover:shadow-[0_0_25px_rgba(212,175,55,0.3)] hover:-translate-y-0.5 transition-all active:scale-[0.98]">
                                 Ingresar / Acceder beneficio

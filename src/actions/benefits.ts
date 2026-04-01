@@ -11,6 +11,7 @@ export type Benefit = {
   description: string;
   image_url: string;
   discount_percentage: number | null;
+  discount_cap?: number | null;
   created_at?: string;
 };
 
