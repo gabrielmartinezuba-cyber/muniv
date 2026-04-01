@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { CheckCircle2, XCircle, Clock, Loader2, Compass } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useCartStore } from "@/store/useCartStore";
+import { checkPaymentStatus } from "@/actions/payments";
 
 function FeedbackContent() {
   const router = useRouter();
@@ -15,9 +16,14 @@ function FeedbackContent() {
   const [countdown, setCountdown] = useState(4);
 
   useEffect(() => {
-    // Si fue aprobado, limpiamos el carrito local
-    if (status === "approved") {
-      clearCart();
+    // Si hay un payment_id en la URL, intentamos conciliar de inmediato
+    const paymentId = searchParams.get("payment_id");
+    if (paymentId) {
+      checkPaymentStatus(paymentId).then(res => {
+        if (res.success && res.status === 'approved') {
+           clearCart();
+        }
+      });
     }
 
     const timer = setInterval(() => {

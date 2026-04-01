@@ -1,7 +1,8 @@
 "use server";
 
-import { MercadoPagoConfig, Preference } from 'mercadopago';
+import { MercadoPagoConfig, Preference, Payment } from 'mercadopago';
 import { createClient } from '@/utils/supabase/server';
+import { createClient as createAdminClient } from '@supabase/supabase-js';
 
 export async function createCheckoutPreference(bookingIds: string[], itemsTitle: string, totalAmount: number) {
   try {
@@ -130,5 +131,38 @@ export async function retryPayment(bookingId: string) {
       success: false,
       message: error.message || "Error al intentar generar un nuevo link de pago."
     };
+  }
+}
+
+export async function checkPaymentStatus(paymentId: string) {
+  try {
+    const accessToken = process.env.MP_ACCESS_TOKEN;
+    if (!accessToken) throw new Error("MP_ACCESS_TOKEN token missing");
+
+    const client = new MercadoPagoConfig({ accessToken });
+    const payment = new Payment(client);
+    const paymentData = await payment.get({ id: paymentId });
+
+    if (paymentData.status === 'approved' && paymentData.external_reference) {
+      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+      const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+      const supabaseAdmin = createAdminClient(supabaseUrl, supabaseServiceKey);
+
+      const bookingIds = paymentData.external_reference.split(',');
+      for (const id of bookingIds) {
+        if (id.trim()) {
+           await supabaseAdmin
+            .from('bookings')
+            .update({ status: 'PAGADO' })
+            .eq('id', id.trim());
+        }
+      }
+      return { success: true, status: 'approved' };
+    }
+
+    return { success: true, status: paymentData.status };
+  } catch (error: any) {
+    console.error(`[CHECK_PAYMENT] Error: ${error.message}`);
+    return { success: false, error: error.message };
   }
 }
