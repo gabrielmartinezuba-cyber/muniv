@@ -35,9 +35,9 @@ export async function createCheckoutPreference(bookingIds: string[], itemsTitle:
         ],
         external_reference: externalReference,
         back_urls: {
-          success: `${siteUrl}/comunidad/mis-experiencias`,
-          failure: `${siteUrl}/comunidad/mis-experiencias`,
-          pending: `${siteUrl}/comunidad/mis-experiencias`
+          success: `${siteUrl}/checkout/feedback`,
+          failure: `${siteUrl}/checkout/feedback`,
+          pending: `${siteUrl}/checkout/feedback`
         },
         auto_return: "approved",
         notification_url: notificationUrl
@@ -110,9 +110,9 @@ export async function retryPayment(bookingId: string) {
         ],
         external_reference: bookingId,
         back_urls: {
-          success: `${siteUrl}/comunidad/mis-experiencias`,
-          failure: `${siteUrl}/comunidad/mis-experiencias`,
-          pending: `${siteUrl}/comunidad/mis-experiencias`
+          success: `${siteUrl}/checkout/feedback`,
+          failure: `${siteUrl}/checkout/feedback`,
+          pending: `${siteUrl}/checkout/feedback`
         },
         auto_return: "approved",
         notification_url: notificationUrl
