@@ -304,32 +304,39 @@ export default function BookingDrawer() {
                       <div className="flex justify-center p-4"><Loader2 className="animate-spin text-gold-500" /></div>
                     ) : (
                       <>
-                        {!user && (
-                          <motion.div 
-                            initial={{ opacity: 0, scale: 0.95 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            className="relative overflow-hidden group p-5 rounded-[2rem] border border-gold-500/30 bg-gradient-to-br from-gold-500/5 via-gold-500/10 to-transparent backdrop-blur-md shadow-[0_0_40px_rgba(212,175,55,0.05)]"
-                          >
-                            <div className="absolute top-0 right-0 w-32 h-32 bg-gold-400/10 blur-[50px] -mr-16 -mt-16 rounded-full group-hover:bg-gold-500/20 transition-all duration-700" />
-                            <div className="relative z-10 flex flex-col gap-4">
-                              <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-2xl bg-gold-500/20 border border-gold-500/30 flex items-center justify-center shrink-0">
-                                  <ShieldCheck className="text-gold-400" size={20} />
-                                </div>
-                                <h4 className="text-white font-display text-base tracking-tight leading-tight">
-                                  ¿Sos socio Muniv? 
-                                  <span className="block text-[10px] text-gold-500 font-black uppercase tracking-[0.2em] mt-1">Beneficio Exclusivo</span>
-                                </h4>
+                  {/* Upsell Banner (Only for Non-Users and NOT for Sorteos) */}
+                  {(() => {
+                    const hasSorteo = items.some(i => i.type?.toLowerCase() === 'sorteo');
+                    if (!user && !checkingAuth && !hasSorteo) {
+                      return (
+                        <motion.div 
+                          initial={{ opacity: 0, scale: 0.95 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          className="relative overflow-hidden group p-5 rounded-[2rem] border border-gold-500/30 bg-gradient-to-br from-gold-500/5 via-gold-500/10 to-transparent backdrop-blur-md shadow-[0_0_40px_rgba(212,175,55,0.05)] mb-6"
+                        >
+                          <div className="absolute top-0 right-0 w-32 h-32 bg-gold-400/10 blur-[50px] -mr-16 -mt-16 rounded-full group-hover:bg-gold-500/20 transition-all duration-700" />
+                          <div className="relative z-10 flex flex-col gap-4">
+                            <div className="flex items-center gap-3">
+                              <div className="w-10 h-10 rounded-2xl bg-gold-500/20 border border-gold-500/30 flex items-center justify-center shrink-0">
+                                <ShieldCheck className="text-gold-400" size={20} />
                               </div>
-                              <p className="text-[11px] text-slate-400 leading-relaxed max-w-[90%]">
-                                Registrate ahora para acceder a un <strong className="text-gold-400">{benefit?.percentage || 20}% de descuento</strong> en esta compra y ahorrar hasta <strong className="text-white">${(benefit?.cap || 5000).toLocaleString('es-AR')}</strong>.
-                              </p>
-                              <Link href="/login" onClick={closeCart} className="w-full text-[9px] uppercase tracking-[0.3em] bg-gold-500 text-slate-950 font-black py-4 px-6 rounded-2xl text-center hover:bg-gold-400 hover:shadow-[0_0_25px_rgba(212,175,55,0.3)] hover:-translate-y-0.5 transition-all active:scale-[0.98]">
-                                Ingresar / Acceder beneficio
-                              </Link>
+                              <h4 className="text-white font-display text-base tracking-tight leading-tight">
+                                ¿Sos socio Muniv? 
+                                <span className="block text-[10px] text-gold-500 font-black uppercase tracking-[0.2em] mt-1">Beneficio Exclusivo</span>
+                              </h4>
                             </div>
-                          </motion.div>
-                        )}
+                            <p className="text-[11px] text-slate-400 leading-relaxed max-w-[90%]">
+                              Registrate ahora para acceder a un <strong className="text-gold-400">{benefit?.percentage || 20}% de descuento</strong> en esta compra y ahorrar hasta <strong className="text-white">${(benefit?.cap || 5000).toLocaleString('es-AR')}</strong>.
+                            </p>
+                            <Link href="/login" onClick={closeCart} className="w-full text-[9px] uppercase tracking-[0.3em] bg-gold-500 text-slate-950 font-black py-4 px-6 rounded-2xl text-center hover:bg-gold-400 hover:shadow-[0_0_25px_rgba(212,175,55,0.3)] hover:-translate-y-0.5 transition-all active:scale-[0.98]">
+                              Ingresar / Acceder beneficio
+                            </Link>
+                          </div>
+                        </motion.div>
+                      );
+                    }
+                    return null;
+                  })()}
 
                         <div className="bg-slate-950/80 rounded-3xl p-6 border border-white/5 shadow-2xl">
                           <div className="flex justify-between items-center mb-3">

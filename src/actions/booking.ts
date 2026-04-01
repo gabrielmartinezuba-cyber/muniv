@@ -38,6 +38,14 @@ export async function submitBooking(data: unknown) {
       return { success: false, message: "La experiencia seleccionada no es válida." };
     }
 
+    // --- VALIDACIÓN DE SORTEO (EXCLUSIVO SOCIOS) ---
+    if (experience.type?.trim().toLowerCase() === 'sorteo' && !user) {
+      return { 
+        success: false, 
+        message: "Acceso denegado: Los sorteos son exclusivos para miembros. ¡Registrate para participar!" 
+      };
+    }
+
     // --- VALIDACIÓN DE VINOS (BACKEND) ---
     if (experience.type?.trim().toLowerCase() === 'caja') {
       const { data: expMeta } = await supabase.from('experiences').select('wine_quantity').eq('id', formData.experienceId).single();

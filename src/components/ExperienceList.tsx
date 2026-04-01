@@ -5,18 +5,30 @@ import { motion } from "framer-motion";
 import Image from "next/image";
 import { getActiveExperiences, type Experience } from "@/actions/experiences";
 import { useCartStore } from "@/store/useCartStore";
-import { Loader2, Plus, Calendar } from "lucide-react";
+import { Loader2, Plus, Calendar, ShieldCheck } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
+import { toast } from "sonner";
 
 export default function ExperienceList() {
   const [experiences, setExperiences] = useState<Experience[]>([]);
   const [loading, setLoading] = useState(true);
   const { addItem, openCart } = useCartStore();
   const router = useRouter();
-  const supabase = createClient();
 
   const handleBookingClick = async (exp: Experience) => {
+    // SECURITY: Raffle Gatekeeping
+    const supabase = createClient();
+    const { data: { session } } = await supabase.auth.getSession();
+    
+    if (exp.type?.toLowerCase() === 'sorteo' && !session) {
+      toast.error("¡Evento exclusivo!", {
+        description: "Para participar de los sorteos tenés que ser miembro. ¡Registrate ahora!",
+        icon: <ShieldCheck className="text-gold-500" size={20} />,
+      });
+      return;
+    }
+
     addItem({
       experienceId: exp.id,
       type: exp.type, // Pass type
