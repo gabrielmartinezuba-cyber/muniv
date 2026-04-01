@@ -1,6 +1,7 @@
 "use server";
 
 import { createClient } from "@/utils/supabase/server";
+import { createAdminClient } from "@/utils/supabase/admin";
 import { BookingSubmitSchema, GiftingSubmitSchema } from "@/schemas/booking";
 import { revalidatePath } from "next/cache";
 import { Resend } from "resend";
@@ -115,7 +116,9 @@ export async function submitBooking(data: unknown) {
 
     console.log(`[SUBMIT BOOKING] Processing for user ${user?.id || 'GUEST'}`);
 
-    const { data: insertedBooking, error: insertError } = await supabase
+    // 7. Insert Booking (Using ADMIN client to bypass RLS issues for Guest Checkout)
+    const supabaseAdmin = createAdminClient();
+    const { data: insertedBooking, error: insertError } = await supabaseAdmin
       .from('bookings')
       .insert(payloadInsert)
       .select('id')
