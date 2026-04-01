@@ -4,6 +4,7 @@ import { createClient } from "@/utils/supabase/server";
 import { BookingSubmitSchema, GiftingSubmitSchema } from "@/schemas/booking";
 import { revalidatePath } from "next/cache";
 import { Resend } from "resend";
+import { getBenefits } from "@/actions/benefits";
 import { generateReceiptEmailHtml } from "@/emails/ReceiptEmail";
 
 /**
@@ -18,10 +19,10 @@ export async function submitBooking(data: unknown) {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
 
-    if (!user && (!formData.guest_name || !formData.guest_email)) {
+    if (!user && (!formData.guest_name || !formData.guest_email || !formData.guest_phone)) {
       return { 
         success: false, 
-        message: "Sesión expirada o inválida. Por favor, iniciá sesión o ingresá tus datos como invitado." 
+        message: "Sesión expirada o inválida. Como invitado, el nombre, email y teléfono son obligatorios." 
       };
     }
 
@@ -34,6 +35,19 @@ export async function submitBooking(data: unknown) {
 
     if (expError || !experience) {
       return { success: false, message: "La experiencia seleccionada no es válida." };
+    }
+
+    // --- VALIDACIÓN DE VINOS (BACKEND) ---
+    if (experience.type?.trim().toLowerCase() === 'caja') {
+      const { data: expMeta } = await supabase.from('experiences').select('wine_quantity').eq('id', formData.experienceId).single();
+      const requiredWines = (expMeta?.wine_quantity || 0) * formData.guests;
+      
+      if (!formData.selected_wines || formData.selected_wines.length < requiredWines || formData.selected_wines.some(w => !w || w === "")) {
+        return { 
+          success: false, 
+          message: `Por favor, seleccioná los ${requiredWines} vinos de tu caja antes de continuar.` 
+        };
+      }
     }
 
     // 4. Protección contra duplicados: Solo para usuarios registrados Y tipo Sorteo
@@ -58,21 +72,45 @@ export async function submitBooking(data: unknown) {
       }
     }
 
-    // Cálculo del precio final
-    const totalPrice = formData.final_price !== undefined 
-      ? formData.final_price 
-      : (experience.price * formData.guests);
+    // Cálculo matemático estricto en el servidor
+    let calculatedTotalPrice = experience.price * formData.guests;
+    if (formData.upSells && formData.upSells.length > 0) {
+      calculatedTotalPrice += formData.upSells.length * 20000; // Agregar Upsells
+    }
+
+    if (user) {
+      const benefitsRes = await getBenefits();
+      if (benefitsRes && benefitsRes.length > 0) {
+        // Encontramos el beneficio principal (ej. tomando el mayor descuento o el primero)
+        // O asumimos el primer beneficio para simplificar, como lo trata el frontend
+        const discountPercentage = benefitsRes[0].discount_percentage || 0;
+        
+        let discountableValue = experience.price * formData.guests;
+        if (experience.type?.trim().toLowerCase() === 'evento') {
+          discountableValue = experience.price; // SOLO descuenta 1 unidad
+        }
+        
+        const rawDiscount = discountableValue * (discountPercentage / 100);
+        // Supabase schema for Benefit doesn't expose discount_cap directly in type? Wait, let's use rawDiscount.
+        // Type 'Benefit' has 'discount_percentage'. If it had 'discount_cap', we'd use it.
+        const finalDiscount = rawDiscount;
+        calculatedTotalPrice -= finalDiscount;
+      }
+    }
+
+    const finalCalculatedPrice = Math.max(0, calculatedTotalPrice);
 
     // 5. Insertar en tabla bookings
     const payloadInsert: any = {
       experience_id: formData.experienceId,
       guests_count: Number(formData.guests),
-      total_price: Number(totalPrice),
+      total_price: Number(finalCalculatedPrice),
       status: 'PENDIENTE',
       selected_wines: formData.selected_wines || [],
       user_id: user?.id || null, // Asegurar que sea null si no hay user
       guest_name: user ? null : formData.guest_name,
-      guest_email: user ? null : formData.guest_email
+      guest_email: user ? null : formData.guest_email,
+      guest_phone: user ? null : formData.guest_phone
     };
 
     console.log(`[SUBMIT BOOKING] Processing for user ${user?.id || 'GUEST'}`);
@@ -105,7 +143,7 @@ export async function submitBooking(data: unknown) {
             date: formData.date,
             time: formData.time,
             guests: Number(formData.guests),
-            totalPaid: Number(totalPrice),
+            totalPaid: Number(finalCalculatedPrice),
           });
 
           await resend.emails.send({

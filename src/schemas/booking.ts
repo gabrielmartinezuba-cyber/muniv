@@ -9,6 +9,7 @@ export const BookingSubmitSchema = z.object({
   upSells: z.array(z.string()),
   guest_name: z.string().optional(),
   guest_email: z.string().email().optional().or(z.literal("")),
+  guest_phone: z.string().optional(),
   final_price: z.number().optional(),
   selected_wines: z.array(z.string()).optional()
 });

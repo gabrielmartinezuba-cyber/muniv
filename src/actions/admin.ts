@@ -18,6 +18,7 @@ export type AdminReportRow = {
   selected_wines: string[] | null;
   cancel_requested: boolean;
   cancel_reason: string | null;
+  client_phone: string | null;
 };
 
 export async function getAdminExperiences(): Promise<{ id: string; title: string, image_url: string }[]> {
@@ -95,7 +96,8 @@ export async function getAdminReport(filters?: AdminReportFilters): Promise<Admi
           status: '-',
           selected_wines: null,
           cancel_requested: false,
-          cancel_reason: null
+          cancel_reason: null,
+          client_phone: u.phone || rawMeta.phone || null
         };
       }).sort((a, b) => {
         if (a.experience_type === 'ADMIN' && b.experience_type !== 'ADMIN') return -1;
@@ -169,7 +171,8 @@ export async function getAdminReport(filters?: AdminReportFilters): Promise<Admi
         status: booking.status,
         selected_wines: booking.selected_wines,
         cancel_requested: booking.cancel_requested ?? false,
-        cancel_reason: booking.cancel_reason ?? null
+        cancel_reason: booking.cancel_reason ?? null,
+        client_phone: clientUser?.phone || rawMeta.phone || null
       };
     });
 

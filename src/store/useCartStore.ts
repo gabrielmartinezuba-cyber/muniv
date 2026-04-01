@@ -128,8 +128,19 @@ export const useCartStore = create<CartState>()(
         const benefit = state.benefit;
         if (!benefit || benefit.percentage <= 0) return 0;
         
-        const subtotal = state.getSubtotal();
-        const rawDiscount = subtotal * (benefit.percentage / 100);
+        let subtotalForDiscount = 0;
+        
+        state.items.forEach(item => {
+          let itemDiscountable = item.price * item.guests;
+          
+          if (item.type?.trim().toLowerCase() === 'evento') {
+            itemDiscountable = item.price; // Solo descuenta 1 unidad
+          }
+          
+          subtotalForDiscount += itemDiscountable;
+        });
+
+        const rawDiscount = subtotalForDiscount * (benefit.percentage / 100);
         
         // Return calculated discount capped by the benefit limit if any
         return Math.min(rawDiscount, benefit.cap || Infinity);

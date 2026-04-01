@@ -3,15 +3,16 @@
 import { useState, useTransition } from "react";
 import Image from "next/image";
 import { motion } from "framer-motion";
-import { Calendar, Users, Package, Clock, CheckCircle2, AlertTriangle, XCircle, Loader2 } from "lucide-react";
+import { Calendar, Users, Package, Clock, CheckCircle2, AlertTriangle, XCircle, Loader2, CreditCard } from "lucide-react";
 import { requestBookingCancellation } from "@/actions/booking";
+import { retryPayment } from "@/actions/payments";
 import { toast } from "sonner";
 
 function StatusBadge({ status }: { status: string }) {
   if (status === 'PENDIENTE') {
     return (
-      <span className="flex items-center gap-1.5 px-4 py-1.5 bg-slate-950 border border-white/5 text-slate-500 rounded-full text-[9px] font-black tracking-widest uppercase shadow-inner">
-        <Clock size={10} /> Pendiente
+      <span className="flex items-center gap-1.5 px-4 py-1.5 bg-orange-500/10 border border-orange-500/30 text-orange-500 rounded-full text-[9px] font-black tracking-widest uppercase shadow-[0_0_15px_rgba(249,115,22,0.1)]">
+        <AlertTriangle size={10} /> Pago pendiente
       </span>
     );
   }
@@ -61,6 +62,7 @@ export function BookingCard({ booking }: { booking: any }) {
   const [reason, setReason] = useState("");
   const [isPending, startTransition] = useTransition();
   const [isLocallyCancelled, setIsLocallyCancelled] = useState(false);
+  const [isRetrying, setIsRetrying] = useState(false);
 
   const isFinalStatus = booking.status === 'ENTREGADO' || booking.status === 'CANCELADO';
   const cancelRequested = (booking.cancel_requested === true || isLocallyCancelled) && !isFinalStatus;
@@ -88,6 +90,22 @@ export function BookingCard({ booking }: { booking: any }) {
         toast.error("Error crítico de sincronización.");
       }
     });
+  };
+
+  const handleRetryPayment = async () => {
+    setIsRetrying(true);
+    try {
+      const res = await retryPayment(booking.id);
+      if (res.success && res.init_point) {
+        window.location.href = res.init_point;
+      } else {
+        toast.error(res.message || "Error al conectar con Mercado Pago.");
+        setIsRetrying(false);
+      }
+    } catch (err) {
+      toast.error("Error al generar el link de pago.");
+      setIsRetrying(false);
+    }
   };
 
   return (
@@ -191,6 +209,24 @@ export function BookingCard({ booking }: { booking: any }) {
                     Regresar
                   </button>
                 </div>
+              </div>
+            ) : booking.status === 'PENDIENTE' ? (
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <button
+                  onClick={handleRetryPayment}
+                  disabled={isRetrying}
+                  className="group flex-1 sm:flex-none relative overflow-hidden px-8 py-3.5 bg-gradient-to-r from-orange-600 to-amber-600 border border-orange-500/50 text-white rounded-xl text-[11px] font-black uppercase tracking-widest hover:shadow-[0_0_20px_rgba(249,115,22,0.4)] hover:-translate-y-0.5 transition-all duration-300 disabled:opacity-50 flex items-center justify-center gap-2"
+                >
+                  {isRetrying ? <Loader2 size={16} className="animate-spin" /> : <CreditCard size={16} />}
+                  Pagar ahora
+                </button>
+                <button
+                  onClick={() => setShowCancelForm(true)}
+                  disabled={isRetrying}
+                  className="text-[10px] text-slate-500 hover:text-rose-500 transition-colors uppercase tracking-widest font-black flex justify-center items-center gap-1.5"
+                >
+                  <XCircle size={14} /> Cancelar Reserva
+                </button>
               </div>
             ) : (
               <button
