@@ -2,7 +2,7 @@
 
 import { motion, AnimatePresence } from "framer-motion";
 import { useCartStore } from "@/store/useCartStore";
-import { X, Users, ShieldCheck, Loader2, AlertCircle, ShoppingCart, Trash2, CalendarDays, Package, Minus, Plus } from "lucide-react";
+import { X, Users, ShieldCheck, Loader2, AlertCircle, ShoppingCart, Trash2, CalendarDays, Package, Minus, Plus, MessageCircle } from "lucide-react";
 import { useEffect, useState, useTransition } from "react";
 import { submitBooking } from "@/actions/booking";
 import { createCheckoutPreference } from "@/actions/payments";
@@ -135,26 +135,26 @@ export default function BookingDrawer() {
         toast.error(lastErrMsg);
         setGlobalError(lastErrMsg);
       } else {
-        if (finalPrice > 0 && bookingIds.length > 0) {
-          toast.loading("Redirigiendo a Mercado Pago...", { duration: 3000 });
-          const prefTitle = items.length === 1 ? items[0].title : `${items.length} experiencias MUNIV`;
-          const prefRes = await createCheckoutPreference(bookingIds, prefTitle, finalPrice);
+        // Redirección a WhatsApp para terminar la compra (Reemplaza Mercado Pago)
+        if (bookingIds.length > 0) {
+          const whatsappNumber = "5491165736669"; 
+          const name = user ? (user.user_metadata?.full_name || user.email) : guestName;
+          const userType = user ? "Socio Muniv" : "Invitado";
           
-          if (prefRes.success && prefRes.init_point) {
-            clearCart();
-            closeCart();
-            window.location.href = prefRes.init_point;
-          } else {
-            toast.error(prefRes.message || "No se pudo iniciar el pago. Podrás abonar tu orden desde tu perfil.");
-            setGlobalError(prefRes.message || "No se pudo iniciar el pago.");
-          }
-        } else {
-          toast.success("¡Reserva confirmada con éxito!");
+          let itemsList = items.map(item => `- ${item.guests}x ${item.title}: $${(item.price * item.guests).toLocaleString('es-AR')}`).join('\n');
+          
+          const message = `Hola Muniv! 👋\n\nSoy ${name} (${userType}).\nQuiero terminar mi compra de:\n${itemsList}\n\n*Total Final: $${finalPrice.toLocaleString('es-AR')}*\n\nNro de gestión: ${bookingIds.join(', ')}\n\n¿Me pasas el alias para transferir?`;
+          
+          const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
+          
+          toast.success("¡Orden generada! Redirigiendo a WhatsApp...");
+          
           setTimeout(() => {
             clearCart();
+            closeCart();
+            window.open(whatsappUrl, '_blank');
             router.push(user ? "/comunidad" : "/");
             router.refresh();
-            closeCart();
           }, 1500);
         }
       }
@@ -427,12 +427,12 @@ export default function BookingDrawer() {
                         <button 
                           onClick={handleCheckout}
                           disabled={isPending}
-                          className="w-full mt-4 glass-panel-glow bg-burgundy-700 text-white font-black py-5 rounded-2xl flex items-center justify-center gap-3 hover:bg-burgundy-600 transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed shadow-2xl tracking-[0.2em] text-[10px] uppercase"
+                          className="w-full mt-4 glass-panel-glow bg-[#25D366] text-white font-black py-5 rounded-2xl flex items-center justify-center gap-3 hover:bg-[#22c35e] transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed shadow-2xl tracking-[0.2em] text-[10px] uppercase"
                         >
                           {isPending ? (
                             <>Procesando <Loader2 size={18} className="animate-spin" /></>
                           ) : (
-                            <>Confirmar Compra Segura <ShieldCheck size={18} /></>
+                            <>Terminar compra <MessageCircle size={18} /></>
                           )}
                         </button>
                       </>

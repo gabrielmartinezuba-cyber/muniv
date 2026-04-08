@@ -343,7 +343,7 @@ export default function OrderManager({ orders }: OrderManagerProps) {
                                 )}
                               >
                                 <option className="bg-slate-950 text-slate-100" value="PENDIENTE">PENDIENTE</option>
-                                <option className="bg-slate-950 text-slate-100" value="PAGADO">PAGADO (MP)</option>
+                                <option className="bg-slate-950 text-slate-100" value="PAGADO">PAGADO</option>
 
                                 {isCaja ? (
                                   <>

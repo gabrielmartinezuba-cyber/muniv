@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import Image from "next/image";
 import { motion } from "framer-motion";
-import { Calendar, Users, Package, Clock, CheckCircle2, AlertTriangle, XCircle, Loader2, CreditCard } from "lucide-react";
+import { Calendar, Users, Package, Clock, CheckCircle2, AlertTriangle, XCircle, Loader2, CreditCard, MessageCircle } from "lucide-react";
 import { requestBookingCancellation } from "@/actions/booking";
 import { retryPayment } from "@/actions/payments";
 import { toast } from "sonner";
@@ -94,18 +94,16 @@ export function BookingCard({ booking }: { booking: any }) {
 
   const handleRetryPayment = async () => {
     setIsRetrying(true);
-    try {
-      const res = await retryPayment(booking.id);
-      if (res.success && res.init_point) {
-        window.location.href = res.init_point;
-      } else {
-        toast.error(res.message || "Error al conectar con Mercado Pago.");
-        setIsRetrying(false);
-      }
-    } catch (err) {
-      toast.error("Error al generar el link de pago.");
-      setIsRetrying(false);
-    }
+    const whatsappNumber = "5491165736669";
+    const experienceTitle = experience?.title || "Reserva Muniv";
+    const total = booking.total_price.toLocaleString('es-AR');
+    
+    const message = `Hola Muniv! 👋\n\nQuiero pagar mi reserva pendiente.\n\n*Nro de gestión:* ${booking.id}\n*Experiencia:* ${experienceTitle}\n*Total:* $${total}\n\n¿Me pasas los datos para transferir?`;
+    
+    const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
+    
+    window.open(whatsappUrl, '_blank');
+    setIsRetrying(false);
   };
 
   return (
@@ -215,10 +213,10 @@ export function BookingCard({ booking }: { booking: any }) {
                 <button
                   onClick={handleRetryPayment}
                   disabled={isRetrying}
-                  className="group flex-1 sm:flex-none relative overflow-hidden px-8 py-3.5 bg-gradient-to-r from-orange-600 to-amber-600 border border-orange-500/50 text-white rounded-xl text-[11px] font-black uppercase tracking-widest hover:shadow-[0_0_20px_rgba(249,115,22,0.4)] hover:-translate-y-0.5 transition-all duration-300 disabled:opacity-50 flex items-center justify-center gap-2"
+                  className="group flex-1 sm:flex-none relative overflow-hidden px-8 py-3.5 bg-[#25D366] border border-[#22c35e]/50 text-white rounded-xl text-[11px] font-black uppercase tracking-widest hover:shadow-[0_0_20px_rgba(37,211,102,0.4)] hover:-translate-y-0.5 transition-all duration-300 disabled:opacity-50 flex items-center justify-center gap-2"
                 >
-                  {isRetrying ? <Loader2 size={16} className="animate-spin" /> : <CreditCard size={16} />}
-                  Pagar ahora
+                  {isRetrying ? <Loader2 size={16} className="animate-spin" /> : <MessageCircle size={16} />}
+                  Terminar compra
                 </button>
                 <button
                   onClick={() => setShowCancelForm(true)}
