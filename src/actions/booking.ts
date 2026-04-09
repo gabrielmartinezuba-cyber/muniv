@@ -60,7 +60,7 @@ export async function submitBooking(data: unknown) {
     }
 
     // 4. Protección contra duplicados: Solo para usuarios registrados Y tipo Sorteo
-    if (user && (experience.type === 'Sorteo' || experience.type === 'sorteo')) {
+    if (user && experience.type?.trim().toLowerCase() === 'sorteo') {
       const { data: existingBooking, error: checkError } = await supabase
         .from('bookings')
         .select('id')

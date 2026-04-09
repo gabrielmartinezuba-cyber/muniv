@@ -426,38 +426,19 @@ export default function OrderManager({ orders }: OrderManagerProps) {
         >
           <AlertTriangle size={15} /> Cancelaciones {cancelRequestCount > 0 && `(${cancelRequestCount})`}
         </button>
-      </div>
 
-      {/* Header Filters */}
-      <div className="flex flex-col gap-4 bg-slate-900/40 p-6 rounded-3xl border border-white/5 backdrop-blur-xl">
-        <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gold-500/10 flex items-center justify-center border border-gold-500/20">
-              <Filter className="text-gold-500" size={18} />
-            </div>
-            <div>
-              <h2 className="text-white font-display text-xl leading-tight">Gestión de Órdenes</h2>
-              <p className="text-[10px] text-slate-500 uppercase tracking-widest font-black mt-1">
-                {activeTab === 'CANCELACIONES' ? 'Revisiones Pendientes' : 'Filtro Rápido'}
-              </p>
-            </div>
-          </div>
-
-          <div className="flex items-end">
-            <div className="flex flex-col gap-1.5">
-              <label className="text-[8px] uppercase tracking-widest text-slate-500 font-bold ml-1">Periodo</label>
-              <select
-                value={filters.date_range}
-                onChange={(e) => handleFilterChange('date_range', e.target.value)}
-                className="bg-black border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-gold-500/50 transition-all cursor-pointer min-w-[120px]"
-              >
-                <option className="bg-slate-950 text-slate-100" value="ALL">Todas las fechas</option>
-                <option className="bg-slate-950 text-slate-100" value="HOY">Hoy</option>
-                <option className="bg-slate-950 text-slate-100" value="SEMANA">Esta semana</option>
-                <option className="bg-slate-950 text-slate-100" value="MES">Este mes</option>
-              </select>
-            </div>
-          </div>
+        <div className="flex items-center gap-1.5 ml-auto">
+          <label className="text-[8px] uppercase tracking-widest text-slate-500 font-black mr-2">Filtrar por:</label>
+          <select
+            value={filters.date_range}
+            onChange={(e) => handleFilterChange('date_range', e.target.value)}
+            className="bg-slate-900/50 border border-white/5 rounded-2xl px-5 py-3 text-[10px] font-black uppercase tracking-widest text-white focus:outline-none focus:border-gold-500/50 transition-all cursor-pointer hover:bg-slate-800"
+          >
+            <option className="bg-slate-950 text-slate-100" value="ALL">Todas las fechas</option>
+            <option className="bg-slate-950 text-slate-100" value="HOY">Hoy</option>
+            <option className="bg-slate-950 text-slate-100" value="SEMANA">Esta semana</option>
+            <option className="bg-slate-950 text-slate-100" value="MES">Este mes</option>
+          </select>
         </div>
       </div>
 
