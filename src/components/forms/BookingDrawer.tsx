@@ -138,12 +138,15 @@ export default function BookingDrawer() {
         // Redirección a WhatsApp para terminar la compra (Reemplaza Mercado Pago)
         if (bookingIds.length > 0) {
           const whatsappNumber = "5491165736669"; 
-          const name = user ? (user.user_metadata?.full_name || user.email) : guestName;
+          const name = user ? (user.user_metadata?.first_name ? `${user.user_metadata.first_name} ${user.user_metadata.last_name || ''}`.trim() : user.user_metadata?.full_name || user.user_metadata?.name || user.email) : guestName;
           const userType = user ? "Socio Muniv" : "Invitado";
           
           let itemsList = items.map(item => `- ${item.guests}x ${item.title}: $${(item.price * item.guests).toLocaleString('es-AR')}`).join('\n');
           
-          const message = `Hola Muniv! 👋\n\nSoy ${name} (${userType}).\nQuiero terminar mi compra de:\n${itemsList}\n\n*Total Final: $${finalPrice.toLocaleString('es-AR')}*\n\nNro de gestión: ${bookingIds.join(', ')}\n\n¿Me pasas el alias para transferir?`;
+          const isSorteo = items.some(i => i.type?.toLowerCase() === 'sorteo');
+          const intention = isSorteo ? "participar de:" : "terminar mi compra de:";
+
+          const message = `Hola Muniv!\n\nSoy ${name} (${userType}).\nQuiero ${intention}\n${itemsList}\n\n*Total Final: $${finalPrice.toLocaleString('es-AR')}*\n\n¿Me pasas el alias para transferir?`;
           
           const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
           
@@ -304,10 +307,9 @@ export default function BookingDrawer() {
                       <div className="flex justify-center p-4"><Loader2 className="animate-spin text-gold-500" /></div>
                     ) : (
                       <>
-                  {/* Upsell Banner (Only for Non-Users and NOT for Sorteos) */}
+                  {/* Upsell Banner (For all Non-Users) */}
                   {(() => {
-                    const hasSorteo = items.some(i => i.type?.toLowerCase() === 'sorteo');
-                    if (!user && !checkingAuth && !hasSorteo) {
+                    if (!user && !checkingAuth) {
                       return (
                         <motion.div 
                           initial={{ opacity: 0, scale: 0.95 }}
@@ -432,7 +434,7 @@ export default function BookingDrawer() {
                           {isPending ? (
                             <>Procesando <Loader2 size={18} className="animate-spin" /></>
                           ) : (
-                            <>Terminar compra <MessageCircle size={18} /></>
+                            <>{items.some(i => i.type?.toLowerCase() === 'sorteo') ? 'Participar en Sorteo' : 'Terminar compra'} <MessageCircle size={18} /></>
                           )}
                         </button>
                       </>

@@ -1,18 +1,21 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import { getActiveExperiences, type Experience } from "@/actions/experiences";
 import { useCartStore } from "@/store/useCartStore";
-import { Loader2, Plus, Calendar, ShieldCheck } from "lucide-react";
+import { Loader2, Plus, Calendar, ShieldCheck, CheckCircle2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
 import { toast } from "sonner";
+import { submitBooking } from "@/actions/booking";
 
 export default function ExperienceList() {
   const [experiences, setExperiences] = useState<Experience[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isPending, startTransition] = useTransition();
+  const [processingId, setProcessingId] = useState<string | null>(null);
   const { addItem, openCart } = useCartStore();
   const router = useRouter();
 
@@ -21,12 +24,49 @@ export default function ExperienceList() {
     const supabase = createClient();
     const { data: { session } } = await supabase.auth.getSession();
     
-    if (exp.type?.toLowerCase() === 'sorteo' && !session) {
-      toast.error("¡Evento exclusivo!", {
-        description: "Para participar de los sorteos tenés que ser miembro. ¡Registrate ahora!",
+    if (exp.type?.toLowerCase() === 'sorteo') {
+      if (!session) {
+        toast.error("¡Evento exclusivo!", {
+          description: "Para participar de los sorteos tenés que ser miembro. ¡Registrate ahora!",
+          icon: <ShieldCheck className="text-gold-500" size={20} />,
+        });
+        return;
+      }
+      
+      // SORTEO: Bypasses cart entirely and submits participation directly
+      setProcessingId(exp.id);
+      startTransition(async () => {
+        const res = await submitBooking({
+          experienceId: exp.id,
+          experienceTitle: exp.title,
+          date: exp.event_date ? exp.event_date.split('T')[0] : new Date().toISOString().split('T')[0],
+          time: exp.event_date ? new Date(exp.event_date).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit', hour12: false }) : "00:00",
+          guests: 1,
+          upSells: [],
+          final_price: 0,
+        });
+
+        if (res.success) {
+          toast.success("¡Participación Confirmada!", {
+             description: `Ya estás participando en el sorteo de ${exp.title}. ¡Mucha suerte!`,
+             icon: <CheckCircle2 className="text-emerald-500" size={20} />
+          });
+        } else {
+          toast.error("Atención", { description: res.message || "Error al participar del sorteo." });
+        }
+        setProcessingId(null);
+      });
+      
+      return;
+    }
+
+    // Normal Cart Flow for Cajas and Eventos
+    if (!session && exp.type?.toLowerCase() !== 'sorteo') {
+      toast("¡Te estás perdiendo de un descuento!", {
+        description: "Como miembro de Muniv adquirís precios especiales y múltiples beneficios.",
+        action: { label: 'Crear cuenta', onClick: () => router.push('/login') },
         icon: <ShieldCheck className="text-gold-500" size={20} />,
       });
-      return;
     }
 
     addItem({
@@ -130,9 +170,10 @@ export default function ExperienceList() {
               ) : (
                 <button
                   onClick={() => handleBookingClick(exp)}
-                  className="flex items-center gap-2 px-5 py-2.5 bg-burgundy-600 text-white rounded-full font-bold text-sm hover:bg-burgundy-500 transition-all active:scale-95 shadow-[0_0_20px_rgba(108,26,26,0.4)]"
+                  disabled={processingId === exp.id}
+                  className="flex items-center gap-2 px-5 py-2.5 bg-burgundy-600 text-white rounded-full font-bold text-sm hover:bg-burgundy-500 transition-all active:scale-95 shadow-[0_0_20px_rgba(108,26,26,0.4)] disabled:opacity-50"
                 >
-                  {exp.type?.toLowerCase() === 'caja' ? 'COMPRAR' : (exp.price === 0 ? 'Participar' : 'Reservar')} <Plus size={16} />
+                  {processingId === exp.id ? <Loader2 size={16} className="animate-spin" /> : (exp.type?.toLowerCase() === 'caja' ? 'COMPRAR' : (exp.type?.toLowerCase() === 'sorteo' ? 'Participar' : 'Reservar'))} {processingId !== exp.id && <Plus size={16} />}
                 </button>
               )}
             </div>

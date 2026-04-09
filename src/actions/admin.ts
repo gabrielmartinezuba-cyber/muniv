@@ -557,3 +557,47 @@ export async function updateBookingStatus(bookingId: string, newStatus: string):
     return { success: false, error: error.message };
   }
 }
+
+export async function dismissCancellation(bookingId: string): Promise<{ success: boolean; error?: string }> {
+  try {
+    const isAdmin = await checkIsAdmin();
+    if (!isAdmin) return { success: false, error: "Unauthorized." };
+
+    const supabaseAdmin = createAdminClient();
+    const { error } = await supabaseAdmin
+      .from('bookings')
+      .update({ cancel_requested: false, cancel_reason: null })
+      .eq('id', bookingId);
+    
+    if (error) throw error;
+
+    revalidatePath('/admin/ordenes');
+    revalidatePath('/comunidad');
+    return { success: true };
+  } catch (error: any) {
+    console.error("dismissCancellation error:", error);
+    return { success: false, error: error.message };
+  }
+}
+
+export async function confirmCancellation(bookingId: string): Promise<{ success: boolean; error?: string }> {
+  try {
+    const isAdmin = await checkIsAdmin();
+    if (!isAdmin) return { success: false, error: "Unauthorized." };
+
+    const supabaseAdmin = createAdminClient();
+    const { error } = await supabaseAdmin
+      .from('bookings')
+      .update({ status: 'CANCELADO' })
+      .eq('id', bookingId);
+    
+    if (error) throw error;
+
+    revalidatePath('/admin/ordenes');
+    revalidatePath('/comunidad');
+    return { success: true };
+  } catch (error: any) {
+    console.error("confirmCancellation error:", error);
+    return { success: false, error: error.message };
+  }
+}

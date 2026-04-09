@@ -12,7 +12,7 @@ function StatusBadge({ status }: { status: string }) {
   if (status === 'PENDIENTE') {
     return (
       <span className="flex items-center gap-1.5 px-4 py-1.5 bg-orange-500/10 border border-orange-500/30 text-orange-500 rounded-full text-[9px] font-black tracking-widest uppercase shadow-[0_0_15px_rgba(249,115,22,0.1)]">
-        <AlertTriangle size={10} /> Pago pendiente
+        <AlertTriangle size={10} /> A verificar...
       </span>
     );
   }
@@ -98,7 +98,7 @@ export function BookingCard({ booking }: { booking: any }) {
     const experienceTitle = experience?.title || "Reserva Muniv";
     const total = booking.total_price.toLocaleString('es-AR');
     
-    const message = `Hola Muniv! 👋\n\nQuiero pagar mi reserva pendiente.\n\n*Nro de gestión:* ${booking.id}\n*Experiencia:* ${experienceTitle}\n*Total:* $${total}\n\n¿Me pasas los datos para transferir?`;
+    const message = `Hola Muniv!\n\nQuiero pagar mi reserva pendiente.\n\n*Experiencia:* ${experienceTitle}\n*Total:* $${total}\n\n¿Me pasas los datos para transferir?`;
     
     const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
     
@@ -216,7 +216,7 @@ export function BookingCard({ booking }: { booking: any }) {
                   className="group flex-1 sm:flex-none relative overflow-hidden px-8 py-3.5 bg-[#25D366] border border-[#22c35e]/50 text-white rounded-xl text-[11px] font-black uppercase tracking-widest hover:shadow-[0_0_20px_rgba(37,211,102,0.4)] hover:-translate-y-0.5 transition-all duration-300 disabled:opacity-50 flex items-center justify-center gap-2"
                 >
                   {isRetrying ? <Loader2 size={16} className="animate-spin" /> : <MessageCircle size={16} />}
-                  Terminar compra
+                  {type === 'sorteo' ? 'Avisar Transferencia / Pago' : 'Avisar Transferencia'}
                 </button>
                 <button
                   onClick={() => setShowCancelForm(true)}
