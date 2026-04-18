@@ -98,7 +98,8 @@ export async function getAdminReport(filters?: AdminReportFilters): Promise<Admi
           selected_wines: null,
           cancel_requested: false,
           cancel_reason: null,
-          client_phone: u.phone || rawMeta.phone || null
+          client_phone: u.phone || rawMeta.phone || null,
+          event_date: null
         };
       }).sort((a, b) => {
         if (a.experience_type === 'ADMIN' && b.experience_type !== 'ADMIN') return -1;
