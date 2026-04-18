@@ -7,6 +7,7 @@ import { useEffect, useState, useTransition } from "react";
 import { submitBooking } from "@/actions/booking";
 import { createCheckoutPreference } from "@/actions/payments";
 import { getBenefits } from "@/actions/benefits";
+import { getExperienceAvailability } from "@/actions/experiences";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { createClient } from "@/utils/supabase/client";
@@ -32,6 +33,7 @@ export default function BookingDrawer() {
   const [guestName, setGuestName] = useState("");
   const [guestEmail, setGuestEmail] = useState("");
   const [guestPhone, setGuestPhone] = useState("");
+  const [availabilityMap, setAvailabilityMap] = useState<Record<string, number>>({});
 
   const router = useRouter();
 
@@ -71,8 +73,19 @@ export default function BookingDrawer() {
         }
       };
       fetchAuthAndDiscounts();
+
+      // Fetch availability for all items in cart
+      const fetchAvailability = async () => {
+        const map: Record<string, number> = {};
+        for (const item of items) {
+          const avail = await getExperienceAvailability(item.experienceId);
+          map[item.experienceId] = avail.remaining;
+        }
+        setAvailabilityMap(map);
+      };
+      fetchAvailability();
     }
-  }, [isOpen, setBenefit]);
+  }, [isOpen, items.length, setBenefit]);
 
   if (!mounted) return null;
 
@@ -268,9 +281,20 @@ export default function BookingDrawer() {
                                 <span className="text-sm font-bold text-white min-w-[1ch] text-center">{item.guests}</span>
                                 <span className="text-[10px] text-slate-400 uppercase font-bold tracking-tighter">{isCaja ? 'cajas' : 'personas'}</span>
                               </div>
-                              <button onClick={() => updateItemGuests(item.id, item.guests + 1)} className="w-8 h-8 rounded-full text-white flex items-center justify-center hover:bg-white/10 transition-colors">
-                                <Plus size={14} />
-                              </button>
+                               <button 
+                                 onClick={() => {
+                                   const remaining = availabilityMap[item.experienceId] ?? 999;
+                                   if (item.guests < remaining) {
+                                     updateItemGuests(item.id, item.guests + 1);
+                                   } else {
+                                     toast.error(`Lo sentimos, solo quedan ${remaining} lugares.`);
+                                   }
+                                 }} 
+                                 disabled={item.guests >= (availabilityMap[item.experienceId] ?? 999)}
+                                 className="w-8 h-8 rounded-full text-white flex items-center justify-center hover:bg-white/10 transition-colors disabled:opacity-20 disabled:cursor-not-allowed"
+                               >
+                                 <Plus size={14} />
+                               </button>
                             </div>
                           )}
                           <span className="text-lg font-display text-white italic">${(item.price * item.guests).toLocaleString('es-AR')}</span>

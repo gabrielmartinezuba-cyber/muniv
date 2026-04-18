@@ -53,6 +53,28 @@ export async function submitBooking(data: unknown) {
       };
     }
 
+    // --- VALIDACIÓN DE CAPACIDAD MÁXIMA ---
+    const maxCapacity = experience.max_capacity || 0;
+    if (maxCapacity > 0) {
+      const { data: currentBookings } = await supabaseAdmin
+        .from('bookings')
+        .select('guests_count')
+        .eq('experience_id', formData.experienceId)
+        .not('status', 'eq', 'CANCELADO');
+      
+      const alreadySold = currentBookings?.reduce((sum, b) => sum + (b.guests_count || 0), 0) || 0;
+      const available = maxCapacity - alreadySold;
+      
+      if (formData.guests > available) {
+        return { 
+          success: false, 
+          message: available > 0 
+            ? `Capacidad excedida. Solo quedan ${available} lugares disponibles.` 
+            : "Lo sentimos, ya no quedan lugares disponibles para esta experiencia."
+        };
+      }
+    }
+
     // --- VALIDACIÓN DE VINOS (BACKEND) ---
     if (experience.type?.trim().toLowerCase() === 'caja') {
       const { data: expMeta } = await supabaseAdmin.from('experiences').select('wine_quantity').eq('id', formData.experienceId).single();
