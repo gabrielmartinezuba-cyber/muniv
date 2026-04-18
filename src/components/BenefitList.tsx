@@ -13,11 +13,12 @@ export default function BenefitList({ filterType = "all" }: { filterType?: "all"
   useEffect(() => {
     const init = async () => {
       const allBenefits = await getBenefits();
+      const activeBenefits = allBenefits.filter(b => b.status === 'ACTIVE');
       
       if (filterType === "physical") {
-        setBenefits(allBenefits.filter(b => !b.discount_percentage || b.discount_percentage === 0));
+        setBenefits(activeBenefits.filter(b => !b.discount_percentage || b.discount_percentage === 0));
       } else {
-        setBenefits(allBenefits);
+        setBenefits(activeBenefits);
       }
       
       setLoading(false);

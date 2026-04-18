@@ -77,8 +77,9 @@ export default function BookingDrawer() {
   if (!mounted) return null;
 
   const subtotal = getSubtotal();
+  const temporalDiscountAmount = getTemporalDiscountAmount();
   const discountAmount = getDiscountAmount();
-  const finalPrice = user ? getTotal() : subtotal;
+  const finalPrice = getTotal();
 
   const handleCheckout = () => {
     if (items.length === 0) return;
@@ -118,7 +119,7 @@ export default function BookingDrawer() {
           guest_name: user ? "" : guestName,
           guest_email: user ? "" : guestEmail,
           guest_phone: user ? "" : guestPhone,
-          final_price: user ? ((item.price * item.guests) * (1 - (benefit?.percentage || 0) / 100)) : (item.price * item.guests),
+          final_price: ((item.price * (1 - (item.temporal_discount || 0) / 100)) * item.guests) * (user ? (1 - (benefit?.percentage || 0) / 100) : 1),
           selected_wines: item.selected_wines
         };
 
@@ -141,7 +142,11 @@ export default function BookingDrawer() {
           const name = user ? (user.user_metadata?.first_name ? `${user.user_metadata.first_name} ${user.user_metadata.last_name || ''}`.trim() : user.user_metadata?.full_name || user.user_metadata?.name || user.email) : guestName;
           const userType = user ? "Socio Muniv" : "Invitado";
           
-          let itemsList = items.map(item => `- ${item.guests}x ${item.title}: $${(item.price * item.guests).toLocaleString('es-AR')}`).join('\n');
+          let itemsList = items.map(item => {
+            const base = item.price * item.guests;
+            const disc = base * ((item.temporal_discount || 0) / 100);
+            return `- ${item.guests}x ${item.title}: $${(base - disc).toLocaleString('es-AR')}`;
+          }).join('\n');
           
           const isSorteo = items.some(i => i.type?.toLowerCase() === 'sorteo');
           const intention = isSorteo ? "participar de:" : "terminar mi compra de:";
@@ -347,7 +352,14 @@ export default function BookingDrawer() {
                               ${subtotal.toLocaleString('es-AR')}
                             </span>
                           </div>
-                          
+                           {temporalDiscountAmount > 0 && (
+                             <div className="flex justify-between items-center mb-3">
+                               <span className="text-red-500 text-[10px] uppercase font-black tracking-widest">
+                                 Promoción (-{items.find(i => (i.temporal_discount || 0) > 0)?.temporal_discount}%)
+                               </span>
+                               <span className="text-red-500 font-display text-lg font-bold">-${temporalDiscountAmount.toLocaleString('es-AR')}</span>
+                             </div>
+                           )}
                           {user && discountAmount > 0 && (
                             <div className="flex justify-between items-center mb-3">
                               <span className="text-burgundy-400 text-xs uppercase font-bold tracking-widest">

@@ -78,6 +78,7 @@ export default function ExperienceList() {
       eventDate: exp.event_date,
       guests: 1,
       upSells: [],
+      temporal_discount: exp.temporal_discount,
       wine_quantity: (exp as any).wine_quantity,
       wine_options: (exp as any).wine_options,
     });

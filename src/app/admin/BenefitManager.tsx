@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { getBenefits, upsertBenefit, deleteBenefit, saveBenefitOrder, getNextBenefitOrder } from "@/actions/benefits";
+import { toggleBenefitStatus } from "@/actions/admin";
 import { Plus, Loader2, Save, Trash2, Image as ImageIcon, Upload, GripVertical, Gift } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
@@ -31,17 +32,20 @@ interface BenefitItem {
   id: string;
   title: string;
   image_url: string;
+  status: string;
 }
 
 // Sub-component for Sortable Item
 function SortableBenefitCard({ 
   benefit, 
   isSelected, 
-  onSelect 
+  onSelect,
+  onToggleStatus
 }: { 
   benefit: BenefitItem; 
   isSelected: boolean; 
-  onSelect: (id: string) => void; 
+  onSelect: (id: string) => void;
+  onToggleStatus: (id: string, current: string) => void;
 }) {
   const {
     attributes,
@@ -60,23 +64,24 @@ function SortableBenefitCard({
     touchAction: 'none',
   };
 
+  const isActive = benefit.status === 'ACTIVE';
+
   return (
     <div
       ref={setNodeRef}
       style={style}
-      className={`group relative rounded-2xl overflow-hidden cursor-pointer transition-all duration-300 border shadow-lg ${
+      className={`group relative rounded-2xl overflow-hidden transition-all duration-300 border shadow-lg ${
         isSelected 
           ? "border-burgundy-500 ring-2 ring-burgundy-500/20 scale-[1.02]" 
-          : "border-white/10 hover:border-burgundy-500/50 bg-slate-900/60"
+          : "border-white/10 bg-slate-900/60"
       }`}
-      onClick={() => onSelect(benefit.id)}
     >
-      <div className="aspect-video relative overflow-hidden">
+      <div className="aspect-video relative overflow-hidden group/img">
         <Image 
           src={benefit.image_url || "/placeholder.jpg"} 
           alt={benefit.title}
           fill
-          className="object-cover transition-transform duration-500 group-hover:scale-110"
+          className="object-cover transition-transform duration-500 group-hover/img:scale-110"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent opacity-60" />
         
@@ -85,16 +90,36 @@ function SortableBenefitCard({
           {...attributes} 
           {...listeners}
           className="absolute top-2 right-2 p-1.5 bg-slate-950/50 backdrop-blur-md rounded-lg text-white/50 hover:text-burgundy-400 transition-colors cursor-grab active:cursor-grabbing opacity-0 group-hover:opacity-100"
-          onClick={(e) => e.stopPropagation()}
         >
           <GripVertical size={16} />
         </div>
       </div>
       
-      <div className="p-3 bg-slate-900/40 backdrop-blur-md relative border-t border-white/5">
-        <h4 className="text-white text-[10px] font-display tracking-widest truncate pr-2 uppercase italic opacity-90">
+      <div className="p-4 bg-slate-900/40 backdrop-blur-md relative border-t border-white/5 space-y-3">
+        <h4 className="text-white text-[10px] font-display tracking-widest truncate uppercase italic opacity-90">
           {benefit.title}
         </h4>
+
+        <div className="flex items-center justify-between gap-3 pt-1 border-t border-white/5">
+          <button
+            onClick={() => onSelect(benefit.id)}
+            className="flex-grow py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-[8px] font-black uppercase tracking-widest text-slate-300 transition-all active:scale-95"
+          >
+            Editar
+          </button>
+
+          <div className="flex items-center gap-2">
+             <span className={`text-[8px] font-black uppercase tracking-widest ${isActive ? 'text-emerald-500' : 'text-slate-600'}`}>
+               {isActive ? 'Activo' : 'Draft'}
+             </span>
+             <button
+                onClick={(e) => { e.stopPropagation(); onToggleStatus(benefit.id, benefit.status); }}
+                className={`relative w-10 h-5 rounded-full transition-colors duration-300 p-1 ${isActive ? 'bg-emerald-500' : 'bg-slate-700'}`}
+             >
+                <div className={`w-3 h-3 bg-white rounded-full transition-transform duration-300 ${isActive ? 'translate-x-5' : 'translate-x-0'}`} />
+             </button>
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -134,7 +159,21 @@ export default function BenefitManager() {
 
   const loadBenefits = async () => {
     const data = await getBenefits();
-    setBenefits(data.map(b => ({ id: b.id, title: b.title, image_url: b.image_url })));
+    setBenefits(data.map(b => ({ id: b.id, title: b.title, image_url: b.image_url, status: b.status })));
+  };
+
+  const handleToggleStatus = async (id: string, current: string) => {
+    // Optimistic update
+    setBenefits(prev => prev.map(b => b.id === id ? { ...b, status: current === 'ACTIVE' ? 'DRAFT' : 'ACTIVE' } : b));
+    
+    const res = await toggleBenefitStatus(id, current);
+    if (res.success) {
+      toast.success("Estado actualizado");
+    } else {
+      toast.error("Error al actualizar estado");
+      // Rollback
+      setBenefits(prev => prev.map(b => b.id === id ? { ...b, status: current } : b));
+    }
   };
 
   useEffect(() => {

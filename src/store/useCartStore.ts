@@ -24,6 +24,7 @@ export interface CartItem {
   eventDate: string | null;
   guests: number; // For non-caja it's persons, for caja it's number of boxes
   upSells: string[];
+  temporal_discount?: number | null;
   wine_quantity?: number; // bottle count per box
   wine_options?: string[]; // varieties to choose from
   selected_wines?: string[]; // actual user choices (flat array of strings)
@@ -48,6 +49,7 @@ interface CartState {
   closeCart: () => void;
   
   getSubtotal: () => number;
+  getTemporalDiscountAmount: () => number;
   getDiscountAmount: () => number;
   getTotal: () => number;
 }
@@ -123,6 +125,15 @@ export const useCartStore = create<CartState>()(
         }, 0);
       },
 
+      getTemporalDiscountAmount: () => {
+        const state = get();
+        return state.items.reduce((total, item) => {
+          if (!item.temporal_discount || item.temporal_discount <= 0) return total;
+          const discountPerUnit = item.price * (item.temporal_discount / 100);
+          return total + (discountPerUnit * item.guests);
+        }, 0);
+      },
+
       getDiscountAmount: () => {
         const state = get();
         const benefit = state.benefit;
@@ -131,10 +142,15 @@ export const useCartStore = create<CartState>()(
         let subtotalForDiscount = 0;
         
         state.items.forEach(item => {
-          let itemDiscountable = item.price * item.guests;
+          // El descuento de comunidad se aplica SOBRE el precio que ya tiene el descuento temporal restado
+          const basePrice = item.price;
+          const tempDiscountPerUnit = basePrice * ((item.temporal_discount || 0) / 100);
+          const priceAfterTempDiscount = basePrice - tempDiscountPerUnit;
+
+          let itemDiscountable = priceAfterTempDiscount * item.guests;
           
           if (item.type?.trim().toLowerCase() === 'evento') {
-            itemDiscountable = item.price; // Solo descuenta 1 unidad
+            itemDiscountable = priceAfterTempDiscount; // Solo descuenta 1 unidad
           }
           
           subtotalForDiscount += itemDiscountable;
@@ -148,7 +164,7 @@ export const useCartStore = create<CartState>()(
 
       getTotal: () => {
         const state = get();
-        return state.getSubtotal() - state.getDiscountAmount();
+        return state.getSubtotal() - state.getTemporalDiscountAmount() - state.getDiscountAmount();
       }
     }),
     {

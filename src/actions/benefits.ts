@@ -12,6 +12,7 @@ export type Benefit = {
   image_url: string;
   discount_percentage: number | null;
   discount_cap?: number | null;
+  status: 'ACTIVE' | 'DRAFT';
   created_at?: string;
 };
 
@@ -20,13 +21,17 @@ export type Benefit = {
 export async function getBenefits(): Promise<Benefit[]> {
   try {
     const supabase = await createClient();
-    const { data, error } = await supabase
-      .from('benefits')
-      .select('*')
-      .order('display_order', { ascending: true });
+    let query = supabase.from('benefits').select('*').order('display_order', { ascending: true });
+    
+    // Si no estamos en el admin, filtrar por activos
+    // Nota: El admin usará una función separada o detectaremos el contexto.
+    // Para simplificar, si hay sesión de admin podemos traer todos.
+    // Pero mejor dejar que el admin llame a una query sin filtro.
+    
+    const { data, error } = await query;
 
     if (error) throw error;
-    return data || [];
+    return (data || []) as Benefit[];
   } catch (error) {
     console.error("getBenefits error:", error);
     return [];
@@ -73,6 +78,7 @@ export async function upsertBenefit(formData: FormData): Promise<{ success: bool
 
     if (isNew) {
       if (!updates.image_url) updates.image_url = '/placeholder.jpg';
+      updates.status = 'ACTIVE';
       const { error } = await supabaseAdmin.from('benefits').insert(updates);
       if (error) throw error;
     } else {

@@ -12,6 +12,7 @@ export type Experience = {
   image_url: string;
   status: 'ACTIVE' | 'SOLD_OUT' | 'COMING_SOON' | 'DRAFT';
   event_date: string | null;
+  temporal_discount: number | null;
 };
 
 export async function getActiveExperiences(): Promise<Experience[]> {

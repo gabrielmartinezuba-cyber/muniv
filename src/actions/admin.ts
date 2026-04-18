@@ -32,7 +32,7 @@ export async function getAdminExperiences(): Promise<{ id: string; title: string
     const supabaseSession = await createClient();
     const { data, error } = await supabaseSession
       .from('experiences')
-      .select('id, title, image_url')
+      .select('id, title, image_url, status')
       .order('display_order', { ascending: true });
 
     if (error || !data) {
@@ -601,6 +601,50 @@ export async function confirmCancellation(bookingId: string): Promise<{ success:
     return { success: true };
   } catch (error: any) {
     console.error("confirmCancellation error:", error);
+    return { success: false, error: error.message };
+  }
+}
+
+export async function toggleExperienceStatus(id: string, currentStatus: string): Promise<{ success: boolean; error?: string }> {
+  try {
+    const isAdmin = await checkIsAdmin();
+    if (!isAdmin) return { success: false, error: "Unauthorized." };
+
+    const newStatus = currentStatus === 'ACTIVE' ? 'DRAFT' : 'ACTIVE';
+    const supabaseAdmin = createAdminClient();
+    const { error } = await supabaseAdmin
+      .from('experiences')
+      .update({ status: newStatus })
+      .eq('id', id);
+
+    if (error) throw error;
+    revalidatePath('/admin/experiencias');
+    revalidatePath('/');
+    return { success: true };
+  } catch (error: any) {
+    console.error("toggleExperienceStatus error:", error);
+    return { success: false, error: error.message };
+  }
+}
+
+export async function toggleBenefitStatus(id: string, currentStatus: string): Promise<{ success: boolean; error?: string }> {
+  try {
+    const isAdmin = await checkIsAdmin();
+    if (!isAdmin) return { success: false, error: "Unauthorized." };
+
+    const newStatus = currentStatus === 'ACTIVE' ? 'DRAFT' : 'ACTIVE';
+    const supabaseAdmin = createAdminClient();
+    const { error } = await supabaseAdmin
+      .from('benefits')
+      .update({ status: newStatus })
+      .eq('id', id);
+
+    if (error) throw error;
+    revalidatePath('/admin/beneficios');
+    revalidatePath('/comunidad');
+    return { success: true };
+  } catch (error: any) {
+    console.error("toggleBenefitStatus error:", error);
     return { success: false, error: error.message };
   }
 }

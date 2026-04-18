@@ -30,7 +30,7 @@ export async function submitBooking(data: unknown) {
     // 3. Obtener precio base de la experiencia para calcular el total
     const { data: experience, error: expError } = await supabase
       .from('experiences')
-      .select('price, type')
+      .select('price, type, temporal_discount')
       .eq('id', formData.experienceId)
       .single();
 
@@ -82,28 +82,32 @@ export async function submitBooking(data: unknown) {
     }
 
     // Cálculo matemático estricto en el servidor
-    let calculatedTotalPrice = experience.price * formData.guests;
+    const basePrice = experience.price;
+    const tempDiscountPercentage = experience.temporal_discount || 0;
+    const tempDiscountPerUnit = basePrice * (tempDiscountPercentage / 100);
+    const priceAfterTempDiscount = basePrice - tempDiscountPerUnit;
+
+    let calculatedTotalPrice = priceAfterTempDiscount * formData.guests;
+    
+    // Up-sells logic (precio fijo extra)
     if (formData.upSells && formData.upSells.length > 0) {
-      calculatedTotalPrice += formData.upSells.length * 20000; // Agregar Upsells
+      calculatedTotalPrice += formData.upSells.length * 20000;
     }
 
+    // Descuento de Comunidad (Solo Socios)
     if (user) {
       const benefitsRes = await getBenefits();
       if (benefitsRes && benefitsRes.length > 0) {
-        // Encontramos el beneficio principal (ej. tomando el mayor descuento o el primero)
-        // O asumimos el primer beneficio para simplificar, como lo trata el frontend
-        const discountPercentage = benefitsRes[0].discount_percentage || 0;
+        const communityDiscountPercentage = benefitsRes[0].discount_percentage || 0;
         
-        let discountableValue = experience.price * formData.guests;
+        // El descuento de comunidad se aplica sobre el precio que ya tiene el temporal restado
+        let discountableValue = priceAfterTempDiscount * formData.guests;
         if (experience.type?.trim().toLowerCase() === 'evento') {
-          discountableValue = experience.price; // SOLO descuenta 1 unidad
+          discountableValue = priceAfterTempDiscount; // SOLO descuenta 1 unidad
         }
         
-        const rawDiscount = discountableValue * (discountPercentage / 100);
-        // Supabase schema for Benefit doesn't expose discount_cap directly in type? Wait, let's use rawDiscount.
-        // Type 'Benefit' has 'discount_percentage'. If it had 'discount_cap', we'd use it.
-        const finalDiscount = rawDiscount;
-        calculatedTotalPrice -= finalDiscount;
+        const finalCommunityDiscount = discountableValue * (communityDiscountPercentage / 100);
+        calculatedTotalPrice -= finalCommunityDiscount;
       }
     }
 
