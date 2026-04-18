@@ -3,7 +3,7 @@
 import { useEffect, useState, useTransition } from "react";
 import { motion } from "framer-motion";
 import Image from "next/image";
-import { getActiveExperiences, type Experience } from "@/actions/experiences";
+import { getActiveExperiences, getExperienceAvailability, type Experience } from "@/actions/experiences";
 import { useCartStore } from "@/store/useCartStore";
 import { Loader2, Plus, Calendar, ShieldCheck, CheckCircle2 } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -16,6 +16,7 @@ export default function ExperienceList() {
   const [loading, setLoading] = useState(true);
   const [isPending, startTransition] = useTransition();
   const [processingId, setProcessingId] = useState<string | null>(null);
+  const [availability, setAvailability] = useState<Record<string, { remaining: number }>>({});
   const { addItem, openCart } = useCartStore();
   const router = useRouter();
 
@@ -86,8 +87,20 @@ export default function ExperienceList() {
   };
 
   useEffect(() => {
-    getActiveExperiences().then((data: Experience[]) => {
+    getActiveExperiences().then(async (data: Experience[]) => {
       setExperiences(data);
+      
+      // Fetch availability for each
+      const availMap: Record<string, { remaining: number }> = {};
+      for (const exp of data) {
+        if (exp.max_capacity && exp.max_capacity > 0) {
+          const res = await getExperienceAvailability(exp.id);
+          availMap[exp.id] = { remaining: res.remaining };
+        } else {
+          availMap[exp.id] = { remaining: 999 };
+        }
+      }
+      setAvailability(availMap);
       setLoading(false);
     });
   }, []);
@@ -167,6 +180,13 @@ export default function ExperienceList() {
                   className="flex items-center gap-2 px-5 py-2.5 bg-slate-800 text-slate-500 rounded-full font-bold text-sm cursor-not-allowed border border-white/5"
                 >
                   PRÓXIMAMENTE
+                </button>
+              ) : availability[exp.id]?.remaining <= 0 ? (
+                <button
+                  disabled
+                  className="flex items-center gap-2 px-5 py-2.5 bg-slate-800 text-slate-500 rounded-full font-bold text-sm cursor-not-allowed border border-white/5 uppercase tracking-widest"
+                >
+                  AGOTADO
                 </button>
               ) : (
                 <button
