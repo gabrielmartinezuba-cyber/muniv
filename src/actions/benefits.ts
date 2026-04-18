@@ -12,7 +12,7 @@ export type Benefit = {
   image_url: string;
   discount_percentage: number | null;
   discount_cap?: number | null;
-  status: 'ACTIVE' | 'DRAFT';
+  status: 'ACTIVE' | 'INACTIVE';
   created_at?: string;
 };
 

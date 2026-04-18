@@ -610,7 +610,8 @@ export async function toggleExperienceStatus(id: string, currentStatus: string):
     const isAdmin = await checkIsAdmin();
     if (!isAdmin) return { success: false, error: "Unauthorized." };
 
-    const newStatus = currentStatus === 'ACTIVE' ? 'DRAFT' : 'ACTIVE';
+    const isCurrentlyPublic = currentStatus === 'ACTIVE' || currentStatus === 'COMING_SOON';
+    const newStatus = isCurrentlyPublic ? 'INACTIVE' : 'ACTIVE';
     const supabaseAdmin = createAdminClient();
     const { error } = await supabaseAdmin
       .from('experiences')
@@ -632,7 +633,8 @@ export async function toggleBenefitStatus(id: string, currentStatus: string): Pr
     const isAdmin = await checkIsAdmin();
     if (!isAdmin) return { success: false, error: "Unauthorized." };
 
-    const newStatus = currentStatus === 'ACTIVE' ? 'DRAFT' : 'ACTIVE';
+    const isCurrentlyPublic = currentStatus === 'ACTIVE' || currentStatus === 'COMING_SOON';
+    const newStatus = isCurrentlyPublic ? 'INACTIVE' : 'ACTIVE';
     const supabaseAdmin = createAdminClient();
     const { error } = await supabaseAdmin
       .from('benefits')
@@ -642,6 +644,7 @@ export async function toggleBenefitStatus(id: string, currentStatus: string): Pr
     if (error) throw error;
     revalidatePath('/admin/beneficios');
     revalidatePath('/comunidad');
+    revalidatePath('/');
     return { success: true };
   } catch (error: any) {
     console.error("toggleBenefitStatus error:", error);

@@ -71,7 +71,7 @@ function SortableExperienceCard({
     touchAction: 'none',
   };
 
-  const isActive = exp.status === 'ACTIVE';
+  const isActive = exp.status === 'ACTIVE' || exp.status === 'COMING_SOON';
 
   return (
     <div
@@ -117,7 +117,7 @@ function SortableExperienceCard({
 
           <div className="flex items-center gap-2">
              <span className={`text-[8px] font-black uppercase tracking-widest ${isActive ? 'text-emerald-500' : 'text-slate-600'}`}>
-               {isActive ? 'Activo' : 'Draft'}
+               {exp.status === 'COMING_SOON' ? 'Próximamente' : isActive ? 'Activo' : 'Inactivo'}
              </span>
              <button
                 onClick={(e) => { e.stopPropagation(); onToggleStatus(exp.id, exp.status); }}
@@ -171,7 +171,9 @@ export default function ExperienceManager() {
 
   const handleToggleStatus = async (id: string, current: string) => {
     // Optimistic update
-    setExperiences(prev => prev.map(e => e.id === id ? { ...e, status: current === 'ACTIVE' ? 'DRAFT' : 'ACTIVE' } : e));
+    const isCurrentlyPublic = current === 'ACTIVE' || current === 'COMING_SOON';
+    const nextStatus = isCurrentlyPublic ? 'INACTIVE' : 'ACTIVE';
+    setExperiences(prev => prev.map(e => e.id === id ? { ...e, status: nextStatus } : e));
     
     const res = await toggleExperienceStatus(id, current);
     if (res.success) {

@@ -10,7 +10,7 @@ export type Experience = {
   price: number;
   type: string;
   image_url: string;
-  status: 'ACTIVE' | 'SOLD_OUT' | 'COMING_SOON' | 'DRAFT';
+  status: 'ACTIVE' | 'SOLD_OUT' | 'COMING_SOON' | 'INACTIVE';
   event_date: string | null;
   temporal_discount: number | null;
 };

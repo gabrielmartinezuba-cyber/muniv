@@ -64,7 +64,7 @@ function SortableBenefitCard({
     touchAction: 'none',
   };
 
-  const isActive = benefit.status === 'ACTIVE';
+  const isActive = benefit.status === 'ACTIVE' || benefit.status === 'COMING_SOON';
 
   return (
     <div
@@ -110,7 +110,7 @@ function SortableBenefitCard({
 
           <div className="flex items-center gap-2">
              <span className={`text-[8px] font-black uppercase tracking-widest ${isActive ? 'text-emerald-500' : 'text-slate-600'}`}>
-               {isActive ? 'Activo' : 'Draft'}
+               {benefit.status === 'COMING_SOON' ? 'Próximamente' : isActive ? 'Activo' : 'Inactivo'}
              </span>
              <button
                 onClick={(e) => { e.stopPropagation(); onToggleStatus(benefit.id, benefit.status); }}
@@ -164,7 +164,9 @@ export default function BenefitManager() {
 
   const handleToggleStatus = async (id: string, current: string) => {
     // Optimistic update
-    setBenefits(prev => prev.map(b => b.id === id ? { ...b, status: current === 'ACTIVE' ? 'DRAFT' : 'ACTIVE' } : b));
+    const isCurrentlyPublic = current === 'ACTIVE' || current === 'COMING_SOON';
+    const nextStatus = isCurrentlyPublic ? 'INACTIVE' : 'ACTIVE';
+    setBenefits(prev => prev.map(b => b.id === id ? { ...b, status: nextStatus } : b));
     
     const res = await toggleBenefitStatus(id, current);
     if (res.success) {
