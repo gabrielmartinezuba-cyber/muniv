@@ -333,6 +333,7 @@ export default function BenefitManager() {
                     benefit={b}
                     isSelected={selectedId === b.id}
                     onSelect={setSelectedId}
+                    onToggleStatus={handleToggleStatus}
                   />
                 );
               })}

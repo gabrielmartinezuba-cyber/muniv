@@ -16,7 +16,7 @@ import Link from "next/link";
 export default function BookingDrawer() {
   const { 
     isOpen, closeCart, items, removeItem, updateItemGuests, updateItemWines, toggleItemUpSell, clearCart, 
-    getSubtotal, getDiscountAmount, getTotal, setBenefit, benefit
+    getSubtotal, getTemporalDiscountAmount, getDiscountAmount, getTotal, setBenefit, benefit
   } = useCartStore();
 
   const [mounted, setMounted] = useState(false);

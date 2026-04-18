@@ -22,7 +22,7 @@ export type AdminReportRow = {
   event_date: string | null;
 };
 
-export async function getAdminExperiences(): Promise<{ id: string; title: string, image_url: string }[]> {
+export async function getAdminExperiences(): Promise<{ id: string; title: string, image_url: string, status: string }[]> {
   try {
     const isAdmin = await checkIsAdmin();
     if (!isAdmin) {
