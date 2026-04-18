@@ -136,7 +136,6 @@ export async function submitBooking(data: unknown) {
     console.log(`[SUBMIT BOOKING] Processing for user ${user?.id || 'GUEST'}`);
 
     // 7. Insert Booking (Using ADMIN client to bypass RLS issues for Guest Checkout)
-    const supabaseAdmin = createAdminClient();
     const { data: insertedBooking, error: insertError } = await supabaseAdmin
       .from('bookings')
       .insert(payloadInsert)
