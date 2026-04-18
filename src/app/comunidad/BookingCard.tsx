@@ -8,7 +8,14 @@ import { requestBookingCancellation } from "@/actions/booking";
 import { retryPayment } from "@/actions/payments";
 import { toast } from "sonner";
 
-function StatusBadge({ status }: { status: string }) {
+function StatusBadge({ status, isPastEvent }: { status: string, isPastEvent?: boolean }) {
+  if (isPastEvent) {
+    return (
+      <span className="flex items-center gap-1.5 px-4 py-1.5 bg-slate-500/10 border border-slate-500/30 text-slate-500 rounded-full text-[9px] font-black tracking-widest uppercase shadow-[0_0_15px_rgba(255,255,255,0.05)]">
+        <Clock size={10} /> ESTADO: FINALIZADO (FECHA PASADA)
+      </span>
+    );
+  }
   if (status === 'PENDIENTE') {
     return (
       <span className="flex items-center gap-1.5 px-4 py-1.5 bg-orange-500/10 border border-orange-500/30 text-orange-500 rounded-full text-[9px] font-black tracking-widest uppercase shadow-[0_0_15px_rgba(249,115,22,0.1)]">
@@ -57,6 +64,9 @@ function StatusBadge({ status }: { status: string }) {
 export function BookingCard({ booking }: { booking: any }) {
   const type = booking.experiences?.type?.trim().toLowerCase();
   const experience = booking.experiences;
+
+  const isEvento = type === "evento";
+  const isPastEvent = isEvento && experience?.event_date && new Date(experience.event_date) <= new Date();
 
   const [showCancelForm, setShowCancelForm] = useState(false);
   const [reason, setReason] = useState("");
@@ -160,7 +170,7 @@ export function BookingCard({ booking }: { booking: any }) {
           </div>
 
           <div className="flex items-center shrink-0">
-            <StatusBadge status={booking.status} />
+            <StatusBadge status={booking.status} isPastEvent={isPastEvent} />
           </div>
         </div>
 

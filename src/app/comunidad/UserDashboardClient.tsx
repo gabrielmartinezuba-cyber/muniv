@@ -12,13 +12,17 @@ export default function UserDashboardClient({ bookings }: { bookings: any[] }) {
   const activeBookings = bookings.filter((b: any) => {
     const isEntregado = b.status === "ENTREGADO";
     const isCancelado = b.status === "CANCELADO";
+    const isEvento = b.experiences?.type?.trim().toLowerCase() === "evento";
+    
+    // Un evento se considera "Pasado" si su fecha es menor o igual a hoy
+    const isPastEvent = isEvento && b.experiences?.event_date && new Date(b.experiences.event_date) <= new Date();
 
     if (showFinalizadas) {
-      // En Finalizadas solo mostramos las entregadas. Las canceladas mueren.
-      return isEntregado;
+      // En Finalizadas mostramos las entregadas Y los eventos pasados.
+      return isEntregado || isPastEvent;
     } else {
-      // En Activas ocultamos las entregadas y canceladas
-      return !isEntregado && !isCancelado;
+      // En Activas ocultamos las entregadas, canceladas y los eventos que ya pasaron
+      return !isEntregado && !isCancelado && !isPastEvent;
     }
   });
 

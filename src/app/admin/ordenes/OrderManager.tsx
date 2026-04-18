@@ -69,7 +69,14 @@ export default function OrderManager({ orders }: OrderManagerProps) {
       
       const typeStr = order.experience_type?.trim().toLowerCase();
       if (activeTab === 'CAJAS' && typeStr !== 'caja') return false;
-      if (activeTab === 'EVENTOS' && typeStr !== 'evento') return false;
+      
+      if (activeTab === 'EVENTOS') {
+        if (typeStr !== 'evento') return false;
+        // FILTRADO DINÁMICO: Solo eventos futuros (gt now)
+        const isPast = order.event_date && new Date(order.event_date) <= new Date();
+        if (isPast) return false;
+      }
+      
       if (activeTab === 'SORTEOS' && typeStr !== 'sorteo') return false;
     }
 

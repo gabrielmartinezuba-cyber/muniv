@@ -19,6 +19,7 @@ export type AdminReportRow = {
   cancel_requested: boolean;
   cancel_reason: string | null;
   client_phone: string | null;
+  event_date: string | null;
 };
 
 export async function getAdminExperiences(): Promise<{ id: string; title: string, image_url: string }[]> {
@@ -108,7 +109,7 @@ export async function getAdminReport(filters?: AdminReportFilters): Promise<Admi
 
     let query = supabaseAdmin
       .from('bookings')
-      .select('*, experiences!inner(title, type)')
+      .select('*, experiences!inner(title, type, event_date)')
       .order('created_at', { ascending: false });
 
     // Apply filters
@@ -172,7 +173,8 @@ export async function getAdminReport(filters?: AdminReportFilters): Promise<Admi
         selected_wines: booking.selected_wines,
         cancel_requested: booking.cancel_requested ?? false,
         cancel_reason: booking.cancel_reason ?? null,
-        client_phone: booking.guest_phone || clientUser?.phone || rawMeta.phone || null
+        client_phone: booking.guest_phone || clientUser?.phone || rawMeta.phone || null,
+        event_date: booking.experiences?.event_date || null
       };
     });
 
