@@ -20,8 +20,8 @@ export type Benefit = {
 
 export async function getBenefits(): Promise<Benefit[]> {
   try {
-    const supabase = await createClient();
-    let query = supabase.from('benefits').select('*').order('display_order', { ascending: true });
+    const supabaseAdmin = createAdminClient();
+    let query = supabaseAdmin.from('benefits').select('*').order('display_order', { ascending: true });
     
     // Si no estamos en el admin, filtrar por activos
     // Nota: El admin usará una función separada o detectaremos el contexto.

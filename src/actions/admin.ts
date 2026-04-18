@@ -29,8 +29,8 @@ export async function getAdminExperiences(): Promise<{ id: string; title: string
       throw new Error("Unauthorized access.");
     }
 
-    const supabaseSession = await createClient();
-    const { data, error } = await supabaseSession
+    const supabaseAdmin = createAdminClient();
+    const { data, error } = await supabaseAdmin
       .from('experiences')
       .select('id, title, image_url, status')
       .order('display_order', { ascending: true });
