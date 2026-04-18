@@ -24,7 +24,7 @@ export interface CartItem {
   eventDate: string | null;
   guests: number; // For non-caja it's persons, for caja it's number of boxes
   upSells: string[];
-  temporal_discount?: number | null;
+  temp_discount?: number | null;
   wine_quantity?: number; // bottle count per box
   wine_options?: string[]; // varieties to choose from
   selected_wines?: string[]; // actual user choices (flat array of strings)
@@ -128,8 +128,9 @@ export const useCartStore = create<CartState>()(
       getTemporalDiscountAmount: () => {
         const state = get();
         return state.items.reduce((total, item) => {
-          if (!item.temporal_discount || item.temporal_discount <= 0) return total;
-          const discountPerUnit = item.price * (item.temporal_discount / 100);
+          const tDiscount = item.temp_discount || 0;
+          if (tDiscount <= 0) return total;
+          const discountPerUnit = item.price * (tDiscount / 100);
           return total + (discountPerUnit * item.guests);
         }, 0);
       },
@@ -143,8 +144,9 @@ export const useCartStore = create<CartState>()(
         
         state.items.forEach(item => {
           // El descuento de comunidad se aplica SOBRE el precio que ya tiene el descuento temporal restado
-          const basePrice = item.price;
-          const tempDiscountPerUnit = basePrice * ((item.temporal_discount || 0) / 100);
+          const basePrice = item.price || 0;
+          const tDiscount = item.temp_discount || 0;
+          const tempDiscountPerUnit = basePrice * (tDiscount / 100);
           const priceAfterTempDiscount = basePrice - tempDiscountPerUnit;
 
           let itemDiscountable = priceAfterTempDiscount * item.guests;

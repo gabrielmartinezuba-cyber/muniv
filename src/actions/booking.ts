@@ -27,15 +27,22 @@ export async function submitBooking(data: unknown) {
       };
     }
 
-    // 3. Obtener precio base de la experiencia para calcular el total
-    const { data: experience, error: expError } = await supabase
+    // 3. Obtener precio base de la experiencia para calcular el total (Usamos ADMIN para saltar RLS)
+    const supabaseAdmin = createAdminClient();
+    const { data: experience, error: expError } = await supabaseAdmin
       .from('experiences')
-      .select('price, type, temporal_discount')
+      .select('*')
       .eq('id', formData.experienceId)
       .single();
 
+    // Si falla, loguear error detallado para depuración
     if (expError || !experience) {
-      return { success: false, message: "La experiencia seleccionada no es válida." };
+      console.error("Checkout Validation Error [Experience Fetch]:", {
+        error: expError,
+        experienceId: formData.experienceId,
+        message: expError?.message
+      });
+      return { success: false, message: "La experiencia seleccionada no es válida o no existe." };
     }
 
     // --- VALIDACIÓN DE SORTEO (EXCLUSIVO SOCIOS) ---
@@ -48,7 +55,7 @@ export async function submitBooking(data: unknown) {
 
     // --- VALIDACIÓN DE VINOS (BACKEND) ---
     if (experience.type?.trim().toLowerCase() === 'caja') {
-      const { data: expMeta } = await supabase.from('experiences').select('wine_quantity').eq('id', formData.experienceId).single();
+      const { data: expMeta } = await supabaseAdmin.from('experiences').select('wine_quantity').eq('id', formData.experienceId).single();
       const requiredWines = (expMeta?.wine_quantity || 0) * formData.guests;
       
       if (!formData.selected_wines || formData.selected_wines.length < requiredWines || formData.selected_wines.some(w => !w || w === "")) {
@@ -82,8 +89,8 @@ export async function submitBooking(data: unknown) {
     }
 
     // Cálculo matemático estricto en el servidor
-    const basePrice = experience.price;
-    const tempDiscountPercentage = experience.temporal_discount || 0;
+    const basePrice = Number(experience.price) || 0;
+    const tempDiscountPercentage = Number(experience.temp_discount) || 0;
     const tempDiscountPerUnit = basePrice * (tempDiscountPercentage / 100);
     const priceAfterTempDiscount = basePrice - tempDiscountPerUnit;
 

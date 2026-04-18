@@ -119,7 +119,7 @@ export default function BookingDrawer() {
           guest_name: user ? "" : guestName,
           guest_email: user ? "" : guestEmail,
           guest_phone: user ? "" : guestPhone,
-          final_price: ((item.price * (1 - (item.temporal_discount || 0) / 100)) * item.guests) * (user ? (1 - (benefit?.percentage || 0) / 100) : 1),
+          final_price: ((Number(item.price || 0) * (1 - (Number(item.temp_discount || 0)) / 100)) * Number(item.guests || 1)) * (user ? (1 - (Number(benefit?.percentage || 0)) / 100) : 1),
           selected_wines: item.selected_wines
         };
 
@@ -143,8 +143,9 @@ export default function BookingDrawer() {
           const userType = user ? "Socio Muniv" : "Invitado";
           
           let itemsList = items.map(item => {
-            const base = item.price * item.guests;
-            const disc = base * ((item.temporal_discount || 0) / 100);
+            const base = (Number(item.price) || 0) * (Number(item.guests) || 1);
+            const tDiscount = Number(item.temp_discount) || 0;
+            const disc = base * (tDiscount / 100);
             return `- ${item.guests}x ${item.title}: $${(base - disc).toLocaleString('es-AR')}`;
           }).join('\n');
           
@@ -355,7 +356,7 @@ export default function BookingDrawer() {
                            {temporalDiscountAmount > 0 && (
                              <div className="flex justify-between items-center mb-3">
                                <span className="text-red-500 text-[10px] uppercase font-black tracking-widest">
-                                 Promoción (-{items.find(i => (i.temporal_discount || 0) > 0)?.temporal_discount}%)
+                                 Promoción (-{items.find(i => (i.temp_discount || 0) > 0)?.temp_discount}%)
                                </span>
                                <span className="text-red-500 font-display text-lg font-bold">-${temporalDiscountAmount.toLocaleString('es-AR')}</span>
                              </div>
