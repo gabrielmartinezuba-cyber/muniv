@@ -101,7 +101,9 @@ export async function getAdminReport(filters?: AdminReportFilters): Promise<Admi
           cancel_requested: false,
           cancel_reason: null,
           client_phone: u.phone || rawMeta.phone || null,
-          event_date: null
+          event_date: null,
+          addon_picada_qty: null,
+          addon_copas_qty: null
         };
       }).sort((a, b) => {
         if (a.experience_type === 'ADMIN' && b.experience_type !== 'ADMIN') return -1;
