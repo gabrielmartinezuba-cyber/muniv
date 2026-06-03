@@ -20,6 +20,8 @@ export type AdminReportRow = {
   cancel_reason: string | null;
   client_phone: string | null;
   event_date: string | null;
+  addon_picada_qty: number | null;
+  addon_copas_qty: number | null;
 };
 
 export async function getAdminExperiences(): Promise<{ id: string; title: string, image_url: string, status: string }[]> {
@@ -175,7 +177,9 @@ export async function getAdminReport(filters?: AdminReportFilters): Promise<Admi
         cancel_requested: booking.cancel_requested ?? false,
         cancel_reason: booking.cancel_reason ?? null,
         client_phone: booking.guest_phone || clientUser?.phone || rawMeta.phone || null,
-        event_date: booking.experiences?.event_date || null
+        event_date: booking.experiences?.event_date || null,
+        addon_picada_qty: booking.addon_picada_qty || null,
+        addon_copas_qty: booking.addon_copas_qty || null
       };
     });
 
@@ -215,6 +219,8 @@ export async function upsertExperience(formData: FormData): Promise<{ success: b
       location_address: formData.get('location_address') as string || null,
       max_capacity: parseInt(formData.get('max_capacity') as string, 10) || null,
       temp_discount: parseInt(formData.get('temp_discount') as string, 10) || null,
+      addon_picada_price: parseInt(formData.get('addon_picada_price') as string, 10) || null,
+      addon_copas_price: parseInt(formData.get('addon_copas_price') as string, 10) || null,
     };
     
     if (updates.type?.toLowerCase() === 'caja') {

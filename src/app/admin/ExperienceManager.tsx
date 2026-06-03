@@ -213,7 +213,9 @@ export default function ExperienceManager() {
           location_name: "",
           location_address: "",
           max_capacity: 0,
-          temp_discount: 0
+          temp_discount: 0,
+          addon_picada_price: 0,
+          addon_copas_price: 0
         });
         setIsLoadingForm(false);
       });
@@ -312,6 +314,8 @@ export default function ExperienceManager() {
     formPayload.append("location_address", formData.location_address || "");
     formPayload.append("max_capacity", formData.max_capacity?.toString() || "0");
     formPayload.append("temp_discount", formData.temp_discount?.toString() || "0");
+    formPayload.append("addon_picada_price", formData.addon_picada_price?.toString() || "0");
+    formPayload.append("addon_copas_price", formData.addon_copas_price?.toString() || "0");
     
     if (formData.event_date) {
       formPayload.append("event_date", new Date(formData.event_date).toISOString());
@@ -579,7 +583,27 @@ export default function ExperienceManager() {
                              >
                                + Añadir Vino
                              </button>
-                          </div>
+                           </div>
+                        </div>
+                        <div className="pt-4 border-t border-white/5 grid grid-cols-2 gap-4">
+                           <div>
+                             <label className="text-[10px] text-burgundy-400 uppercase tracking-[0.2em] font-bold mb-3 block">Precio Picada ($)</label>
+                             <input
+                               type="number"
+                               value={formData.addon_picada_price || 0}
+                               onChange={e => setFormData({ ...formData, addon_picada_price: parseInt(e.target.value) || 0 })}
+                               className="w-full bg-slate-950/70 border border-white/10 rounded-xl px-4 py-3.5 text-sm text-white focus:outline-none focus:border-gold-500/50"
+                             />
+                           </div>
+                           <div>
+                             <label className="text-[10px] text-burgundy-400 uppercase tracking-[0.2em] font-bold mb-3 block">Precio Copas ($ c/u)</label>
+                             <input
+                               type="number"
+                               value={formData.addon_copas_price || 0}
+                               onChange={e => setFormData({ ...formData, addon_copas_price: parseInt(e.target.value) || 0 })}
+                               className="w-full bg-slate-950/70 border border-white/10 rounded-xl px-4 py-3.5 text-sm text-white focus:outline-none focus:border-gold-500/50"
+                             />
+                           </div>
                         </div>
                       </div>
                     )}

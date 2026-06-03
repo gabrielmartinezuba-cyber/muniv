@@ -269,6 +269,19 @@ export default function OrderManager({ orders }: OrderManagerProps) {
                             </p>
                           </div>
                         )}
+
+                        {(order.addon_picada_qty || order.addon_copas_qty) ? (
+                          <div className="p-3 rounded-xl bg-gold-500/10 border border-gold-500/20">
+                            <p className="text-[9px] text-gold-500 font-black uppercase tracking-[0.2em] mb-1">
+                              Extras Incluidos
+                            </p>
+                            <div className="text-xs text-slate-300 font-medium tracking-wide">
+                              {order.addon_picada_qty ? <span>{order.addon_picada_qty}x Picada</span> : null}
+                              {order.addon_picada_qty && order.addon_copas_qty ? <span className="mx-2 opacity-50">•</span> : null}
+                              {order.addon_copas_qty ? <span>{order.addon_copas_qty}x Copas</span> : null}
+                            </div>
+                          </div>
+                        ) : null}
                       </div>
 
                       {/* Actions & Logistics */}

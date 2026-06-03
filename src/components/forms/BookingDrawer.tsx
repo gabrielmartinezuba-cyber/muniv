@@ -17,7 +17,8 @@ import Link from "next/link";
 export default function BookingDrawer() {
   const { 
     isOpen, closeCart, items, removeItem, updateItemGuests, updateItemWines, toggleItemUpSell, clearCart, 
-    getSubtotal, getTemporalDiscountAmount, getDiscountAmount, getTotal, setBenefit, benefit
+    getSubtotal, getTemporalDiscountAmount, getDiscountAmount, getTotal, setBenefit, benefit,
+    updateItemPicada, updateItemCopas
   } = useCartStore();
 
   const [mounted, setMounted] = useState(false);
@@ -132,6 +133,8 @@ export default function BookingDrawer() {
           guest_name: user ? "" : guestName,
           guest_email: user ? "" : guestEmail,
           guest_phone: user ? "" : guestPhone,
+          addon_picada_qty: item.addon_picada_qty || 0,
+          addon_copas_qty: item.addon_copas_qty || 0,
           final_price: ((Number(item.price || 0) * (1 - (Number(item.temp_discount || 0)) / 100)) * Number(item.guests || 1)) * (user ? (1 - (Number(benefit?.percentage || 0)) / 100) : 1),
           selected_wines: item.selected_wines
         };
@@ -159,7 +162,17 @@ export default function BookingDrawer() {
             const base = (Number(item.price) || 0) * (Number(item.guests) || 1);
             const tDiscount = Number(item.temp_discount) || 0;
             const disc = base * (tDiscount / 100);
-            return `- ${item.guests}x ${item.title}: $${(base - disc).toLocaleString('es-AR')}`;
+            let itemLine = `- ${item.guests}x ${item.title}: $${(base - disc).toLocaleString('es-AR')}`;
+            
+            const picadaQty = item.addon_picada_qty || 0;
+            const copasQty = item.addon_copas_qty || 0;
+            if (picadaQty > 0 || copasQty > 0) {
+              const extras = [];
+              if (picadaQty > 0) extras.push(`${picadaQty}x Picada`);
+              if (copasQty > 0) extras.push(`${copasQty}x Copas`);
+              itemLine += `\n  Extras: ${extras.join(', ')}`;
+            }
+            return itemLine;
           }).join('\n');
           
           const isSorteo = items.some(i => i.type?.toLowerCase() === 'sorteo');
@@ -324,6 +337,51 @@ export default function BookingDrawer() {
                                    ))}
                                  </select>
                                ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Addons for Cajas */}
+                        {isCaja && ((item.addon_picada_price || 0) > 0 || (item.addon_copas_price || 0) > 0) && (
+                          <div className="mt-2 space-y-4 pt-4 border-t border-white/5 bg-slate-950/40 backdrop-blur-md -mx-5 px-5 pb-5 border-b border-gold-500/10">
+                            <label className="text-[10px] text-burgundy-400 uppercase font-black tracking-widest flex items-center gap-2">
+                              Acompañá tu vino:
+                            </label>
+                            <div className="space-y-3">
+                              {(item.addon_picada_price || 0) > 0 && (
+                                <div className="flex items-center justify-between">
+                                  <div className="flex flex-col">
+                                    <span className="text-sm text-slate-200">Sumar Picada</span>
+                                    <span className="text-[10px] text-gold-500 font-display">+${(item.addon_picada_price || 0).toLocaleString('es-AR')}</span>
+                                  </div>
+                                  <div className="flex items-center gap-3 bg-slate-900 rounded-full border border-white/10 p-1">
+                                    <button onClick={() => updateItemPicada(item.id, (item.addon_picada_qty || 0) - 1)} className="w-6 h-6 rounded-full text-white flex items-center justify-center hover:bg-white/10 transition-colors">
+                                      <Minus size={12} />
+                                    </button>
+                                    <span className="text-xs font-bold text-white min-w-[1ch] text-center">{item.addon_picada_qty || 0}</span>
+                                    <button onClick={() => updateItemPicada(item.id, (item.addon_picada_qty || 0) + 1)} className="w-6 h-6 rounded-full text-white flex items-center justify-center hover:bg-white/10 transition-colors">
+                                      <Plus size={12} />
+                                    </button>
+                                  </div>
+                                </div>
+                              )}
+                              {(item.addon_copas_price || 0) > 0 && (
+                                <div className="flex items-center justify-between">
+                                  <div className="flex flex-col">
+                                    <span className="text-sm text-slate-200">Sumar Copas</span>
+                                    <span className="text-[10px] text-gold-500 font-display">+${(item.addon_copas_price || 0).toLocaleString('es-AR')} c/u</span>
+                                  </div>
+                                  <div className="flex items-center gap-3 bg-slate-900 rounded-full border border-white/10 p-1">
+                                    <button onClick={() => updateItemCopas(item.id, (item.addon_copas_qty || 0) - 1)} className="w-6 h-6 rounded-full text-white flex items-center justify-center hover:bg-white/10 transition-colors">
+                                      <Minus size={12} />
+                                    </button>
+                                    <span className="text-xs font-bold text-white min-w-[1ch] text-center">{item.addon_copas_qty || 0}</span>
+                                    <button onClick={() => updateItemCopas(item.id, (item.addon_copas_qty || 0) + 1)} className="w-6 h-6 rounded-full text-white flex items-center justify-center hover:bg-white/10 transition-colors">
+                                      <Plus size={12} />
+                                    </button>
+                                  </div>
+                                </div>
+                              )}
                             </div>
                           </div>
                         )}

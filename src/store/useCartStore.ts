@@ -28,6 +28,10 @@ export interface CartItem {
   wine_quantity?: number; // bottle count per box
   wine_options?: string[]; // varieties to choose from
   selected_wines?: string[]; // actual user choices (flat array of strings)
+  addon_picada_qty?: number;
+  addon_copas_qty?: number;
+  addon_picada_price?: number | null;
+  addon_copas_price?: number | null;
 }
 
 interface CartState {
@@ -43,6 +47,8 @@ interface CartState {
   updateItemGuests: (id: string, guests: number) => void;
   updateItemWines: (id: string, newWinesArray: string[]) => void;
   toggleItemUpSell: (id: string, upsellId: string) => void;
+  updateItemPicada: (id: string, qty: number) => void;
+  updateItemCopas: (id: string, qty: number) => void;
   clearCart: () => void;
   
   openCart: () => void;
@@ -110,6 +116,14 @@ export const useCartStore = create<CartState>()(
         })
       })),
 
+      updateItemPicada: (id, qty) => set((state) => ({
+        items: state.items.map((i) => i.id === id ? { ...i, addon_picada_qty: Math.max(0, qty) } : i)
+      })),
+
+      updateItemCopas: (id, qty) => set((state) => ({
+        items: state.items.map((i) => i.id === id ? { ...i, addon_copas_qty: Math.max(0, qty) } : i)
+      })),
+
       clearCart: () => set({ items: [] }),
 
       openCart: () => set({ isOpen: true }),
@@ -121,6 +135,10 @@ export const useCartStore = create<CartState>()(
           let itemTotal = item.price * item.guests;
           // Up-sells logic
           itemTotal += item.upSells.length * 20000; 
+          // Addons logic
+          const picadaCost = (item.addon_picada_qty || 0) * (item.addon_picada_price || 0);
+          const copasCost = (item.addon_copas_qty || 0) * (item.addon_copas_price || 0);
+          itemTotal += picadaCost + copasCost;
           return total + itemTotal;
         }, 0);
       },

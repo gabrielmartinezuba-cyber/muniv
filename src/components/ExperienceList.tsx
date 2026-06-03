@@ -82,6 +82,8 @@ export default function ExperienceList() {
       temp_discount: exp.temp_discount || (exp as any).temporal_discount || 0,
       wine_quantity: (exp as any).wine_quantity,
       wine_options: (exp as any).wine_options,
+      addon_picada_price: exp.addon_picada_price || 0,
+      addon_copas_price: exp.addon_copas_price || 0,
     });
     openCart();
   };

@@ -15,6 +15,8 @@ export type Experience = {
   event_date: string | null;
   temp_discount: number | null;
   max_capacity: number | null;
+  addon_picada_price: number | null;
+  addon_copas_price: number | null;
 };
 
 export async function getActiveExperiences(): Promise<Experience[]> {

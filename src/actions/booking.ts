@@ -123,6 +123,13 @@ export async function submitBooking(data: unknown) {
       calculatedTotalPrice += formData.upSells.length * 20000;
     }
 
+    // Addons logic para cajas (precio fijo extra, sin descuento)
+    const picadaQty = formData.addon_picada_qty || 0;
+    const copasQty = formData.addon_copas_qty || 0;
+    const picadaPrice = experience.addon_picada_price || 0;
+    const copasPrice = experience.addon_copas_price || 0;
+    calculatedTotalPrice += (picadaQty * picadaPrice) + (copasQty * copasPrice);
+
     // Descuento de Comunidad (Solo Socios)
     if (user) {
       const benefitsRes = await getBenefits();
@@ -152,7 +159,9 @@ export async function submitBooking(data: unknown) {
       user_id: user?.id || null, // Asegurar que sea null si no hay user
       guest_name: user ? null : formData.guest_name,
       guest_email: user ? null : formData.guest_email,
-      guest_phone: user ? null : formData.guest_phone
+      guest_phone: user ? null : formData.guest_phone,
+      addon_picada_qty: formData.addon_picada_qty || 0,
+      addon_copas_qty: formData.addon_copas_qty || 0
     };
 
     console.log(`[SUBMIT BOOKING] Processing for user ${user?.id || 'GUEST'}`);
