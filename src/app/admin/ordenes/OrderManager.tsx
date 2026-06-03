@@ -68,7 +68,10 @@ export default function OrderManager({ orders }: OrderManagerProps) {
       if (order.status === 'CANCELADO') return false; 
       
       const typeStr = order.experience_type?.trim().toLowerCase();
-      if (activeTab === 'CAJAS' && typeStr !== 'caja') return false;
+      if (activeTab === 'CAJAS') {
+        if (typeStr !== 'caja') return false;
+        if (order.status === 'ENTREGADO') return false;
+      }
       
       if (activeTab === 'EVENTOS') {
         if (typeStr !== 'evento') return false;
@@ -370,10 +373,6 @@ export default function OrderManager({ orders }: OrderManagerProps) {
           <div>
             <h3 className="text-orange-400 font-display text-xl mb-4 flex items-center gap-3"><Package size={20} /> En Preparación</h3>
             {renderOrderList(filteredOrders.filter(o => o.status === 'EN_PREPARACION'))}
-          </div>
-          <div>
-            <h3 className="text-emerald-500/80 font-display text-xl mb-4 flex items-center gap-3"><Gift size={20} /> Entregadas</h3>
-            {renderOrderList(filteredOrders.filter(o => o.status === 'ENTREGADO'))}
           </div>
         </div>
       );
