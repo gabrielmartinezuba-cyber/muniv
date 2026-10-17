@@ -1,30 +1,20 @@
 "use client";
 
 import { useEffect, useState, useTransition } from "react";
-import { motion } from "framer-motion";
-import Image from "next/image";
 import {
   getActiveExperiences,
   getExperienceAvailability,
   type Experience,
 } from "@/actions/experiences";
 import { useCartStore } from "@/store/useCartStore";
-import {
-  Loader2,
-  Plus,
-  Calendar,
-  ShieldCheck,
-  CheckCircle2,
-  MapPin,
-  Flame,
-  Sparkles,
-} from "lucide-react";
+import { ShieldCheck, CheckCircle2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
 import { toast } from "sonner";
 import { submitBooking } from "@/actions/booking";
 import { Skeleton } from "@/components/ui/Skeleton";
-import { cn } from "@/lib/utils";
+import { BottleBentoCard } from "@/components/catalog/BottleBentoCard";
+import { ExperienceDetailModal } from "@/components/catalog/ExperienceDetailModal";
 
 export default function ExperienceList() {
   const [experiences, setExperiences] = useState<Experience[]>([]);
@@ -34,10 +24,25 @@ export default function ExperienceList() {
   const [availability, setAvailability] = useState<
     Record<string, { remaining: number }>
   >({});
+  const [selectedExp, setSelectedExp] = useState<Experience | null>(null);
+
   const { addItem, openCart } = useCartStore();
   const router = useRouter();
 
-  const handleBookingClick = async (exp: Experience) => {
+  // Map transparent bottle assets provided by the user
+  const getBottleAsset = (exp: Experience, index: number) => {
+    // If the experience has a caja or bottle, alternate the user's transparent PNG assets
+    return index % 2 === 0 ? "/botella-1.png" : "/botella-2.png";
+  };
+
+  const executeBookingFlow = async (
+    exp: Experience,
+    options?: {
+      picadaQty?: number;
+      copasQty?: number;
+      selectedWines?: string[];
+    }
+  ) => {
     // SECURITY: Raffle Gatekeeping
     const supabase = createClient();
     const {
@@ -115,8 +120,29 @@ export default function ExperienceList() {
       wine_options: (exp as any).wine_options,
       addon_picada_price: exp.addon_picada_price || 0,
       addon_copas_price: exp.addon_copas_price || 0,
+      addon_picada_qty: options?.picadaQty || 0,
+      addon_copas_qty: options?.copasQty || 0,
+      selected_wines: options?.selectedWines || [],
     });
+
     openCart();
+  };
+
+  const handleQuickBuy = (exp: Experience, e: React.MouseEvent) => {
+    e.stopPropagation();
+    executeBookingFlow(exp);
+  };
+
+  const handleModalConfirm = (
+    exp: Experience,
+    options: {
+      picadaQty: number;
+      copasQty: number;
+      selectedWines: string[];
+    }
+  ) => {
+    setSelectedExp(null);
+    executeBookingFlow(exp, options);
   };
 
   useEffect(() => {
@@ -138,7 +164,7 @@ export default function ExperienceList() {
     });
   }, []);
 
-  // Premium Shimmer Loading State in Bento Shapes
+  // Premium Shimmer Loading State
   if (loading) {
     return (
       <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6 py-6">
@@ -164,210 +190,51 @@ export default function ExperienceList() {
     );
   }
 
+  const selectedIndex = selectedExp
+    ? experiences.findIndex((e) => e.id === selectedExp.id)
+    : 0;
+
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 py-4">
-      {experiences.map((exp, index) => {
-        const isSoldOut = availability[exp.id]?.remaining <= 0;
-        const isComingSoon = exp.status === "COMING_SOON";
-        const tempDiscount =
-          exp.temp_discount || (exp as any).temporal_discount || 0;
+    <>
+      {/* 2.5D Bento Grid with Floating Bottles */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 py-4">
+        {experiences.map((exp, index) => {
+          const isSoldOut = availability[exp.id]?.remaining <= 0;
+          const isComingSoon = exp.status === "COMING_SOON";
+          const tempDiscount =
+            exp.temp_discount || (exp as any).temporal_discount || 0;
+          const bottleAsset = getBottleAsset(exp, index);
 
-        // Bento Grid Card Sizing:
-        // Item 0 is Featured Hero Card (2 cols, 2 rows in large screens)
-        // Item 1, 2 are standard cards
-        // Item 3 is wide card (2 cols)
-        let bentoSpan = "col-span-1 row-span-1 min-h-[380px]";
-        if (index === 0) {
-          bentoSpan = "md:col-span-2 md:row-span-2 min-h-[460px] md:min-h-[580px]";
-        } else if (index === 3) {
-          bentoSpan = "md:col-span-2 row-span-1 min-h-[380px]";
-        } else if (index % 5 === 0) {
-          bentoSpan = "lg:col-span-2 row-span-1 min-h-[380px]";
+          return (
+            <BottleBentoCard
+              key={exp.id}
+              exp={exp}
+              index={index}
+              isSoldOut={isSoldOut}
+              isComingSoon={isComingSoon}
+              tempDiscount={tempDiscount}
+              bottleAsset={bottleAsset}
+              onSelect={(selected) => setSelectedExp(selected)}
+              onQuickBuy={handleQuickBuy}
+              isProcessing={processingId === exp.id}
+            />
+          );
+        })}
+      </div>
+
+      {/* 2.5D FLIP Bottle Detail Modal */}
+      <ExperienceDetailModal
+        exp={selectedExp}
+        bottleAsset={
+          selectedExp ? getBottleAsset(selectedExp, selectedIndex) : "/botella-1.png"
         }
-
-        const isHeroBento = index === 0;
-
-        return (
-          <motion.div
-            key={exp.id}
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-60px" }}
-            transition={{ duration: 0.6, delay: index * 0.07 }}
-            whileHover={!isSoldOut ? { y: -6 } : undefined}
-            className={cn(
-              "group relative rounded-3xl overflow-hidden flex flex-col justify-between",
-              "bg-white/[0.03] hover:bg-white/[0.06] backdrop-blur-xl",
-              "border border-white/10 hover:border-gold-400/40",
-              "transition-all duration-500 ease-out shadow-[0_8px_32px_rgba(0,0,0,0.35)]",
-              bentoSpan,
-              isSoldOut && "opacity-70 grayscale-[0.4]"
-            )}
-          >
-            {/* Background Image Container with Contextual Glass Gradient */}
-            <div
-              className={cn(
-                "relative w-full overflow-hidden",
-                isHeroBento ? "h-64 sm:h-80 md:h-[340px]" : "h-52 md:h-56"
-              )}
-            >
-              <Image
-                src={exp.image_url}
-                alt={exp.title}
-                fill
-                sizes={
-                  isHeroBento
-                    ? "(max-width: 768px) 100vw, 66vw"
-                    : "(max-width: 768px) 100vw, 33vw"
-                }
-                className={cn(
-                  "object-cover transition-transform duration-700 ease-out",
-                  !isSoldOut && "group-hover:scale-105"
-                )}
-              />
-
-              {/* Translucent cinematic scrim */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent pointer-events-none" />
-
-              {/* Badges Container */}
-              <div className="absolute top-4 left-4 right-4 flex items-center justify-between gap-2 pointer-events-none z-10">
-                {/* Type Badge */}
-                <span className="px-3.5 py-1 bg-black/45 backdrop-blur-md border border-white/15 text-gold-300 text-[11px] uppercase tracking-[0.2em] font-bold rounded-full shadow-lg">
-                  {exp.type}
-                </span>
-
-                {/* Promotional Discount Badge */}
-                {tempDiscount > 0 && !isSoldOut && (
-                  <span className="inline-flex items-center gap-1 px-3 py-1 bg-burgundy-700/80 backdrop-blur-md border border-ember-400/40 text-amber-200 text-xs font-bold rounded-full shadow-[0_0_15px_rgba(249,115,22,0.4)]">
-                    <Flame size={12} className="text-amber-400 animate-pulse" />
-                    <span>-{tempDiscount}% OFF</span>
-                  </span>
-                )}
-              </div>
-            </div>
-
-            {/* Bento Card Content Body */}
-            <div className="p-6 md:p-7 flex flex-col flex-1 justify-between bg-black/20">
-              <div>
-                <h3
-                  className={cn(
-                    "font-display text-white mb-2.5 group-hover:text-gold-300 transition-colors leading-tight drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]",
-                    isHeroBento ? "text-3xl md:text-4xl" : "text-xl md:text-2xl"
-                  )}
-                >
-                  {exp.title}
-                </h3>
-                <p
-                  className={cn(
-                    "text-[#e8e0d5]/80 font-light mb-5 leading-relaxed drop-shadow-[0_1px_4px_rgba(0,0,0,0.8)]",
-                    isHeroBento ? "text-base md:text-lg line-clamp-3" : "text-sm line-clamp-2"
-                  )}
-                >
-                  {exp.description}
-                </p>
-
-                {/* Date & Location Details */}
-                <div className="space-y-2 mb-5">
-                  {exp.event_date && (
-                    <div className="flex items-center gap-2 text-gold-300/90 text-xs tracking-wider uppercase font-medium drop-shadow">
-                      <Calendar size={14} className="text-gold-400 shrink-0" />
-                      <span>
-                        {new Date(exp.event_date)
-                          .toLocaleDateString("es-AR", {
-                            weekday: "short",
-                            day: "numeric",
-                            month: "short",
-                          })
-                          .replace(".", "")}{" "}
-                        •{" "}
-                        {new Date(exp.event_date).toLocaleTimeString("es-AR", {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}
-                        hs
-                      </span>
-                    </div>
-                  )}
-
-                  {(exp as any).location_name && (
-                    <div className="flex items-center gap-2 text-slate-300/80 text-xs tracking-wider font-light drop-shadow">
-                      <MapPin size={14} className="text-gold-400/80 shrink-0" />
-                      <span className="truncate">
-                        {(exp as any).location_name}
-                        {(exp as any).location_address
-                          ? ` • ${(exp as any).location_address}`
-                          : ""}
-                      </span>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Price & Action Footer */}
-              <div className="pt-4 border-t border-white/10 flex items-center justify-between gap-4 mt-auto">
-                <div className="flex flex-col">
-                  {exp.price > 0 && (
-                    <span className="text-[10px] text-slate-400 uppercase tracking-widest font-medium">
-                      Inversión
-                    </span>
-                  )}
-                  <div className="flex items-baseline gap-1.5">
-                    <span className="text-2xl md:text-3xl text-white font-display font-medium tracking-tight drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">
-                      {exp.price === 0
-                        ? "Gratis"
-                        : `$${exp.price.toLocaleString("es-AR")}`}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Action Buttons */}
-                {isComingSoon ? (
-                  <button
-                    disabled
-                    className="px-5 py-2.5 rounded-full font-bold text-xs cursor-not-allowed bg-white/5 border border-white/10 text-slate-400 uppercase tracking-widest"
-                  >
-                    Próximamente
-                  </button>
-                ) : isSoldOut ? (
-                  <button
-                    disabled
-                    className="px-5 py-2.5 rounded-full font-bold text-xs cursor-not-allowed bg-black/40 border border-white/10 text-slate-400 uppercase tracking-widest"
-                  >
-                    Agotado
-                  </button>
-                ) : (
-                  <button
-                    onClick={() => handleBookingClick(exp)}
-                    disabled={processingId === exp.id}
-                    className={cn(
-                      "relative inline-flex items-center gap-2 px-6 py-2.5 rounded-full font-semibold text-sm",
-                      "bg-burgundy-600/90 hover:bg-burgundy-500 text-white backdrop-blur-md",
-                      "border border-burgundy-400/30",
-                      "transition-all duration-300 ease-out shadow-[0_0_25px_rgba(124,32,32,0.4)] hover:shadow-[0_0_35px_rgba(124,32,32,0.6)]",
-                      "active:scale-95 cursor-pointer disabled:opacity-50"
-                    )}
-                  >
-                    {processingId === exp.id ? (
-                      <Loader2 size={16} className="animate-spin" />
-                    ) : (
-                      <>
-                        <span>
-                          {exp.type?.toLowerCase() === "caja"
-                            ? "Comprar"
-                            : exp.type?.toLowerCase() === "sorteo"
-                            ? "Participar"
-                            : "Reservar"}
-                        </span>
-                        <Plus size={15} />
-                      </>
-                    )}
-                  </button>
-                )}
-              </div>
-            </div>
-          </motion.div>
-        );
-      })}
-    </div>
+        onClose={() => setSelectedExp(null)}
+        onConfirm={handleModalConfirm}
+        isProcessing={processingId === selectedExp?.id}
+        remainingCapacity={
+          selectedExp ? availability[selectedExp.id]?.remaining ?? 999 : 999
+        }
+      />
+    </>
   );
 }
