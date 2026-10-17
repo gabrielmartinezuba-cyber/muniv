@@ -11,24 +11,106 @@
   --font-sans: var(--font-inter);
   --font-display: var(--font-playfair);
 
-  /* === MEDIEVAL BRONZE / ANTIQUE GOLD PALETTE === */
-  /* Replaces the saturated "Luxury Gold" — now warmer, more opaque, envejecido */
-  --color-gold-200: #e8d5b0;   /* Warm parchment highlight */
-  --color-gold-400: #c9a96e;   /* Antique bronze mid */
-  --color-gold-500: #b69a68;   /* Bronce Antique — primary accent (was #D4AF37) */
-  --color-gold-600: #9a7d50;   /* Deep aged bronze */
+  /* === MEDIEVAL BRONZE / ANTIQUE GOLD PALETTE (Extended) === */
+  --color-gold-50:  #fdf8ed;
+  --color-gold-100: #f5ecd4;
+  --color-gold-200: #e8d5b0;
+  --color-gold-300: #d9bf8a;
+  --color-gold-400: #c9a96e;
+  --color-gold-500: #b69a68;   /* Bronce Antique — primary accent */
+  --color-gold-600: #9a7d50;
+  --color-gold-700: #7a6340;
+  --color-gold-800: #5c4a30;
+  --color-gold-900: #3d3120;
 
-  /* === BURGUNDY / WINE RED PALETTE === */
-  /* Primary CTA color — Borgoña Profundo */
-  --color-burgundy-700: #6b1a1a;  /* Deep wine red, dominant */
+  /* === BURGUNDY / WINE RED PALETTE (Extended) === */
+  --color-burgundy-300: #c45050;
+  --color-burgundy-400: #a33535;
+  --color-burgundy-500: #8f2828;
   --color-burgundy-600: #7c2020;  /* Standard primary CTA */
-  --color-burgundy-500: #8f2828;  /* Hover state */
-  --color-burgundy-400: #a33535;  /* Lighter accent */
+  --color-burgundy-700: #6b1a1a;
+  --color-burgundy-800: #4d1212;
+  --color-burgundy-900: #350d0d;
 
-  /* === IRON / STONE BACKGROUNDS === */
+  /* === EMBER / FIRE ACCENTS === */
+  --color-ember-300: #fdba74;
+  --color-ember-400: #fb923c;
+  --color-ember-500: #f97316;
+  --color-ember-600: #ea580c;
+
+  /* === IRON / STONE BACKGROUNDS (Extended) === */
   --color-stone-950: #0c0a09;
+  --color-stone-900: #131110;
+  --color-iron-950: #141210;
   --color-iron-900: #1c1917;    /* Forged iron containers */
+  --color-iron-850: #211e1b;
   --color-iron-800: #27231f;    /* Slightly lighter panels */
+  --color-iron-700: #342e28;
+  --color-iron-600: #443d34;
+
+  /* === CUSTOM ANIMATIONS === */
+  --animate-float: float 6s ease-in-out infinite;
+  --animate-float-slow: float-slow 8s ease-in-out infinite;
+  --animate-float-delayed: float 6s ease-in-out 3s infinite;
+  --animate-shimmer: shimmer 2.5s linear infinite;
+  --animate-glow-pulse: glow-pulse 3s ease-in-out infinite;
+  --animate-slide-up: slide-up 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+  --animate-fade-in: fade-in 0.6s ease-out both;
+  --animate-scale-in: scale-in 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+  --animate-border-glow: border-glow 4s ease-in-out infinite;
+  --animate-spin-slow: spin 8s linear infinite;
+}
+
+/* ============================================ */
+/* === KEYFRAME ANIMATIONS                  === */
+/* ============================================ */
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-20px) rotate(1deg); }
+}
+
+@keyframes float-slow {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-12px); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes glow-pulse {
+  0%, 100% { opacity: 0.3; filter: blur(20px); }
+  50% { opacity: 0.6; filter: blur(30px); }
+}
+
+@keyframes slide-up {
+  from { transform: translateY(40px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes scale-in {
+  from { transform: scale(0.9); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+@keyframes border-glow {
+  0%, 100% { border-color: rgba(182, 154, 104, 0.08); }
+  50% { border-color: rgba(182, 154, 104, 0.2); }
+}
+
+/* ============================================ */
+/* === BASE STYLES                          === */
+/* ============================================ */
+
+html {
+  scroll-behavior: smooth;
 }
 
 body {
@@ -51,19 +133,70 @@ body::before {
   background-repeat: repeat;
 }
 
-/* === GLASSMORPHISM PRIMITIVES === */
-/* Updated for Iron/Stone aesthetic */
-.glass-panel {
-  @apply backdrop-blur-xl border shadow-[0_8px_32px_rgba(0,0,0,0.6)];
-  background: rgba(28, 25, 23, 0.5);  /* iron-900 based */
-  border-color: rgba(182, 154, 104, 0.08);  /* Antique bronze border faint */
+/* ============================================ */
+/* === GLASSMORPHISM SYSTEM V2              === */
+/* ============================================ */
+
+/* --- Subtle Glass (lightest blur, faintest border) --- */
+.glass-subtle {
+  @apply backdrop-blur-md border;
+  background: rgba(28, 25, 23, 0.3);
+  border-color: rgba(182, 154, 104, 0.05);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
 }
 
+/* --- Standard Glass Panel (existing, enhanced) --- */
+.glass-panel {
+  @apply backdrop-blur-xl border;
+  background: rgba(28, 25, 23, 0.5);
+  border-color: rgba(182, 154, 104, 0.08);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.6),
+    inset 0 1px 0 rgba(255, 255, 255, 0.03);
+}
+
+/* --- Heavy Glass (maximum blur, prominent border) --- */
+.glass-heavy {
+  @apply backdrop-blur-2xl border;
+  background: rgba(28, 25, 23, 0.7);
+  border-color: rgba(182, 154, 104, 0.12);
+  box-shadow:
+    0 16px 64px rgba(0, 0, 0, 0.7),
+    0 4px 16px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+/* --- Glow effect (composable with any glass variant) --- */
+.glass-glow {
+  @apply relative z-10;
+}
+
+.glass-glow::before {
+  content: "";
+  @apply absolute -inset-0.5 rounded-[inherit] blur-md opacity-0 transition-opacity duration-500;
+  background: linear-gradient(135deg, #6b1a1a, #f97316);
+  z-index: -1;
+}
+
+.glass-glow:hover::before {
+  @apply opacity-50;
+}
+
+/* --- Gold border glow (for premium items) --- */
+.glass-glow-gold::before {
+  background: linear-gradient(135deg, #b69a68, #c9a96e, #b69a68) !important;
+}
+
+/* --- Burgundy border glow (for CTAs) --- */
+.glass-glow-burgundy::before {
+  background: linear-gradient(135deg, #6b1a1a, #8f2828, #a33535) !important;
+}
+
+/* Legacy alias for backward compatibility */
 .glass-panel-glow {
   @apply relative z-10;
 }
 
-/* Button glow — updated to wine red / fire */
 .glass-panel-glow::before {
   content: "";
   @apply absolute -inset-0.5 rounded-[inherit] blur-md opacity-0 transition-opacity duration-500;
@@ -75,7 +208,102 @@ body::before {
   @apply opacity-50;
 }
 
-/* === SCROLLBAR STYLING === */
+/* ============================================ */
+/* === GRADIENT UTILITIES                   === */
+/* ============================================ */
+
+.gradient-text-gold {
+  background: linear-gradient(135deg, #e8d5b0, #c9a96e, #b69a68);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.gradient-text-burgundy {
+  background: linear-gradient(135deg, #a33535, #7c2020, #6b1a1a);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.gradient-text-ember {
+  background: linear-gradient(135deg, #fdba74, #f97316, #ea580c);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.gradient-text-shimmer {
+  background: linear-gradient(
+    90deg,
+    #b69a68 0%,
+    #e8d5b0 25%,
+    #c9a96e 50%,
+    #e8d5b0 75%,
+    #b69a68 100%
+  );
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: shimmer 3s linear infinite;
+}
+
+/* ============================================ */
+/* === MESH GRADIENT BACKGROUNDS            === */
+/* ============================================ */
+
+.mesh-gradient-hero {
+  background:
+    radial-gradient(ellipse at 20% 50%, rgba(107, 26, 26, 0.15) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 20%, rgba(182, 154, 104, 0.08) 0%, transparent 40%),
+    radial-gradient(ellipse at 50% 80%, rgba(249, 115, 22, 0.06) 0%, transparent 50%),
+    var(--background);
+}
+
+.mesh-gradient-section {
+  background:
+    radial-gradient(ellipse at 0% 50%, rgba(107, 26, 26, 0.08) 0%, transparent 50%),
+    radial-gradient(ellipse at 100% 50%, rgba(182, 154, 104, 0.05) 0%, transparent 50%);
+}
+
+/* ============================================ */
+/* === INTERACTIVE PRIMITIVES               === */
+/* ============================================ */
+
+/* Magnetic hover lift for cards */
+.hover-lift {
+  @apply transition-all duration-500 ease-out;
+}
+
+.hover-lift:hover {
+  transform: translateY(-8px);
+  box-shadow:
+    0 20px 60px rgba(0, 0, 0, 0.5),
+    0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+/* 3D tilt perspective container */
+.perspective-container {
+  perspective: 1000px;
+}
+
+/* Shimmer skeleton loading */
+.skeleton-shimmer {
+  background: linear-gradient(
+    90deg,
+    rgba(28, 25, 23, 0.5) 0%,
+    rgba(39, 35, 31, 0.8) 50%,
+    rgba(28, 25, 23, 0.5) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s linear infinite;
+}
+
+/* ============================================ */
+/* === SCROLLBAR STYLING                    === */
+/* ============================================ */
+
 .custom-scrollbar::-webkit-scrollbar {
   width: 4px;
 }
@@ -87,3 +315,34 @@ body::before {
   border-radius: 99px;
 }
 
+/* ============================================ */
+/* === FOCUS STYLES (Accessibility)         === */
+/* ============================================ */
+
+:focus-visible {
+  outline: 2px solid rgba(182, 154, 104, 0.4);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* ============================================ */
+/* === VIDEO BACKGROUND UTILITIES           === */
+/* ============================================ */
+
+.video-bg-container {
+  @apply absolute inset-0 overflow-hidden;
+}
+
+.video-bg-container video {
+  @apply w-full h-full object-cover;
+}
+
+.video-overlay-gradient {
+  background: linear-gradient(
+    to bottom,
+    rgba(12, 10, 9, 0.3) 0%,
+    rgba(12, 10, 9, 0.6) 40%,
+    rgba(12, 10, 9, 0.95) 85%,
+    rgba(12, 10, 9, 1) 100%
+  );
+}
