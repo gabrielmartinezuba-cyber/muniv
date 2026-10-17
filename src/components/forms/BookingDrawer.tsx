@@ -268,17 +268,17 @@ export default function BookingDrawer() {
     <AnimatePresence>
       {isOpen && (
         <>
-          {/* Backdrop with heavy blur */}
+          {/* Backdrop with translucent blur */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3 }}
             onClick={closeCart}
-            className="fixed inset-0 bg-black/75 backdrop-blur-md z-40"
+            className="fixed inset-0 bg-black/60 backdrop-blur-md z-40"
           />
 
-          {/* Drawer container */}
+          {/* Drawer container (Pure Contextual Glass) */}
           <motion.div
             initial={
               isMobile
@@ -303,11 +303,11 @@ export default function BookingDrawer() {
               }
             }}
             className={cn(
-              "fixed z-50 glass-heavy flex flex-col overflow-hidden",
-              "border-gold-500/15 shadow-[0_0_80px_rgba(0,0,0,0.9)]",
+              "fixed z-50 bg-black/65 backdrop-blur-2xl flex flex-col overflow-hidden",
+              "border-white/10 shadow-[0_0_80px_rgba(0,0,0,0.9)]",
               isMobile
                 ? "bottom-0 left-0 w-full h-[90vh] rounded-t-[2.5rem] border-t"
-                : "top-0 right-0 h-full w-[500px] border-l"
+                : "top-0 right-0 h-full w-[520px] border-l"
             )}
           >
             {/* Mobile Drag Indicator */}
@@ -320,8 +320,8 @@ export default function BookingDrawer() {
             {/* Header */}
             <div
               className={cn(
-                "px-7 pb-6 border-b border-white/5 flex items-center justify-between sticky top-0",
-                "bg-[#141210]/90 backdrop-blur-xl z-10",
+                "px-7 pb-6 border-b border-white/10 flex items-center justify-between sticky top-0",
+                "bg-black/30 backdrop-blur-xl z-10",
                 !isMobile ? "pt-7" : "pt-2"
               )}
             >
@@ -505,13 +505,13 @@ export default function BookingDrawer() {
                                         newWines[idx] = e.target.value;
                                         updateItemWines(item.id, newWines);
                                       }}
-                                      className="w-full bg-[#1c1917] border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-gold-500/50 transition-all cursor-pointer"
+                                      className="w-full bg-black/50 backdrop-blur-md border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-gold-400/50 transition-all cursor-pointer"
                                     >
                                       <option value="" disabled>
                                         Seleccionar vino {idx + 1}...
                                       </option>
                                       {item.wine_options?.map((opt, oIdx) => (
-                                        <option key={oIdx} value={opt}>
+                                        <option key={oIdx} value={opt} className="bg-stone-900 text-white">
                                           {opt}
                                         </option>
                                       ))}
@@ -526,14 +526,14 @@ export default function BookingDrawer() {
                         {isCaja &&
                           ((item.addon_picada_price || 0) > 0 ||
                             (item.addon_copas_price || 0) > 0) && (
-                            <div className="space-y-3 pt-3 border-t border-white/5 bg-[#141210]/60 -mx-5 px-5 pb-4">
+                            <div className="space-y-3 pt-3 border-t border-white/10 bg-white/[0.02] -mx-5 px-5 pb-4">
                               <label className="text-[10px] text-burgundy-400 uppercase font-bold tracking-widest flex items-center gap-1.5">
                                 <Sparkles size={13} className="text-burgundy-400" />
                                 <span>Acompañá tu caja:</span>
                               </label>
                               <div className="space-y-2.5">
                                 {(item.addon_picada_price || 0) > 0 && (
-                                  <div className="flex items-center justify-between p-2.5 rounded-xl bg-black/20 border border-white/5">
+                                  <div className="flex items-center justify-between p-2.5 rounded-xl bg-white/[0.03] border border-white/5">
                                     <div className="flex items-center gap-2">
                                       <UtensilsCrossed size={14} className="text-gold-400/80" />
                                       <div className="flex flex-col">
@@ -548,7 +548,7 @@ export default function BookingDrawer() {
                                         </span>
                                       </div>
                                     </div>
-                                    <div className="flex items-center gap-2 bg-[#0c0a09] rounded-full border border-white/10 p-1">
+                                    <div className="flex items-center gap-2 bg-white/5 rounded-full border border-white/10 p-1">
                                       <button
                                         onClick={() =>
                                           updateItemPicada(
@@ -579,7 +579,7 @@ export default function BookingDrawer() {
                                 )}
 
                                 {(item.addon_copas_price || 0) > 0 && (
-                                  <div className="flex items-center justify-between p-2.5 rounded-xl bg-black/20 border border-white/5">
+                                  <div className="flex items-center justify-between p-2.5 rounded-xl bg-white/[0.03] border border-white/5">
                                     <div className="flex items-center gap-2">
                                       <GlassWater size={14} className="text-gold-400/80" />
                                       <div className="flex flex-col">
@@ -595,7 +595,7 @@ export default function BookingDrawer() {
                                         </span>
                                       </div>
                                     </div>
-                                    <div className="flex items-center gap-2 bg-[#0c0a09] rounded-full border border-white/10 p-1">
+                                    <div className="flex items-center gap-2 bg-white/5 rounded-full border border-white/10 p-1">
                                       <button
                                         onClick={() =>
                                           updateItemCopas(
@@ -644,7 +644,7 @@ export default function BookingDrawer() {
                           <motion.div
                             initial={{ opacity: 0, scale: 0.96 }}
                             animate={{ opacity: 1, scale: 1 }}
-                            className="relative overflow-hidden p-6 rounded-3xl border border-gold-500/30 bg-gradient-to-br from-gold-500/10 via-black/40 to-transparent backdrop-blur-md shadow-[0_0_40px_rgba(182,154,104,0.08)]"
+                            className="relative overflow-hidden p-6 rounded-3xl border border-gold-500/30 bg-gradient-to-br from-gold-500/10 via-black/30 to-transparent backdrop-blur-xl shadow-[0_0_40px_rgba(182,154,104,0.08)]"
                           >
                             <div className="relative z-10 flex flex-col gap-3">
                               <div className="flex items-center gap-3">
@@ -660,7 +660,7 @@ export default function BookingDrawer() {
                                   </span>
                                 </div>
                               </div>
-                              <p className="text-xs text-[#e8e0d5]/75 leading-relaxed font-light">
+                              <p className="text-xs text-[#e8e0d5]/85 leading-relaxed font-light">
                                 Registrate ahora para acceder a un{" "}
                                 <strong className="text-gold-400 font-semibold">
                                   {benefit?.percentage || 20}% de descuento
@@ -685,8 +685,8 @@ export default function BookingDrawer() {
                           </motion.div>
                         )}
 
-                        {/* Financial Summary Card */}
-                        <div className="glass-panel rounded-3xl p-6 border border-white/10 shadow-2xl space-y-3.5">
+                        {/* Financial Summary Card (Pure Contextual Glass) */}
+                        <div className="bg-white/[0.04] backdrop-blur-xl rounded-3xl p-6 border border-white/10 shadow-2xl space-y-3.5">
                           <div className="flex justify-between items-center text-sm">
                             <span className="text-slate-400 uppercase text-xs tracking-wider font-medium">
                               Subtotal
@@ -754,10 +754,10 @@ export default function BookingDrawer() {
                               <h4 className="text-[10px] uppercase tracking-[0.25em] text-slate-400 font-bold">
                                 Datos del Comprador
                               </h4>
-                              <div className="flex-grow h-px bg-white/5" />
+                              <div className="flex-grow h-px bg-white/10" />
                             </div>
 
-                            <div className="grid grid-cols-1 gap-3.5 p-5 glass-subtle border border-white/5 rounded-3xl">
+                            <div className="grid grid-cols-1 gap-3.5 p-5 bg-white/[0.03] backdrop-blur-xl border border-white/10 rounded-3xl">
                               <div className="space-y-1.5">
                                 <label className="text-[10px] uppercase tracking-wider text-slate-400 font-medium">
                                   Nombre Completo
@@ -767,7 +767,7 @@ export default function BookingDrawer() {
                                   placeholder="Ej: Juan Pérez"
                                   value={guestName}
                                   onChange={(e) => setGuestName(e.target.value)}
-                                  className="w-full bg-[#1c1917]/90 border border-white/10 text-white rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-gold-500/50 transition-all placeholder:text-slate-600 font-light"
+                                  className="w-full bg-white/[0.05] border border-white/10 text-white rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-gold-400/50 transition-all placeholder:text-slate-500 font-light"
                                   required
                                 />
                               </div>
@@ -781,7 +781,7 @@ export default function BookingDrawer() {
                                   placeholder="juan@ejemplo.com"
                                   value={guestEmail}
                                   onChange={(e) => setGuestEmail(e.target.value)}
-                                  className="w-full bg-[#1c1917]/90 border border-white/10 text-white rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-gold-500/50 transition-all placeholder:text-slate-600 font-light"
+                                  className="w-full bg-white/[0.05] border border-white/10 text-white rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-gold-400/50 transition-all placeholder:text-slate-500 font-light"
                                   required
                                 />
                               </div>
@@ -798,10 +798,10 @@ export default function BookingDrawer() {
                                     const val = e.target.value.replace(/\D/g, "");
                                     setGuestPhone(val);
                                   }}
-                                  className="w-full bg-[#1c1917]/90 border border-white/10 text-white rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-gold-500/50 transition-all placeholder:text-slate-600 font-light"
+                                  className="w-full bg-white/[0.05] border border-white/10 text-white rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-gold-400/50 transition-all placeholder:text-slate-500 font-light"
                                   required
                                 />
-                                <p className="text-[9px] text-slate-500 font-light mt-0.5">
+                                <p className="text-[9px] text-slate-400 font-light mt-0.5">
                                   Para confirmar voucher y coordinar entrega.
                                 </p>
                               </div>

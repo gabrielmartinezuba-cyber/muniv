@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 :root {
-  --background: #0c0a09; /* Warm near-black, like scorched stone */
+  --background: transparent;
   --foreground: #e8e0d5; /* Aged parchment white */
 }
 
@@ -137,33 +137,32 @@ body::before {
 /* === GLASSMORPHISM SYSTEM V2              === */
 /* ============================================ */
 
-/* --- Subtle Glass (lightest blur, faintest border) --- */
+/* --- Subtle Glass (lightest blur, ultra-translucent) --- */
 .glass-subtle {
-  @apply backdrop-blur-md border;
-  background: rgba(28, 25, 23, 0.3);
-  border-color: rgba(182, 154, 104, 0.05);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  @apply backdrop-blur-xl border;
+  background: rgba(255, 255, 255, 0.03);
+  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
 }
 
-/* --- Standard Glass Panel (existing, enhanced) --- */
+/* --- Standard Glass Panel (Contextual Glassmorphism 2026) --- */
 .glass-panel {
   @apply backdrop-blur-xl border;
-  background: rgba(28, 25, 23, 0.5);
-  border-color: rgba(182, 154, 104, 0.08);
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.1);
   box-shadow:
-    0 8px 32px rgba(0, 0, 0, 0.6),
-    inset 0 1px 0 rgba(255, 255, 255, 0.03);
+    0 8px 32px rgba(0, 0, 0, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
-/* --- Heavy Glass (maximum blur, prominent border) --- */
+/* --- Heavy Glass (Dark Contextual Glass for Drawers / Menus) --- */
 .glass-heavy {
   @apply backdrop-blur-2xl border;
-  background: rgba(28, 25, 23, 0.7);
-  border-color: rgba(182, 154, 104, 0.12);
+  background: rgba(0, 0, 0, 0.45);
+  border-color: rgba(255, 255, 255, 0.12);
   box-shadow:
-    0 16px 64px rgba(0, 0, 0, 0.7),
-    0 4px 16px rgba(0, 0, 0, 0.4),
-    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    0 16px 48px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
 }
 
 /* --- Glow effect (composable with any glass variant) --- */

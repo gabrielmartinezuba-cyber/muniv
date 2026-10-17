@@ -3,6 +3,7 @@ import { Inter, Playfair_Display } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/layout/Navbar";
 import BookingDrawer from "@/components/forms/BookingDrawer";
+import { GlobalVideoBackground } from "@/components/ui/GlobalVideoBackground";
 import { createClient } from "@/utils/supabase/server";
 import { Toaster } from "sonner";
 
@@ -14,6 +15,7 @@ const inter = Inter({
 const playfair = Playfair_Display({
   variable: "--font-playfair",
   subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800", "900"],
 });
 
 export const metadata: Metadata = {
@@ -40,7 +42,7 @@ export const metadata: Metadata = {
     title: "MUNIV | La experiencia que nos gusta repetir 🍷",
     description: "Experiencias de vino para descubrir cómo disfrutarlo.",
     images: ["/logo-share.jpg"],
-  }
+  },
 };
 
 export const viewport: Viewport = {
@@ -48,7 +50,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
-  themeColor: "#7c2020",
+  themeColor: "#000000",
 };
 
 export default async function RootLayout({
@@ -58,13 +60,18 @@ export default async function RootLayout({
 }>) {
   // Fetch user session on the server to pass to the Navbar
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
   return (
-    <html lang="es" className="dark" style={{ colorScheme: "dark" }}>
+    <html lang="es" className="dark bg-black" style={{ colorScheme: "dark" }}>
       <body
-        className={`${inter.variable} ${playfair.variable} font-sans antialiased text-white bg-[#0c0a09] min-h-screen selection:bg-gold-500/30 selection:text-white`}
+        className={`${inter.variable} ${playfair.variable} font-sans antialiased text-[#e8e0d5] bg-transparent min-h-screen selection:bg-gold-500/30 selection:text-white relative`}
       >
+        {/* Global Fixed Video Background across the entire site */}
+        <GlobalVideoBackground />
+
         <Navbar initialUser={user} />
         {children}
         <BookingDrawer />
@@ -73,4 +80,3 @@ export default async function RootLayout({
     </html>
   );
 }
-

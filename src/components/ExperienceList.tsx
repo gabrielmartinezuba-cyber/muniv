@@ -16,8 +16,8 @@ import {
   ShieldCheck,
   CheckCircle2,
   MapPin,
-  Sparkles,
   Flame,
+  Sparkles,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
@@ -49,7 +49,7 @@ export default function ExperienceList() {
         toast.error("¡Evento exclusivo!", {
           description:
             "Para participar de los sorteos tenés que ser miembro. ¡Registrate ahora!",
-          icon: <ShieldCheck className="text-gold-500" size={20} />,
+          icon: <ShieldCheck className="text-gold-400" size={20} />,
         });
         return;
       }
@@ -78,7 +78,7 @@ export default function ExperienceList() {
         if (res.success) {
           toast.success("¡Participación Confirmada!", {
             description: `Ya estás participando en el sorteo de ${exp.title}. ¡Mucha suerte!`,
-            icon: <CheckCircle2 className="text-emerald-500" size={20} />,
+            icon: <CheckCircle2 className="text-emerald-400" size={20} />,
           });
         } else {
           toast.error("Atención", {
@@ -97,7 +97,7 @@ export default function ExperienceList() {
         description:
           "Como miembro de Muniv adquirís precios especiales y múltiples beneficios.",
         action: { label: "Crear cuenta", onClick: () => router.push("/login") },
-        icon: <ShieldCheck className="text-gold-500" size={20} />,
+        icon: <ShieldCheck className="text-gold-400" size={20} />,
       });
     }
 
@@ -138,36 +138,54 @@ export default function ExperienceList() {
     });
   }, []);
 
-  // Premium Shimmer Loading State
+  // Premium Shimmer Loading State in Bento Shapes
   if (loading) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 py-8">
-        {[1, 2, 3].map((n) => (
-          <div
-            key={n}
-            className="rounded-3xl glass-panel p-5 border border-white/5 space-y-4"
-          >
-            <Skeleton variant="card" className="w-full h-56 rounded-2xl" />
-            <div className="space-y-2 pt-2">
-              <Skeleton variant="text" lines={2} />
-              <div className="flex justify-between items-center pt-4">
-                <Skeleton variant="button" className="w-24 h-6" />
-                <Skeleton variant="button" className="w-28 h-10 rounded-full" />
-              </div>
+      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6 py-6">
+        <div className="md:col-span-2 md:row-span-2 h-[480px] rounded-3xl bg-white/[0.03] backdrop-blur-xl border border-white/10 p-6 flex flex-col justify-between">
+          <Skeleton variant="card" className="w-full h-64 rounded-2xl" />
+          <div className="space-y-3">
+            <Skeleton variant="text" lines={2} />
+            <div className="flex justify-between items-center pt-2">
+              <Skeleton variant="button" className="w-24 h-6" />
+              <Skeleton variant="button" className="w-32 h-10 rounded-full" />
             </div>
           </div>
-        ))}
+        </div>
+        <div className="md:col-span-1 md:row-span-1 h-[280px] rounded-3xl bg-white/[0.03] backdrop-blur-xl border border-white/10 p-5 space-y-3">
+          <Skeleton variant="card" className="w-full h-32 rounded-xl" />
+          <Skeleton variant="text" lines={1} />
+        </div>
+        <div className="md:col-span-1 md:row-span-1 h-[280px] rounded-3xl bg-white/[0.03] backdrop-blur-xl border border-white/10 p-5 space-y-3">
+          <Skeleton variant="card" className="w-full h-32 rounded-xl" />
+          <Skeleton variant="text" lines={1} />
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 py-8">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 py-4">
       {experiences.map((exp, index) => {
         const isSoldOut = availability[exp.id]?.remaining <= 0;
         const isComingSoon = exp.status === "COMING_SOON";
         const tempDiscount =
           exp.temp_discount || (exp as any).temporal_discount || 0;
+
+        // Bento Grid Card Sizing:
+        // Item 0 is Featured Hero Card (2 cols, 2 rows in large screens)
+        // Item 1, 2 are standard cards
+        // Item 3 is wide card (2 cols)
+        let bentoSpan = "col-span-1 row-span-1 min-h-[380px]";
+        if (index === 0) {
+          bentoSpan = "md:col-span-2 md:row-span-2 min-h-[460px] md:min-h-[580px]";
+        } else if (index === 3) {
+          bentoSpan = "md:col-span-2 row-span-1 min-h-[380px]";
+        } else if (index % 5 === 0) {
+          bentoSpan = "lg:col-span-2 row-span-1 min-h-[380px]";
+        }
+
+        const isHeroBento = index === 0;
 
         return (
           <motion.div
@@ -175,41 +193,52 @@ export default function ExperienceList() {
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-60px" }}
-            transition={{ duration: 0.6, delay: index * 0.08 }}
+            transition={{ duration: 0.6, delay: index * 0.07 }}
             whileHover={!isSoldOut ? { y: -6 } : undefined}
             className={cn(
               "group relative rounded-3xl overflow-hidden flex flex-col justify-between",
-              "glass-panel border border-white/5 hover:border-gold-500/30",
-              "transition-all duration-500 ease-out shadow-[0_10px_30px_rgba(0,0,0,0.5)]",
-              isSoldOut && "opacity-75 grayscale-[0.35]"
+              "bg-white/[0.03] hover:bg-white/[0.06] backdrop-blur-xl",
+              "border border-white/10 hover:border-gold-400/40",
+              "transition-all duration-500 ease-out shadow-[0_8px_32px_rgba(0,0,0,0.35)]",
+              bentoSpan,
+              isSoldOut && "opacity-70 grayscale-[0.4]"
             )}
           >
-            {/* Top Image Container */}
-            <div className="relative h-64 w-full overflow-hidden bg-iron-950">
+            {/* Background Image Container with Contextual Glass Gradient */}
+            <div
+              className={cn(
+                "relative w-full overflow-hidden",
+                isHeroBento ? "h-64 sm:h-80 md:h-[340px]" : "h-52 md:h-56"
+              )}
+            >
               <Image
                 src={exp.image_url}
                 alt={exp.title}
                 fill
-                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                sizes={
+                  isHeroBento
+                    ? "(max-width: 768px) 100vw, 66vw"
+                    : "(max-width: 768px) 100vw, 33vw"
+                }
                 className={cn(
                   "object-cover transition-transform duration-700 ease-out",
                   !isSoldOut && "group-hover:scale-105"
                 )}
               />
 
-              {/* Cinematic Vignette Overlay */}
-              <div className="absolute inset-0 bg-gradient-to-t from-[#141210] via-transparent to-black/30 pointer-events-none" />
+              {/* Translucent cinematic scrim */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent pointer-events-none" />
 
               {/* Badges Container */}
-              <div className="absolute top-4 left-4 right-4 flex items-center justify-between gap-2 pointer-events-none">
+              <div className="absolute top-4 left-4 right-4 flex items-center justify-between gap-2 pointer-events-none z-10">
                 {/* Type Badge */}
-                <span className="px-3.5 py-1 bg-black/60 backdrop-blur-md border border-gold-500/25 text-gold-400 text-[11px] uppercase tracking-[0.18em] font-bold rounded-full shadow-lg">
+                <span className="px-3.5 py-1 bg-black/45 backdrop-blur-md border border-white/15 text-gold-300 text-[11px] uppercase tracking-[0.2em] font-bold rounded-full shadow-lg">
                   {exp.type}
                 </span>
 
                 {/* Promotional Discount Badge */}
                 {tempDiscount > 0 && !isSoldOut && (
-                  <span className="inline-flex items-center gap-1 px-3 py-1 bg-burgundy-700/90 backdrop-blur-md border border-ember-500/40 text-amber-200 text-xs font-bold rounded-full shadow-[0_0_15px_rgba(249,115,22,0.4)]">
+                  <span className="inline-flex items-center gap-1 px-3 py-1 bg-burgundy-700/80 backdrop-blur-md border border-ember-400/40 text-amber-200 text-xs font-bold rounded-full shadow-[0_0_15px_rgba(249,115,22,0.4)]">
                     <Flame size={12} className="text-amber-400 animate-pulse" />
                     <span>-{tempDiscount}% OFF</span>
                   </span>
@@ -217,20 +246,30 @@ export default function ExperienceList() {
               </div>
             </div>
 
-            {/* Content Body */}
-            <div className="p-6 md:p-7 flex flex-col flex-1 justify-between">
+            {/* Bento Card Content Body */}
+            <div className="p-6 md:p-7 flex flex-col flex-1 justify-between bg-black/20">
               <div>
-                <h3 className="font-display text-2xl text-white mb-2.5 group-hover:text-gold-300 transition-colors leading-tight">
+                <h3
+                  className={cn(
+                    "font-display text-white mb-2.5 group-hover:text-gold-300 transition-colors leading-tight drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]",
+                    isHeroBento ? "text-3xl md:text-4xl" : "text-xl md:text-2xl"
+                  )}
+                >
                   {exp.title}
                 </h3>
-                <p className="text-slate-300/80 text-sm mb-5 font-light line-clamp-3 leading-relaxed">
+                <p
+                  className={cn(
+                    "text-[#e8e0d5]/80 font-light mb-5 leading-relaxed drop-shadow-[0_1px_4px_rgba(0,0,0,0.8)]",
+                    isHeroBento ? "text-base md:text-lg line-clamp-3" : "text-sm line-clamp-2"
+                  )}
+                >
                   {exp.description}
                 </p>
 
-                {/* Metadata Details: Date & Location */}
-                <div className="space-y-2 mb-6">
+                {/* Date & Location Details */}
+                <div className="space-y-2 mb-5">
                   {exp.event_date && (
-                    <div className="flex items-center gap-2 text-gold-400/90 text-xs tracking-wider uppercase font-medium">
+                    <div className="flex items-center gap-2 text-gold-300/90 text-xs tracking-wider uppercase font-medium drop-shadow">
                       <Calendar size={14} className="text-gold-400 shrink-0" />
                       <span>
                         {new Date(exp.event_date)
@@ -251,8 +290,8 @@ export default function ExperienceList() {
                   )}
 
                   {(exp as any).location_name && (
-                    <div className="flex items-center gap-2 text-slate-400 text-xs tracking-wider font-light">
-                      <MapPin size={14} className="text-gold-400/70 shrink-0" />
+                    <div className="flex items-center gap-2 text-slate-300/80 text-xs tracking-wider font-light drop-shadow">
+                      <MapPin size={14} className="text-gold-400/80 shrink-0" />
                       <span className="truncate">
                         {(exp as any).location_name}
                         {(exp as any).location_address
@@ -265,7 +304,7 @@ export default function ExperienceList() {
               </div>
 
               {/* Price & Action Footer */}
-              <div className="pt-4 border-t border-white/5 flex items-center justify-between gap-4 mt-auto">
+              <div className="pt-4 border-t border-white/10 flex items-center justify-between gap-4 mt-auto">
                 <div className="flex flex-col">
                   {exp.price > 0 && (
                     <span className="text-[10px] text-slate-400 uppercase tracking-widest font-medium">
@@ -273,7 +312,7 @@ export default function ExperienceList() {
                     </span>
                   )}
                   <div className="flex items-baseline gap-1.5">
-                    <span className="text-2xl text-white font-medium tracking-tight">
+                    <span className="text-2xl md:text-3xl text-white font-display font-medium tracking-tight drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">
                       {exp.price === 0
                         ? "Gratis"
                         : `$${exp.price.toLocaleString("es-AR")}`}
@@ -285,14 +324,14 @@ export default function ExperienceList() {
                 {isComingSoon ? (
                   <button
                     disabled
-                    className="px-5 py-2.5 rounded-full font-bold text-xs cursor-not-allowed bg-stone-900/80 border border-white/10 text-slate-500 uppercase tracking-widest"
+                    className="px-5 py-2.5 rounded-full font-bold text-xs cursor-not-allowed bg-white/5 border border-white/10 text-slate-400 uppercase tracking-widest"
                   >
                     Próximamente
                   </button>
                 ) : isSoldOut ? (
                   <button
                     disabled
-                    className="px-5 py-2.5 rounded-full font-bold text-xs cursor-not-allowed bg-stone-950/80 border border-white/10 text-slate-500 uppercase tracking-widest"
+                    className="px-5 py-2.5 rounded-full font-bold text-xs cursor-not-allowed bg-black/40 border border-white/10 text-slate-400 uppercase tracking-widest"
                   >
                     Agotado
                   </button>
@@ -302,8 +341,9 @@ export default function ExperienceList() {
                     disabled={processingId === exp.id}
                     className={cn(
                       "relative inline-flex items-center gap-2 px-6 py-2.5 rounded-full font-semibold text-sm",
-                      "bg-burgundy-600 hover:bg-burgundy-500 text-white",
-                      "transition-all duration-300 ease-out shadow-[0_0_20px_rgba(124,32,32,0.4)]",
+                      "bg-burgundy-600/90 hover:bg-burgundy-500 text-white backdrop-blur-md",
+                      "border border-burgundy-400/30",
+                      "transition-all duration-300 ease-out shadow-[0_0_25px_rgba(124,32,32,0.4)] hover:shadow-[0_0_35px_rgba(124,32,32,0.6)]",
                       "active:scale-95 cursor-pointer disabled:opacity-50"
                     )}
                   >
