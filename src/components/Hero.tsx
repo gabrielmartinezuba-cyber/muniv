@@ -1,24 +1,19 @@
 "use client";
 
-import dynamic from 'next/dynamic';
-import { useEffect, useRef, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { X } from 'lucide-react';
-import gsap from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { ErrorBoundary } from '@/components/ErrorBoundary';
+import dynamic from "next/dynamic";
+import { useEffect, useRef, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { X, ArrowDown, Sparkles } from "lucide-react";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { VideoBackground } from "@/components/ui/VideoBackground";
+import { MagneticButton } from "@/components/ui/MagneticButton";
 
-// Lazy load the heaviest part (Three.js WebGL canvas) to protect First Load as requested.
-const Scene3D = dynamic(() => import('@/components/3d/HeroScene'), { 
+// Lazy load the Three.js WebGL canvas to protect initial load performance
+const Scene3D = dynamic(() => import("@/components/3d/HeroScene"), {
   ssr: false,
-  loading: () => (
-    <div className="absolute inset-0 flex items-center justify-center bg-[#0c0a09]">
-      <div className="relative w-16 h-16">
-        <div className="absolute inset-0 rounded-full border-t-2 border-gold-500 animate-spin"></div>
-        <div className="absolute inset-2 rounded-full border-r-2 border-burgundy-600 animate-spin flex-reverse shadow-[0_0_15px_rgba(108,26,26,0.6)]"></div>
-      </div>
-    </div>
-  )
+  loading: () => null,
 });
 
 interface HeroProps {
@@ -36,119 +31,220 @@ Más que vender vino, en MUNIV queremos acompañar momentos. Crear una conexión
 
 MUNIV es calidad, experiencia y disfrute. Una invitación a descubrir vinos con personalidad y a hacer de cada ocasión algo digno de repetir.`;
 
-export default function Hero({ 
+export default function Hero({
   title = "Vinos y experiencias <br/> para compartir",
   description = "Comunidad de vinos y experiencias pensado para descubrir, regalar y disfrutar momentos que valen la pena repetir.",
   button_text = "Conocé MUNIV",
-  conoce_descripcion = DEFAULT_CONOCE
+  conoce_descripcion = DEFAULT_CONOCE,
 }: HeroProps) {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const textRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       gsap.registerPlugin(ScrollTrigger);
 
       if (containerRef.current && textRef.current) {
         gsap.to(textRef.current, {
           y: 120,
           opacity: 0,
-          scale: 0.95,
+          scale: 0.94,
           scrollTrigger: {
             trigger: containerRef.current,
             start: "top top",
             end: "bottom top",
-            scrub: 1, // Smooth dampening
-          }
+            scrub: 1.2,
+          },
         });
       }
     }
   }, []);
 
+  const scrollToExperiences = () => {
+    const el = document.getElementById("experiencias");
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth" });
+    }
+  };
+
   return (
-    <section ref={containerRef} className="relative h-screen w-full flex items-center justify-center overflow-hidden">
-      {/* 3D Background Encapsulated */}
-      <div className="absolute inset-0 z-0">
-        <ErrorBoundary fallbackMessage="El motor WebGL encontró un inconveniente en el procesador gráfico. Continuamos en modo lectura a 60fps.">
-          <Scene3D />
-        </ErrorBoundary>
-      </div>
-      
-      {/* Foreground Content */}
-      <div ref={textRef} className="z-10 text-center flex flex-col items-center max-w-4xl px-4 pointer-events-none">
-        <h1 
-          className="font-display font-medium text-5xl md:text-7xl lg:text-8xl tracking-tight text-white mb-6 drop-shadow-2xl h-auto"
+    <section
+      ref={containerRef}
+      className="relative min-h-[92vh] lg:min-h-screen w-full flex items-center justify-center overflow-hidden"
+    >
+      {/* 1. Cinematic Realistic AI Video Background */}
+      <VideoBackground
+        src="/videos/hero.mp4"
+        overlay={true}
+        overlayOpacity={0.65}
+        className="z-0"
+      >
+        {/* 2. WebGL 3D Floating Embers layered on top of video */}
+        <div className="absolute inset-0 z-[1] pointer-events-none opacity-60">
+          <ErrorBoundary fallbackMessage="WebGL ambient layer fallback">
+            <Scene3D />
+          </ErrorBoundary>
+        </div>
+
+        {/* Ambient mesh vignettes */}
+        <div className="absolute inset-0 z-[2] pointer-events-none bg-gradient-to-t from-[#0c0a09] via-transparent to-[#0c0a09]/50" />
+        <div className="absolute inset-0 z-[2] pointer-events-none bg-[radial-gradient(ellipse_at_center,transparent_0%,rgba(12,10,9,0.7)_85%)]" />
+      </VideoBackground>
+
+      {/* 3. Hero Foreground Content */}
+      <div
+        ref={textRef}
+        className="z-10 text-center flex flex-col items-center max-w-5xl px-6 py-20 relative pointer-events-none"
+      >
+        {/* Subtle pill badge */}
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.1 }}
+          className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full glass-subtle border border-gold-500/20 text-gold-400 text-xs tracking-[0.2em] uppercase font-medium mb-8 pointer-events-auto"
+        >
+          <Sparkles size={13} className="text-gold-400 animate-pulse" />
+          <span>Experiencias de autor & Comunidad</span>
+        </motion.div>
+
+        {/* Display Title with extreme contrast */}
+        <motion.h1
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.9, delay: 0.25 }}
+          className="font-display font-medium text-5xl sm:text-6xl md:text-7xl lg:text-8xl tracking-tight text-white mb-6 drop-shadow-[0_12px_36px_rgba(0,0,0,0.8)] leading-[1.08]"
           dangerouslySetInnerHTML={{ __html: title }}
         />
-        <p className="text-lg md:text-xl text-slate-300 font-light max-w-2xl mb-10 leading-relaxed drop-shadow-lg">
+
+        {/* Descriptive copy with refined typography */}
+        <motion.p
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.45 }}
+          className="text-base sm:text-lg md:text-xl text-[#e8e0d5]/85 font-light max-w-2xl mb-12 leading-relaxed drop-shadow-[0_4px_16px_rgba(0,0,0,0.9)]"
+        >
           {description}
-        </p>
-        <div className="pointer-events-auto flex items-center gap-6">
-          <button 
+        </motion.p>
+
+        {/* Interactive Action CTAs with Magnetic Effect */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.7, delay: 0.6 }}
+          className="pointer-events-auto flex flex-wrap items-center justify-center gap-4"
+        >
+          <MagneticButton
+            variant="secondary"
+            size="lg"
+            glow={true}
+            magnetic={true}
             onClick={() => setIsDrawerOpen(true)}
-            className="glass-panel glass-panel-glow px-8 py-4 rounded-full text-gold-400 font-medium tracking-wide transition-all duration-500 transform hover:scale-105 flex items-center gap-2 group"
+            className="group"
           >
-            <span className="group-hover:text-white transition-colors duration-300">{button_text}</span>
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gold-400 group-hover:translate-x-1 group-hover:text-gold-200 transition-all duration-300" viewBox="0 0 20 20" fill="currentColor">
-              <path fillRule="evenodd" d="M12.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd" />
-            </svg>
-          </button>
-        </div>
+            <span>{button_text}</span>
+            <span className="text-gold-400 group-hover:translate-x-1 transition-transform duration-300">
+              →
+            </span>
+          </MagneticButton>
+
+          <MagneticButton
+            variant="primary"
+            size="lg"
+            glow={true}
+            magnetic={true}
+            onClick={scrollToExperiences}
+          >
+            Explorar Catálogo
+          </MagneticButton>
+        </motion.div>
       </div>
 
-      {/* Side Drawer: Info */}
+      {/* Scroll indicator prompt */}
+      <motion.button
+        onClick={scrollToExperiences}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 1.2, duration: 0.8 }}
+        className="absolute bottom-8 z-10 flex flex-col items-center gap-2 text-gold-400/60 hover:text-gold-400 transition-colors pointer-events-auto group cursor-pointer"
+        aria-label="Desplazarse al catálogo"
+      >
+        <span className="text-[11px] tracking-[0.25em] uppercase font-light">Explorar</span>
+        <motion.div
+          animate={{ y: [0, 6, 0] }}
+          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+        >
+          <ArrowDown size={16} />
+        </motion.div>
+      </motion.button>
+
+      {/* Side Drawer: Conocé MUNIV */}
       <AnimatePresence>
         {isDrawerOpen && (
           <>
             {/* Backdrop */}
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setIsDrawerOpen(false)}
-              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100]"
+              className="fixed inset-0 bg-black/75 backdrop-blur-md z-[100]"
             />
-            
-            {/* Drawer */}
-            <motion.div 
-              initial={{ x: '100%' }}
+
+            {/* Slide-over Drawer with heavy glass */}
+            <motion.div
+              initial={{ x: "100%" }}
               animate={{ x: 0 }}
-              exit={{ x: '100%' }}
-              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              className="fixed inset-y-0 right-0 w-full md:w-[500px] backdrop-blur-xl border-l z-[101] flex flex-col shadow-2xl"
-              style={{ background: 'rgba(12,10,9,0.95)', borderColor: 'rgba(182,154,104,0.12)' }}
+              exit={{ x: "100%" }}
+              transition={{ type: "spring", damping: 28, stiffness: 220 }}
+              className="fixed inset-y-0 right-0 w-full md:w-[540px] z-[101] flex flex-col shadow-[0_0_80px_rgba(0,0,0,0.9)] glass-heavy border-l border-gold-500/20"
             >
               <div className="p-8 md:p-12 flex flex-col h-full">
-                <div className="flex justify-end mb-8">
-                  <button 
+                {/* Header with Close Button */}
+                <div className="flex items-center justify-between mb-8 pb-4 border-b border-white/5">
+                  <span className="text-xs uppercase tracking-[0.25em] text-gold-400/80 font-medium">
+                    Manifiesto MUNIV
+                  </span>
+                  <button
                     onClick={() => setIsDrawerOpen(false)}
-                    className="p-2 text-slate-400 hover:text-white hover:bg-white/5 rounded-full transition-all"
+                    className="p-2 text-slate-400 hover:text-white hover:bg-white/5 rounded-full transition-all cursor-pointer"
+                    aria-label="Cerrar panel"
                   >
-                    <X size={24} />
+                    <X size={22} />
                   </button>
                 </div>
-                
-                <div className="flex-1 overflow-y-auto custom-scrollbar pr-4">
-                  <h2 className="font-display text-4xl md:text-5xl text-white mb-10 leading-tight">
-                    ¿Qué es <br/>
-                    <span className="italic text-gold-400">MUNIV?</span>
+
+                {/* Content body */}
+                <div className="flex-1 overflow-y-auto custom-scrollbar pr-4 space-y-6">
+                  <h2 className="font-display text-4xl md:text-5xl text-white leading-tight">
+                    ¿Qué es <br />
+                    <span className="gradient-text-gold italic">MUNIV?</span>
                   </h2>
-                  
-                  <div className="text-slate-300 font-light leading-relaxed space-y-6 text-lg">
-                    {conoce_descripcion.split('\n\n').map((paragraph, idx) => (
-                      <p key={idx}>{paragraph}</p>
+
+                  <div className="text-[#e8e0d5]/85 font-light leading-relaxed space-y-6 text-base md:text-lg">
+                    {conoce_descripcion.split("\n\n").map((paragraph, idx) => (
+                      <p key={idx} className="leading-relaxed">
+                        {paragraph}
+                      </p>
                     ))}
                   </div>
                 </div>
-                
-                <div className="pt-12 mt-auto border-t border-white/5">
-                   <button 
-                    onClick={() => setIsDrawerOpen(false)}
-                     className="w-full py-4 bg-burgundy-600 text-white font-bold rounded-xl hover:bg-burgundy-500 transition-colors shadow-[0_0_20px_rgba(108,26,26,0.3)]"
-                   >
-                     Continuar Explorando
-                   </button>
+
+                {/* Footer CTA */}
+                <div className="pt-8 mt-auto border-t border-white/10">
+                  <MagneticButton
+                    variant="primary"
+                    size="md"
+                    glow={true}
+                    magnetic={false}
+                    onClick={() => {
+                      setIsDrawerOpen(false);
+                      scrollToExperiences();
+                    }}
+                    className="w-full font-bold shadow-[0_0_30px_rgba(108,26,26,0.5)]"
+                  >
+                    Continuar Explorando
+                  </MagneticButton>
                 </div>
               </div>
             </motion.div>
@@ -158,5 +254,3 @@ export default function Hero({
     </section>
   );
 }
-
-
